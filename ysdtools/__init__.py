@@ -1,3 +1,4 @@
+from . import ysdlog
+
 __version__ = "0.1.0"
-__all__ = ["ysdlog"]
-import ysdtools.ysdlog
+__all__ = ["ysdlog", ]
