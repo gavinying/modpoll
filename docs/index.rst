@@ -10,8 +10,7 @@ Welcome to ysdtools's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: ysdtools
-    :members:
+   ysdlog
 
 
 Indices and tables

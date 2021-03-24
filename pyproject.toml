@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "ysdtools"
 version = "0.1.0"
-description = "Some useful python tools"
+description = "A collection of useful python tools"
 authors = ["ysd <helloysd@foxmail.com>"]
+packages = [
+    { include = "ysdtools" },
+]
 
 [tool.poetry.dependencies]
 python = ">3.7,<4.0"

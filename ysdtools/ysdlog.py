@@ -1,9 +1,3 @@
-"""
-.. module:: ysdlog
-   :platform: Linux, Windows
-   :synopsis: A thin wrapper to logging
-.. moduleauthor:: Ying Shaodong <helloysd@gmail.com>
-"""
 import logging
 
 logging.basicConfig(
@@ -13,13 +7,15 @@ logging.basicConfig(
 
 
 def get_logger(name: str):
-    """Get a simple logger
+    """
+    Get a simple logger
 
-    :param name: A name to describe the logger
-    :type name: str
-    ...
-    :return: An instance of logger
-    :rtype: logging.Logger
+    Args:
+        name(str): A name for logger
+
+    Returns:
+        A default logger
+
     """
     return logging.getLogger(name)
 
