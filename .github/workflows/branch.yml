@@ -1,5 +1,5 @@
 name: Push
-on: [push]
+on: [push, pull_request]
 
 jobs:
   test:
@@ -25,6 +25,8 @@ jobs:
         run: poetry run pytest --cov=./ --cov-report=xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
   code-quality:
     strategy:
       fail-fast: false
