@@ -2,7 +2,7 @@ import ysdtools
 
 
 def test_version():
-    assert ysdtools.__version__ == "0.1.0"
+    assert ysdtools.__version__ == "0.1.1"
 
 
 def test_ysdlog():

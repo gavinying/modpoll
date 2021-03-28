@@ -1,8 +1,10 @@
 import logging
 
+FORMAT_SIMPLE = "%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+
 logging.basicConfig(
     level=logging.DEBUG,
-    format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
+    format=FORMAT_SIMPLE,
 )
 
 
