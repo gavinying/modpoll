@@ -128,5 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Added by ysd
+# added by ysd
 .idea/
+.vscode/
+/*.csv
+/config/
+/public/
