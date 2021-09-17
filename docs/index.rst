@@ -1,17 +1,19 @@
-.. ysdtools documentation master file, created by
-   sphinx-quickstart on Wed Mar 24 00:14:06 2021.
+.. Modpoll documentation master file, created by
+   sphinx-quickstart on Thu Sep 16 10:11:08 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to ysdtools's documentation!
-====================================
+Welcome to Modpoll's documentation!
+===================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   ysdlog
-
+   install
+   usage
+   example
+   changelog
 
 Indices and tables
 ==================
