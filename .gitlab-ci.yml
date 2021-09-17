@@ -1,0 +1,70 @@
+# Global --------------------------
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  APP_NAME: "modpoll"
+  PYTHON_TAG: "3.6-slim-buster"
+  PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
+
+cache:
+  key:
+    files:
+      - .gitlab-ci.yml
+    # prefix: ${CI_JOB_NAME}
+  paths:
+    - .venv
+    - .cache/pip
+    - poetry.lock
+
+image: helloysd/poetry:$PYTHON_TAG
+
+# build jobs ------------------------
+
+build-module:
+  stage: build
+  script:
+    - poetry update
+    - poetry install --no-root
+    - poetry build
+  artifacts:
+    paths: 
+      - dist
+  only:
+    - master
+    - tags
+
+# test jobs ------------------------
+
+pytest:
+  stage: test
+  script:
+    - poetry install
+    # - pip install dist/*.whl
+    - poetry run pytest
+  only:
+    - master
+    - tags
+
+# deploy jobs ------------------------
+
+pypi:
+  stage: deploy
+  script:
+    - poetry config pypi-token.pypi ${PYPI_TOKEN}
+    - poetry publish
+  only:
+    - tags
+
+pages:
+  stage: deploy
+  script:
+    - poetry run sphinx-build -b html docs public
+  artifacts:
+    paths:
+      - public
+  only:
+    - tags
