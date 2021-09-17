@@ -1,28 +1,31 @@
 [tool.poetry]
-name = "ysdtools"
-version = "0.1.1"
-description = "A collection of useful python tools"
-authors = ["ysd <helloysd@foxmail.com>"]
-packages = [
-    { include = "ysdtools" },
+name = "modpoll"
+version = "0.2.24"
+description = "A command line tool to communicate with modbus devices"
+authors = ["Ying Shaodong <helloysd@foxmail.com>"]
+readme = "README.md"
+homepage = "https://helloysd.gitlab.io/modpoll"
+repository = "https://gitlab.com/helloysd/modpoll"
+license = "MIT"
+include = [
+  "LICENSE",
 ]
 
 [tool.poetry.dependencies]
-python = ">3.7,<4.0"
+python = "^3.6"
+importlib-metadata = {version = "^1.0", python = "<3.8"}
+pymodbus = "^2.5.2"
+paho-mqtt = "^1.5.1"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.2"
-pytest-cov = "^2.11.1"
-black = "^20.8b1"
-isort = "^5.8.0"
-flake8 = "^3.9.0"
-bandit = "^1.7.0"
-safety = "^1.10.3"
+pytest = "^5.2"
+sphinx = "^4.2.0"
+sphinx-argparse = "^0.3.1"
+sphinx-rtd-theme = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.pytest.ini_options]
-log_cli = true
-log_level = "DEBUG"
+[tool.poetry.scripts]
+modpoll = "modpoll:app"
