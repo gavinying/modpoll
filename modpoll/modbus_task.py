@@ -10,13 +10,12 @@ from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
 
-from modpoll.arg_parser import get_parser
 from modpoll.mqtt_task import mqttc_publish
 
 # global objects
-master = None
 args = None
 log = None
+master = None
 deviceList = []
 referenceList = []
 pollers = []
@@ -322,11 +321,12 @@ def load_config(file):
 
 
 def modbus_setup(config):
-    global master
     global args
-    global log
     args = config
+    global log
     log = logging.getLogger(__name__)
+    global master
+
     log.info(f"Loading config from file: {args.config}")
     load_config(args.config)
     if args.rtu:

@@ -3,7 +3,6 @@ import time
 import sys
 import signal
 
-# from modpoll import __version__
 from modpoll.arg_parser import get_parser
 from modpoll.mqtt_task import mqttc_setup, mqttc_publish, mqttc_close
 from modpoll.modbus_task import modbus_setup, modbus_poll, modbus_export, modbus_close
@@ -37,7 +36,7 @@ def app(name="modpoll"):
     # setup mqtt
     if args.mqtt_host:
         log.info(f"Setup MQTT connection to {args.mqtt_host}")
-        if not mqttc_setup(args.mqtt_host, port=args.mqtt_port, user=args.mqtt_user, password=args.mqtt_pass, qos=args.mqtt_qos):
+        if not mqttc_setup(args):
             log.error("fail to setup MQTT client")
             mqttc_close()
             exit(1)
