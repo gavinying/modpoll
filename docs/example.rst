@@ -31,6 +31,20 @@ Commandline Examples
     modpoll --tcp 192.168.0.10 --config examples/scpms6.csv --export data.csv
 
 
+- Check app version (in docker)
+
+  .. code-block:: shell
+
+    docker run helloysd/modpoll modpoll --version
+
+
+- Connect to Modbus TCP device and publish data to MQTT broker (in docker)
+
+  .. code-block:: shell
+
+    docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp 192.168.0.10 --config /app/examples/scpms6.csv --mqtt-host iot.eclipse.org
+
+
 Modbus Configuration File
 --------------------------
 

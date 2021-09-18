@@ -38,10 +38,18 @@ This program is tested on python 3.6+.
   pip install -U modpoll
   ```
 
-- Install with docker
+## Run in docker
 
-  (To be added...)
+A docker image has been provided for users to directly run the program, 
 
+  ```bash
+  docker run helloysd/modpoll modpoll --help
+  ```
+To config the modbus registers, user may need to mount local volume to the container, e.g. 
+
+  ```bash
+  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp 192.168.0.10 --config /app/examples/scpms6.csv --mqtt-host iot.eclipse.org
+  ```
 
 ## Basic Usage
 
