@@ -1,0 +1,20 @@
+version: '2'
+
+volumes:
+  mosquitto-data:
+
+services:
+  modpoll:
+    build: .
+    container_name: modpoll
+    depends_on:
+      - mosquitto
+    command: modpoll --tcp 192.168.0.10 --config examples/scpms6.csv --mqtt-host mosquitto
+  mosquitto:
+    image: helloysd/mosquitto:2.0.11
+    container_name: mosquitto
+    restart: unless-stopped
+    volumes:
+      - mosquitto-data:/mosquitto
+    ports:
+      - 1883:1883
