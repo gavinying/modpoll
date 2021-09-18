@@ -12,7 +12,7 @@ A command line tool to communicate with modbus devices.
 
 ## Motivation
 
-The initial idea of creating this tool is to help myself debugging and troubleshooting new modbus devices during site survey. A typical site survey usually has limited time and space, working on-site also pile up some pressures. During that time, a portable swiss-knife toolkit is our best friend.
+The initial idea of creating this tool is to help myself debugging new devices during site survey. A site survey usually has limited time and space, working on-site also piles up some pressures. At that time, a portable swiss-knife toolkit is our best friend.
 
 This program can be easily deployed to Raspberry Pi or similar embedded devices, continuously polling data from the connected modbus devices, you can choose to save data locally or forward uplink to a MQTT broker for easy debugging, the MQTT broker can be setup on the same Raspberry Pi or on the cloud. On the other hand, a smart phone (Android/Iphone) can be used to visualize collected data and control the devices remotely via the same MQTT broker. 
 
@@ -43,7 +43,35 @@ This program is tested on python 3.6+.
   (To be added...)
 
 
-## Examples
+## Basic Usage
+
+- Connect to Modbus TCP device
+
+  ```bash
+  modpoll --tcp 192.168.0.10 --config examples/scpms6.csv
+
+  ```
+
+- Connect to Modbus RTU device 
+
+  ```bash
+  modpoll --rtu /dev/ttyUSB0 --rtu-baud 9600 --config examples/scpms6.csv
+
+  ```
+
+- Connect to Modbus TCP device and publish data to MQTT broker 
+
+  ```bash
+  modpoll --tcp 192.168.0.10 --config examples/scpms6.csv --mqtt-host iot.eclipse.org
+
+  ```
+
+- Connect to Modbus TCP device and export data to local csv file
+
+  ```bash
+  modpoll --tcp 192.168.0.10 --config examples/scpms6.csv --export data.csv
+
+  ```
 
 Please refer to [documentation](https://helloysd.gitlab.io/modpoll) site for more configures and examples.
 
