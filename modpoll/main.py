@@ -4,7 +4,7 @@ import sys
 import signal
 
 from modpoll.arg_parser import get_parser
-from modpoll.mqtt_task import mqttc_setup, mqttc_publish, mqttc_close
+from modpoll.mqtt_task import mqttc_setup, mqttc_close
 from modpoll.modbus_task import modbus_setup, modbus_poll, modbus_export, modbus_close
 
 # global objects

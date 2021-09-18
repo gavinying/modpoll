@@ -59,7 +59,7 @@ def mqttc_setup(args):
     log = logging.getLogger(__name__)
     try:
         global mqttc
-        mqttc = mqtt.Client(socket.gethostname(), clean_session=(args.qos == 0))
+        mqttc = mqtt.Client(socket.gethostname(), clean_session=(args.mqtt_qos == 0))
         # if args.mqtt_use_tls:
         #     if args.mqtt_tls_version == "tlsv1.2":
         #         tlsVersion = ssl.PROTOCOL_TLSv1_2
@@ -78,14 +78,14 @@ def mqttc_setup(args):
         #     else:
         #         cert_required = ssl.CERT_NONE
         #
-        #     _mqttc.tls_set(ca_certs=args.cacerts, certfile=None, keyfile=None, cert_reqs=cert_required,
+        #     mqttc.tls_set(ca_certs=args.mqtt_cacerts, certfile=None, keyfile=None, cert_reqs=cert_required,
         #                    tls_version=tlsVersion)
         #
         #     if args.mqtt_insecure:
-        #         _mqttc.tls_insecure_set(True)
+        #         mqttc.tls_insecure_set(True)
 
-        if args.user:
-            mqttc.username_pw_set(args.user, args.password)
+        if args.mqtt_user:
+            mqttc.username_pw_set(args.mqtt_user, args.mqtt_password)
 
         mqttc.on_message = _on_message
         mqttc.on_connect = _on_connect
@@ -97,7 +97,7 @@ def mqttc_setup(args):
             mqttc.on_log = _on_log
 
         # try to connect
-        mqttc.connect(host=args.host, port=args.port, keepalive=60)
+        mqttc.connect(host=args.mqtt_host, port=args.mqtt_port, keepalive=60)
 
         # start loop - let paho manage connection
         mqttc.loop_start()
@@ -107,7 +107,7 @@ def mqttc_setup(args):
         return True
 
     except Exception as ex:
-        log.error("mqtt connection error")
+        log.error(f"mqtt connection error: {ex}")
         # raise ex
         return False
 
