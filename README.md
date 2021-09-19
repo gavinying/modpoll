@@ -1,14 +1,10 @@
+# ModPoll - A command line tool to communicate with modbus devices.
+
 [![pipeline status](https://gitlab.com/helloysd/modpoll/badges/master/pipeline.svg)](https://gitlab.com/helloysd/modpoll/-/commits/master)
 [![License](https://img.shields.io/pypi/l/modpoll)](https://gitlab.com/helloysd/modpoll/-/blob/master/LICENSE)
-
----
-
-# Modpoll
-
-A command line tool to communicate with modbus devices.
+[![Downloads](http://pepy.tech/badge/modpoll)](http://pepy.tech/project/modpoll)
 
 > Learn more about `modpoll` usage at [documentation](https://helloysd.gitlab.io/modpoll) site. 
-
 
 ## Motivation
 
@@ -38,25 +34,12 @@ This program is tested on python 3.6+.
   pip install -U modpoll
   ```
 
-## Run in docker
-
-A docker image has been provided for users to directly run the program, 
-
-  ```bash
-  docker run helloysd/modpoll modpoll --help
-  ```
-To config the modbus registers, user may need to mount local volume to the container, e.g. 
-
-  ```bash
-  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp 192.168.0.10 --config /app/examples/scpms6.csv --mqtt-host iot.eclipse.org
-  ```
-
 ## Basic Usage
 
 - Connect to Modbus TCP device
 
   ```bash
-  modpoll --tcp 192.168.0.10 --config examples/scpms6.csv
+  modpoll --tcp modsim.topmaker.net --config examples/modsim.csv
 
   ```
 
@@ -70,18 +53,35 @@ To config the modbus registers, user may need to mount local volume to the conta
 - Connect to Modbus TCP device and publish data to MQTT broker 
 
   ```bash
-  modpoll --tcp 192.168.0.10 --config examples/scpms6.csv --mqtt-host iot.eclipse.org
+  modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --mqtt-host iot.eclipse.org
 
   ```
 
 - Connect to Modbus TCP device and export data to local csv file
 
   ```bash
-  modpoll --tcp 192.168.0.10 --config examples/scpms6.csv --export data.csv
+  modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --export data.csv
 
   ```
 
 Please refer to [documentation](https://helloysd.gitlab.io/modpoll) site for more configures and examples.
+
+> Notes: some of the examples use our online modbus simulator at `modsim.topmaker.net` with standard `502` port, it helps user to quickly test the functions of `modpoll` tool. 
+
+## Run in docker
+
+A docker image has been provided for user to directly run the program, 
+
+  ```bash
+  docker run helloysd/modpoll modpoll --help
+  ```
+
+To load the modbus register configure file, user may need to mount the volume to container, 
+for example, if the child folder `examples` contains the config file `modsim.csv`, we can mount it using the following command, 
+
+  ```bash
+  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
+  ```
 
 ## Credits
 

@@ -8,7 +8,7 @@ Commandline Examples
 
   .. code-block:: shell
   
-    modpoll --tcp 192.168.0.10 --config examples/scpms6.csv
+    modpoll --tcp modsim.topmaker.net --config examples/modsim.csv
 
 - Connect to Modbus RTU device 
 
@@ -21,14 +21,14 @@ Commandline Examples
 
   .. code-block:: shell
 
-    modpoll --tcp 192.168.0.10 --config examples/scpms6.csv --mqtt-host iot.eclipse.org
+    modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --mqtt-host iot.eclipse.org
 
 
 - Connect to Modbus TCP device and export data to local csv file
 
   .. code-block:: shell
 
-    modpoll --tcp 192.168.0.10 --config examples/scpms6.csv --export data.csv
+    modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --export data.csv
 
 
 - Check app version (in docker)
@@ -38,11 +38,11 @@ Commandline Examples
     docker run helloysd/modpoll modpoll --version
 
 
-- Connect to Modbus TCP device and publish data to MQTT broker (in docker)
+- Connect to our online Modbus TCP device simulator (in docker)
 
   .. code-block:: shell
 
-    docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp 192.168.0.10 --config /app/examples/scpms6.csv --mqtt-host iot.eclipse.org
+    docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
 
 
 Modbus Configuration File
@@ -59,7 +59,19 @@ Here is the basic structure of modbus configure file.
    :linenos:
 
 
-Configuration Example 1: SCPM-S6 Power Meter
+Configuration Example 1: Online Modbus Device Simulator (Modbus TCP)
+--------------------------------------------------------
+
+This online Modbus TCP device simulator is designed for user to quickly test our modpoll functions.
+
+Here is an example of modbus configure file for modsim.
+
+.. literalinclude:: ../examples/modsim.csv
+   :language: default
+   :linenos:
+
+
+Configuration Example 2: SCPM-S6 Power Meter (Modbus RTU)
 ---------------------------------------------
 
 SCPM-S6 is designed as a sub-circuit power meter to monitor multiple electrical circuit power consumptions. 
