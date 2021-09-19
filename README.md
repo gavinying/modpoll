@@ -53,7 +53,7 @@ This program is tested on python 3.6+.
 - Connect to Modbus TCP device and publish data to MQTT broker 
 
   ```bash
-  modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --mqtt-host iot.eclipse.org
+  modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --mqtt-host iot.topmaker.net
 
   ```
 

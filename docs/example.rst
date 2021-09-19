@@ -1,8 +1,8 @@
 Examples
 ========
 
-Commandline Examples
----------------------
+Commandline
+------------
 
 - Connect to Modbus TCP device
 
@@ -21,7 +21,7 @@ Commandline Examples
 
   .. code-block:: shell
 
-    modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --mqtt-host iot.eclipse.org
+    modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --mqtt-host iot.topmaker.net
 
 
 - Connect to Modbus TCP device and export data to local csv file
@@ -31,6 +31,9 @@ Commandline Examples
     modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --export data.csv
 
 
+Run in docker
+--------------
+
 - Check app version (in docker)
 
   .. code-block:: shell
@@ -39,6 +42,8 @@ Commandline Examples
 
 
 - Connect to our online Modbus TCP device simulator (in docker)
+
+  To load the modbus register configure file, user may need to mount the volume to container, for example, if the child folder `examples` contains the config file `modsim.csv`, we can mount it using the following command,
 
   .. code-block:: shell
 
@@ -59,7 +64,7 @@ Here is the basic structure of modbus configure file.
    :linenos:
 
 
-Configuration Example 1: Online Modbus Device Simulator (Modbus TCP)
+Example 1: Online Modbus Device Simulator (Modbus TCP)
 --------------------------------------------------------
 
 This online Modbus TCP device simulator is designed for user to quickly test our modpoll functions.
@@ -71,7 +76,7 @@ Here is an example of modbus configure file for modsim.
    :linenos:
 
 
-Configuration Example 2: SCPM-S6 Power Meter (Modbus RTU)
+Example 2: SCPM-S6 Power Meter (Modbus RTU)
 ---------------------------------------------
 
 SCPM-S6 is designed as a sub-circuit power meter to monitor multiple electrical circuit power consumptions. 
