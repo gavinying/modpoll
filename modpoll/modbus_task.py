@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import time
+import requests
 
 from pymodbus.client.sync import ModbusSerialClient
 from pymodbus.client.sync import ModbusTcpClient
@@ -256,69 +257,80 @@ class Reference:
         self.val = v
 
 
-def load_config(file):
-    with open(file, "r") as f:
-        f.seek(0)
-        csv_reader = csv.reader(f)
-        current_poller = None
-        for row in csv_reader:
-            if not row or len(row) == 0:
-                continue
-            if "poll" in row[0]:
-                name = row[1]
-                devid = int(row[2])
-                reference = int(row[3])
-                size = int(row[4])
-                endian = row[6]
-                if "coil" == row[5]:
-                    functioncode = 1
-                    if size > 2000:  # some implementations don't seem to support 2008 coils/inputs
-                        current_poller = None
-                        log.error(
-                            "Too many coils (max. 2000). Ignoring poller " + row[1] + ".")
-                        continue
-                elif "input_status" == row[5]:
-                    functioncode = 2
-                    if size > 2000:
-                        current_poller = None
-                        log.error(
-                            "Too many inputs (max. 2000). Ignoring poller " + row[1] + ".")
-                        continue
-                elif "holding_register" == row[5]:
-                    functioncode = 3
-                    if size > 123:  # applies to TCP, RTU should support 125 registers. But let's be safe.
-                        current_poller = None
-                        log.error(
-                            "Too many registers (max. 123). Ignoring poller " + row[1] + ".")
-                        continue
-                elif "input_register" == row[5]:
-                    functioncode = 4
-                    if size > 123:
-                        current_poller = None
-                        log.error(
-                            "Too many registers (max. 123). Ignoring poller " + row[1] + ".")
-                        continue
-                else:
-                    log.warning("Unknown function code (" +
-                                row[5] + " ignoring poller " + row[1] + ".")
+def parse_config(csv_reader):
+    current_poller = None
+    for row in csv_reader:
+        if not row or len(row) == 0:
+            continue
+        if "poll" in row[0]:
+            name = row[1]
+            devid = int(row[2])
+            reference = int(row[3])
+            size = int(row[4])
+            endian = row[6]
+            if "coil" == row[5]:
+                functioncode = 1
+                if size > 2000:  # some implementations don't seem to support 2008 coils/inputs
                     current_poller = None
+                    log.error(
+                        "Too many coils (max. 2000). Ignoring poller " + row[1] + ".")
                     continue
-                current_poller = Poller(
-                    name, devid, reference, size, functioncode, endian)
-                pollers.append(current_poller)
-                log.info(f"Added new poller {current_poller.name}, {current_poller.devid}, "
-                         f"{current_poller.reference}, {current_poller.size}")
-            elif "ref" in row[0]:
-                if current_poller:
-                    name = row[1].replace(" ", "_")
-                    unit = row[2]
-                    ref = row[3]
-                    dtype = row[4]
-                    scale = row[5]
-                    current_poller.add_readable_reference(
-                        Reference(name, unit, ref, dtype, scale))
-                else:
-                    log.debug(f"No poller for reference {name}.")
+            elif "input_status" == row[5]:
+                functioncode = 2
+                if size > 2000:
+                    current_poller = None
+                    log.error(
+                        "Too many inputs (max. 2000). Ignoring poller " + row[1] + ".")
+                    continue
+            elif "holding_register" == row[5]:
+                functioncode = 3
+                if size > 123:  # applies to TCP, RTU should support 125 registers. But let's be safe.
+                    current_poller = None
+                    log.error(
+                        "Too many registers (max. 123). Ignoring poller " + row[1] + ".")
+                    continue
+            elif "input_register" == row[5]:
+                functioncode = 4
+                if size > 123:
+                    current_poller = None
+                    log.error(
+                        "Too many registers (max. 123). Ignoring poller " + row[1] + ".")
+                    continue
+            else:
+                log.warning("Unknown function code (" +
+                            row[5] + " ignoring poller " + row[1] + ".")
+                current_poller = None
+                continue
+            current_poller = Poller(
+                name, devid, reference, size, functioncode, endian)
+            pollers.append(current_poller)
+            log.info(f"Added new poller {current_poller.name}, {current_poller.devid}, "
+                     f"{current_poller.reference}, {current_poller.size}")
+        elif "ref" in row[0]:
+            name = row[1].replace(" ", "_")
+            unit = row[2]
+            ref = row[3]
+            dtype = row[4]
+            scale = row[5]
+            if current_poller:
+                current_poller.add_readable_reference(
+                    Reference(name, unit, ref, dtype, scale))
+            else:
+                log.debug(f"No poller for reference {name}.")
+
+
+def load_config(file):
+    try:
+        with requests.Session() as s:
+            response = s.get(file)
+            decoded_content = response.content.decode('utf-8')
+            csv_reader = csv.reader(decoded_content.splitlines(), delimiter=',')
+            parse_config(csv_reader)
+    except requests.RequestException as exception:
+        with open(file, "r") as f:
+            f.seek(0)
+            csv_reader = csv.reader(f)
+            parse_config(csv_reader)
 
 
 def modbus_setup(config):
@@ -328,7 +340,7 @@ def modbus_setup(config):
     log = logging.getLogger(__name__)
     global master
 
-    log.info(f"Loading config from file: {args.config}")
+    log.info(f"Loading config from: {args.config}")
     load_config(args.config)
     if args.rtu:
         if args.rtu_parity == "odd":
