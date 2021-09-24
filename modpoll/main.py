@@ -16,6 +16,7 @@ LOG_PROCESS = "%(asctime)s | %(levelname).1s | %(processName)s | %(name)s | %(me
 LOG_THREAD = "%(asctime)s | %(levelname).1s | %(threadName)s | %(name)s | %(message)s"
 log = None
 
+
 def _signal_handler(signal, frame):
     print('Exiting ' + sys.argv[0])
     _shutdown()
