@@ -54,12 +54,12 @@ def app(name="modpoll"):
     last_check = 0
     while run_loop:
         now = time.time()
-        if last_check == 0:
-            last_check = now
-            continue
         # routine check
         if now > last_check + args.rate:
-            elapsed = now - last_check
+            if last_check == 0:
+                elapsed = args.rate
+            else:
+                elapsed = now - last_check
             last_check = now
             log.info(f"looping at rate:{args.rate}, actual:{elapsed}")
             modbus_poll()
