@@ -12,6 +12,7 @@ Welcome to Modpoll's documentation!
 
    install
    usage
+   config
    example
    changelog
 

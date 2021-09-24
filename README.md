@@ -68,20 +68,28 @@ Please refer to [documentation](https://helloysd.gitlab.io/modpoll) site for mor
 
 > Notes: some of the examples use our online modbus simulator at `modsim.topmaker.net` with standard `502` port, it helps user to quickly test the functions of `modpoll` tool. 
 
+
 ## Run in docker
 
 A docker image has been provided for user to directly run the program, 
 
   ```bash
-  docker run helloysd/modpoll modpoll --help
+  docker run helloysd/modpoll --help
   ```
 
-To load the modbus register configure file, user may need to mount the volume to container, 
+To load local configure file, you need to mount a local folder to the container volume, 
 for example, if the child folder `examples` contains the config file `modsim.csv`, we can mount it using the following command, 
 
   ```bash
-  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
+  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
   ```
+
+The other way is to load configure file from URL, for example, 
+
+  ```bash
+  docker run helloysd/modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+  ```
+
 
 ## Credits
 
