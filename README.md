@@ -1,4 +1,4 @@
-# ModPoll - A command line tool to communicate with modbus devices.
+# ModPoll - A new modpoll tool for modbus communication
 
 [![pipeline status](https://gitlab.com/helloysd/modpoll/badges/master/pipeline.svg)](https://gitlab.com/helloysd/modpoll/-/commits/master)
 [![License](https://img.shields.io/pypi/l/modpoll)](https://gitlab.com/helloysd/modpoll/-/blob/master/LICENSE)

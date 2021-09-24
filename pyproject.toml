@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "modpoll"
-version = "0.3.3"
-description = "A command line tool to communicate with modbus devices"
+version = "0.3.4"
+description = "A new modpoll tool for modbus communication"
 authors = ["Ying Shaodong <helloysd@foxmail.com>"]
 readme = "README.md"
 homepage = "https://helloysd.gitlab.io/modpoll"
@@ -13,12 +13,13 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.6"
+pip = "^21.2"
 importlib-metadata = {version = "^1.0", python = "<3.8"}
 pymodbus = "^2.5.2"
 paho-mqtt = "^1.5.1"
+prettytable = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
-pip = "^21.2"
 pytest = "^5.2"
 pytest-cov = "^2.11.1"
 #black = "^20.8b1"
