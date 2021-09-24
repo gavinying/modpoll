@@ -9,6 +9,7 @@ from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
+from prettytable import PrettyTable
 
 from modpoll.mqtt_task import mqttc_publish
 
@@ -360,8 +361,18 @@ def modbus_poll():
             while time.time() < t + args.interval:
                 time.sleep(0.001)
     master.close()
+    # print out result
+    modbus_print()
     for d in deviceList:
         d.publish_diagnostics()
+
+
+def modbus_print():
+    table = PrettyTable(['name', 'unit', 'reference', 'value'])
+    for r in referenceList:
+        row = [r.name, r.unit, r.reference, r.val]
+        table.add_row(row)
+    print(table)
 
 
 def modbus_export(file):
