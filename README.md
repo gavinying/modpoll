@@ -16,6 +16,8 @@ Moreover, you can also run this program on any PC or server with Python 3 suppor
 
 > This program is designed to be a standalone tool, it shall work out-of-the-box. If you are looing for a modbus python library, please consider the following two great open source projects, [pymodbus](https://github.com/riptideio/pymodbus) or [minimalmodbus](https://github.com/pyhys/minimalmodbus)
 
+
+
 ## Installation
 
 This program is tested on python 3.6+.
@@ -28,11 +30,66 @@ This program is tested on python 3.6+.
   pip install modpoll
   ```
 
-  Upgrade the tool via pip by the following command,
+  Upgrade the tool via the following command,
 
   ```bash
   pip install -U modpoll
   ```
+
+
+
+## Quickstart
+
+As the name tells, *modpoll* is a tool for communicating with Modbus devices, so ideally it makes more sense if you have a real Modbus device on hand for the following test, but it is OK if you don't, we have deployed a virtual Modbus TCP device on cloud at `modsim.topmaker.net:502` for your quick testing purpose, the code is available at [modsim](https://github.com/gavinying/modsim), let's start expoloring *modpoll* tool with the virtual device *modsim*.
+
+Using *modpoll* tool, you can poll the first 5 holding registers via the following command,
+
+  ```bash
+  modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+  ```
+
+![screenshot-modpoll](docs/assets/screenshot-modpoll.png)
+
+Meanwhile, if you prefer a local test or simply failed to connect to online *modsim* service, you can always launch your own device simulator via the following command, 
+
+```bash
+docker run -p 5020:5020 helloysd/modsim
+```
+
+> If you want to use the standard port `502` , you need to use `sudo` before the docker command
+
+It will create a virtual Modbus TCP device running at `localhost:5020`, and then you can poll it via the following command, 
+
+```bash
+modpoll --tcp localhost --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+```
+
+
+
+## Run in docker
+
+A docker image has been provided for user to directly run the program, 
+
+  ```bash
+  docker run helloysd/modpoll
+  ```
+
+It shows the version of the program by default.
+
+Similar to the above `modsim` test, we can poll the first 5 holding registers in docker via the following command,
+
+  ```bash
+  docker run helloysd/modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+  ```
+
+If you want to load a local configure file, you need to mount a local folder onto container volume, 
+for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command, 
+
+  ```bash
+  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
+  ```
+
+
 
 ## Basic Usage
 
@@ -61,34 +118,13 @@ This program is tested on python 3.6+.
 
   ```bash
   modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config examples/modsim.csv --export data.csv
-
+  
   ```
 
-Please refer to [documentation](https://helloysd.gitlab.io/modpoll) site for more configures and examples.
-
-> Notes: some of the examples use our online modbus simulator at `modsim.topmaker.net` with standard `502` port, it helps user to quickly test the functions of `modpoll` tool. 
 
 
-## Run in docker
+> *Please refer to the [documentation](https://helloysd.gitlab.io/modpoll) site for more details about the configuration and examples.*
 
-A docker image has been provided for user to directly run the program, 
-
-  ```bash
-  docker run helloysd/modpoll --help
-  ```
-
-To load local configure file, you need to mount a local folder to the container volume, 
-for example, if the child folder `examples` contains the config file `modsim.csv`, we can mount it using the following command, 
-
-  ```bash
-  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
-  ```
-
-The other way is to load configure file from a remote URL, for example, 
-
-  ```bash
-  docker run helloysd/modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
-  ```
 
 
 ## Credits
@@ -98,6 +134,8 @@ The implementation of this project is heavily inspired by the following two proj
 - https://github.com/mbs38/spicierModbus2mqtt (MIT license)
 Thanks to Max Brueggemann and Oliver Wagner for their great work. 
 
+
+
 ## License
 
-MIT © [Ying Shaodong](helloysd@foxmail.com)
+MIT © [helloysd](helloysd@foxmail.com)
