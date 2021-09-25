@@ -23,7 +23,7 @@ The program can be uninstalled by the following command::
     pip uninstall modpoll
 
 
-Run in docker (without installation)
+Run in docker
 -------------------------------------
 
 - Check app version
@@ -35,8 +35,8 @@ Run in docker (without installation)
 
 - Connect to Modbus TCP device
 
-  To load the modbus register configure file, user may need to mount the volume to container, for example, if the child folder `examples` contains the config file `modsim.csv`, we can mount it using the following command,
+  In order to quickly explore the functions of *modpoll*, we deployed a dummy Modbus TCP device at `<modsim.topmaker.net:502>`_, you can connect via the following command, 
 
   .. code-block:: shell
 
-    docker run -v $(pwd)/examples:/app/examples helloysd/modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
+    docker run helloysd/modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv

@@ -1,8 +1,8 @@
-Modbus Configuration
+Configuration
 ====================
 
-File Format
---------------------------
+Modbus Configure File
+----------------------
 
 In order to communicate with modbus devices, a proper modbus configure file is required. 
 It is mainly to describe the device address and register mappings. 

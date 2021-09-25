@@ -7,7 +7,7 @@ def get_parser():
     parser.add_argument('--version', action='version', version=f'modpoll v{__version__}')
     parser.add_argument('--loglevel', default='INFO', help='log level (DEBUG/INFO/WARNING/ERROR/CRITICAL), Defaults to INFO')
     # parser.add_argument('--config', required=True, help='Configuration file. Required!')
-    parser.add_argument('--config', required=True, help='Modbus configuration file. Required!')
+    parser.add_argument('--config', required=True, help='A local path or URL of Modbus configuration file. Required!')
     parser.add_argument('--rate', default=5.0, type=float, help='The sampling rate (s) to poll modbus device, Defaults to 5.0')
     parser.add_argument('--interval', default=1.0, type=float, help='The time interval (s) between two polling, Defaults to 1.0')
     parser.add_argument('--tcp', help='Act as a Modbus TCP master, connecting to host TCP')

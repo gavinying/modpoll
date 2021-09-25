@@ -6,8 +6,7 @@ Change log
 
  * add documentation
  * add examples
- * migrate to gitlab
- * add gitlab-ci
+ * add CI/CD integration
  * bugfixs;
 
 0.2.0

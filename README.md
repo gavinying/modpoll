@@ -12,9 +12,9 @@ The initial idea of creating this tool is to help myself debugging new devices d
 
 This program can be easily deployed to Raspberry Pi or similar embedded devices, continuously polling data from the connected modbus devices, you can choose to save data locally or forward uplink to a MQTT broker for easy debugging, the MQTT broker can be setup on the same Raspberry Pi or on the cloud. On the other hand, a smart phone (Android/Iphone) can be used to visualize collected data and control the devices remotely via the same MQTT broker. 
 
-However, beside the above recommended setup, you can actually run this program on any PC or server with Python 3 support. One popular use case is to deploy the program onto a server and keep it running as a gateway to bridge between traditional industrial network and modern IoT edge/cloud infrustructure. 
+Moreover, you can also run this program on any PC or server with Python 3 support. One common use case is to deploy the program onto a server and keep it running as a gateway, i.e. polling data from local Modbus devices and forward to a centralized cloud server. In that sense, this program helps to bridge between the traditional world of fieldbus network and the modern world of IoT edge/cloud infrustructure. 
 
-> This program is designed as a standalone tool, if you are looing for a python library to communicate with modbus devices, please consider the following two great open source projects, [pymodbus](https://github.com/riptideio/pymodbus) or [minimalmodbus](https://github.com/pyhys/minimalmodbus)
+> This program is designed to be a standalone tool, it shall work out-of-the-box. If you are looing for a modbus python library, please consider the following two great open source projects, [pymodbus](https://github.com/riptideio/pymodbus) or [minimalmodbus](https://github.com/pyhys/minimalmodbus)
 
 ## Installation
 
@@ -39,7 +39,7 @@ This program is tested on python 3.6+.
 - Connect to Modbus TCP device
 
   ```bash
-  modpoll --tcp modsim.topmaker.net --config examples/modsim.csv
+  modpoll --tcp 192.168.1.10 --config examples/modsim.csv
 
   ```
 
@@ -53,14 +53,14 @@ This program is tested on python 3.6+.
 - Connect to Modbus TCP device and publish data to MQTT broker 
 
   ```bash
-  modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --mqtt-host iot.topmaker.net
+  modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config examples/modsim.csv --mqtt-host iot.topmaker.net
 
   ```
 
 - Connect to Modbus TCP device and export data to local csv file
 
   ```bash
-  modpoll --tcp modsim.topmaker.net --config examples/modsim.csv --export data.csv
+  modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config examples/modsim.csv --export data.csv
 
   ```
 
@@ -84,7 +84,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   docker run -v $(pwd)/examples:/app/examples helloysd/modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
   ```
 
-The other way is to load configure file from URL, for example, 
+The other way is to load configure file from a remote URL, for example, 
 
   ```bash
   docker run helloysd/modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv

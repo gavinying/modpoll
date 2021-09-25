@@ -10,10 +10,10 @@ Welcome to Modpoll's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   install
+   installation
+   quickstart
    usage
-   config
-   example
+   configure
    changelog
 
 Indices and tables
