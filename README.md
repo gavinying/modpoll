@@ -1,10 +1,12 @@
-# ModPoll - A new modpoll tool for modbus communication
+# modpoll - A Command Line Tool for Modbus
 
 [![pipeline status](https://gitlab.com/helloysd/modpoll/badges/master/pipeline.svg)](https://gitlab.com/helloysd/modpoll/-/commits/master)
 [![License](https://img.shields.io/pypi/l/modpoll)](https://gitlab.com/helloysd/modpoll/-/blob/master/LICENSE)
 [![Downloads](http://pepy.tech/badge/modpoll)](http://pepy.tech/project/modpoll)
 
 > Learn more about `modpoll` usage at [documentation](https://helloysd.gitlab.io/modpoll) site. 
+
+
 
 ## Motivation
 
@@ -13,12 +15,24 @@ The initial idea of creating this tool is to help myself debugging new devices d
 This program can be easily deployed to Raspberry Pi or similar embedded devices, continuously polling data from the connected modbus devices, user can choose to save data locally or publish to a MQTT broker for easy debugging, the MQTT broker can be setup on the same Raspberry Pi or on the cloud. Once data has been successfully published, user can subscribe to a specific MQTT topic to view the collected data via a smart phone. 
 
 
+
 ![modpoll_usage](docs/assets/modpoll-usage.png)
+
 
 
 Moreover, you can also continuously run this program on any PC or server with Python 3 support. One common use case is to deploy `modpoll` onto a server and keep it running as a gateway, i.e. polling data from local Modbus devices and forward to a centralized cloud server. In that sense, `modpoll` helps to bridge between the traditional world of fieldbus network and the modern world of IoT edge/cloud infrustructure. 
 
 > This program is designed to be a standalone tool, it works out-of-the-box. If you are looing for a modbus python library, please consider the following two great open source projects, [pymodbus](https://github.com/riptideio/pymodbus) or [minimalmodbus](https://github.com/pyhys/minimalmodbus)
+
+
+
+## Feature
+
+- Support Modbus RTU/TCP/UDP devices
+- Show polling data for local debugging, like a typical modpoll tool
+- Publish polling data to MQTT broker for remote debugging, especially on smart phone
+- Export polling data to local storage for further investigation
+- Provide docker solution for continuous data polling use case
 
 
 
@@ -41,6 +55,8 @@ pip install -U modpoll
 ## Quickstart
 
 As the name tells, *modpoll* is a tool for communicating with Modbus devices, so ideally it makes more sense if you have a real Modbus device on hand for the following test, but it is OK if you don't, we have deployed a virtual Modbus TCP device on cloud at `modsim.topmaker.net:502` for your quick testing purpose, the code is available at [modsim](https://github.com/gavinying/modsim), let's start expoloring *modpoll* tool with the virtual device *modsim*.
+
+
 
 ### Poll modsim service
 
@@ -88,6 +104,10 @@ With successful data polling and publishing, you can subscribe the topic `modpol
 
 
 
+![screencast-modpoll-mqtt](docs/assets/screencast-modpoll-mqtt.gif)
+
+
+
 ## Run in docker
 
 A docker image has been provided for user to directly run the program without local installation, 
@@ -119,28 +139,24 @@ for example, if the child folder `examples` contains the config file `modsim.csv
 
   ```bash
   modpoll --tcp 192.168.1.10 --config examples/modsim.csv
-
   ```
 
 - Connect to Modbus RTU device 
 
   ```bash
   modpoll --rtu /dev/ttyUSB0 --rtu-baud 9600 --config examples/scpms6.csv
-
   ```
 
 - Connect to Modbus TCP device and publish data to MQTT broker 
 
   ```bash
   modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config examples/modsim.csv --mqtt-host mqtt.eclipseprojects.io
-
   ```
 
 - Connect to Modbus TCP device and export data to local csv file
 
   ```bash
   modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config examples/modsim.csv --export data.csv
-  
   ```
 
 
