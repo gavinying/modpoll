@@ -16,7 +16,9 @@ This program can be easily deployed to Raspberry Pi or similar embedded devices,
 
 
 
-![modpoll_usage](docs/assets/modpoll-usage.png)
+<p align="center">
+  <img src="docs/assets/modpoll-usage.png">
+</p>
 
 
 
@@ -66,7 +68,10 @@ Using *modpoll* tool, you can poll the first 5 holding registers via the followi
 modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
 
-![screenshot-modpoll](docs/assets/screenshot-modpoll.png)
+
+<p align="center">
+  <img src="docs/assets/screenshot-modpoll.png">
+</p>
 
 
 
@@ -104,7 +109,9 @@ With successful data polling and publishing, you can subscribe the topic `modpol
 
 
 
-![screencast-modpoll-mqtt](docs/assets/screencast-modpoll-mqtt.gif)
+<p align="center">
+  <img width="1280" height="720" src="docs/assets/screencast-modpoll-mqtt.gif">
+</p>
 
 
 
