@@ -3,7 +3,7 @@ import argparse
 from . import __version__
 
 def get_parser():
-    parser = argparse.ArgumentParser(description=f'modpoll v{__version__} - A new modpoll tool for modbus communication')
+    parser = argparse.ArgumentParser(description=f'modpoll v{__version__} - A Command Line Tool for Modbus')
     parser.add_argument('--version', action='version', version=f'modpoll v{__version__}')
     parser.add_argument('--loglevel', default='INFO', help='log level (DEBUG/INFO/WARNING/ERROR/CRITICAL), Defaults to INFO')
     # parser.add_argument('--config', required=True, help='Configuration file. Required!')

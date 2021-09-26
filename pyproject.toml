@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "modpoll"
-version = "0.3.8"
-description = "A new modpoll tool for modbus communication"
+version = "0.3.9"
+description = "A Command Line Tool for Modbus"
 authors = ["Ying Shaodong <helloysd@foxmail.com>"]
 readme = "README.md"
 homepage = "https://helloysd.gitlab.io/modpoll"
