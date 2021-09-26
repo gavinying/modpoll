@@ -110,7 +110,7 @@ With successful data polling and publishing, you can subscribe the topic `modpol
 
 
 <p align="center">
-  <img width="1280" height="720" src="docs/assets/screencast-modpoll-mqtt.gif">
+  <img src="docs/assets/screencast-modpoll-mqtt.gif">
 </p>
 
 
