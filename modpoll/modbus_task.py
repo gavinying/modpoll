@@ -198,7 +198,10 @@ class Poller:
         for ref in self.readableReferences:
             if on_change and ref.val == ref.last_val:
                 continue
-            payload[f'{ref.name}|{ref.unit}'] = ref.val
+            if ref.unit:
+                payload[f'{ref.name}|{ref.unit}'] = ref.val
+            else:
+                payload[f'{ref.name}'] = ref.val
         if timestamp:
             payload['timestamp'] = timestamp
         topic = f"{args.mqtt_topic_prefix}{self.device.name}"
