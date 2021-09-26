@@ -1,18 +1,18 @@
 # Example register definition file.
 #
 # You need to define a Poller and then one or more References for that poller.
-# The Poller will 'poll' the devid and bring back 1 or more registers/bits.
+# The Poller will 'poll' the device and bring back 1 or more registers/bits.
 # The References must then match up with the polled range to define the topic for each.
 #
 #################################################################################
 # Poller-object
 # Columns:
-# type, name, devid, reference, size, functioncode, endian
+# type, device, deviceid, reference, size, functioncode, endian
 #
 # Possible values for columns:
 # type: poll
-# name: any string without spaces to describe the poller
-# devid: integer 1 to 254
+# device: any string without spaces to describe the device
+# deviceid: integer 1 to 254
 # reference: integer 0 to 65535 (Modbus references are as transmitted on the wire.
 # In the traditional numbering scheme these would have been called offsets. E. g. to
 # read 400020 you would use reference 20.)

@@ -27,7 +27,7 @@ Commandline Usage
 
   .. code-block:: shell
 
-    modpoll --tcp 192.168.1.10 --config examples/modsim.csv --mqtt-host iot.topmaker.net
+    modpoll --tcp 192.168.1.10 --config examples/modsim.csv --mqtt-host mqtt.eclipseprojects.io
 
 - Connect to Modbus TCP device and export data to local csv file
 
