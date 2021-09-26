@@ -4,11 +4,14 @@ stages:
   - build
   - test
   - deploy
+  - document
+  - deploy-docker
 
 variables:
   APP_NAME: "modpoll"
+  APP_TAG: "${CI_COMMIT_TAG}"
   PYTHON_TAG: "3.6-slim-buster"
-  PIP_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/pip"
+  PIP_CACHE_DIR: "${APP_TAG}/.cache/pip"
 
 cache:
   key:
@@ -60,11 +63,29 @@ pypi:
     - tags
 
 pages:
-  stage: deploy
+  stage: document
   script:
     - poetry run sphinx-build -b html docs public
   artifacts:
     paths:
       - public
+  only:
+    - tags
+
+dockerhub:
+  stage: deploy-docker
+  before_script:
+    # adjusted due to gitlab ci's issue: https://github.com/docker/buildx/issues/584
+    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes; docker buildx create --name mybuilder --use
+    # variables defined in gitlab
+    - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY"
+  script:
+    - |
+      docker buildx build \
+        --build-arg "APP_TAG=$APP_TAG" \
+        --platform linux/amd64,linux/arm64,linux/arm/v7 \
+        --tag "$DOCKER_REGISTRY/$DOCKER_REGISTRY_USERNAME/$APP_NAME:$APP_TAG" \
+        --tag "$DOCKER_REGISTRY/$DOCKER_REGISTRY_USERNAME/$APP_NAME:latest" \
+        --push .
   only:
     - tags
