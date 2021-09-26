@@ -19,7 +19,7 @@ def get_parser():
     parser.add_argument('--export', default=None, help='Export references/registers to local csv file')
     parser.add_argument('--mqtt-host', default=None, help='MQTT server address. Skip MQTT setup if not specified')
     parser.add_argument('--mqtt-port', default=1883, type=int, help='1833 for non-TLS or 8883 for TLS, Defaults to 1883')
-    parser.add_argument('--mqtt-topic-prefix', default='modbus/', help='Topic prefix to be used for subscribing/publishing. Defaults to "modbus/"')
+    parser.add_argument('--mqtt-topic-prefix', default='modpoll/', help='Topic prefix to be used for subscribing/publishing. Defaults to "modpoll/"')
     parser.add_argument('--mqtt-qos', default=0, type=int, help='MQTT QoS value (0/1/2). Defaults to 0')
     parser.add_argument('--mqtt-user', default=None, help='Username for authentication (optional)')
     parser.add_argument('--mqtt-pass', default=None, help='Password for authentication (optional)')
