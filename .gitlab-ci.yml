@@ -38,6 +38,8 @@ build-module:
       - dist
   only:
     - master
+    - merge_requests
+    - external_pull_requests
     - tags
 
 # test jobs ------------------------
@@ -50,6 +52,8 @@ pytest:
     - poetry run pytest
   only:
     - master
+    - merge_requests
+    - external_pull_requests
     - tags
 
 # deploy jobs ------------------------
