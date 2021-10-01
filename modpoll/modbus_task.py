@@ -31,10 +31,15 @@ class Device:
         self.referenceMap = {}
         self.errorCount = 0
         self.pollCount = 0
+        self.pollSuccess = False
         log.info(f"Added new device {self.name}")
 
     def add_reference_mapping(self, ref):
         self.referenceMap[ref.name] = ref
+
+    def update_reference(self, ref):
+        self.referenceMap[ref.name].last_val = ref.last_val
+        self.referenceMap[ref.name].val = ref.val
 
 
 class Poller:
@@ -101,28 +106,29 @@ class Poller:
                     break
                 if "uint16" == ref.dtype:
                     ref.update_value(decoder.decode_16bit_uint())
-                    cur_ref += 1
+                    cur_ref += ref.length
                 elif "int16" == ref.dtype:
                     ref.update_value(decoder.decode_16bit_int())
-                    cur_ref += 1
+                    cur_ref += ref.length
                 elif "uint32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_uint())
-                    cur_ref += 2
+                    cur_ref += ref.length
                 elif "int32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_int())
-                    cur_ref += 2
+                    cur_ref += ref.length
                 elif "float32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_float())
-                    cur_ref += 2
-                # elif "bool" == ref.dtype:
-                #     ref.update_value(decoder.decode_bits())
-                #     cur_ref += ref.length
-                # elif ref.dtype.startswith("string"):
-                #     ref.update_value(decoder.decode_string())
-                #     cur_ref += ref.length
+                    cur_ref += ref.length
+                elif "bool" == ref.dtype:
+                    ref.update_value(decoder.decode_bits())
+                    cur_ref += ref.length
+                elif ref.dtype.startswith("string"):
+                    ref.update_value(decoder.decode_string())
+                    cur_ref += ref.length
                 else:
                     decoder.decode_16bit_uint()
                     cur_ref += 1
+            self.device.update_reference(ref)
             self.update_statistics(True)
             log.info(f"Reading device:{self.device.name}, FuncCode:{self.funccode}, "
                      f"Start_address:{self.start_address}, Size:{self.size}... SUCCESS")
@@ -138,18 +144,15 @@ class Poller:
         if ref not in self.readableReferences:
             self.readableReferences.append(ref)
 
-    def update_device(self):
-        for ref in self.readableReferences:
-            self.device.referenceMap[ref.name].value = ref.val
-            self.device.referenceMap[ref.name].last_value = ref.last_val
-
     def update_statistics(self, success):
         self.device.pollCount += 1
         if success:
             self.failcounter = 0
+            self.device.pollSuccess = True
         else:
             self.failcounter += 1
             self.device.errorCount += 1
+            self.device.pollSuccess = False
             if args.autoremove and self.failcounter >= 3:
                 self.disabled = True
                 log.info(f"Poller {self.name} disabled (functioncode: {self.funccode}, "
@@ -222,13 +225,13 @@ def parse_config(csv_reader):
     for row in csv_reader:
         if not row or len(row) == 0:
             continue
-        if "device" in row[0]:
+        if "device" in row[0].lower():
             device_name = row[1]
             device_id = int(row[2])
             current_device = Device(device_name, device_id)
             deviceList.append(current_device)
-        elif "poll" in row[0]:
-            fc = row[1]
+        elif "poll" in row[0].lower():
+            fc = row[1].lower()
             start_address = int(row[2])
             size = int(row[3])
             endian = row[4]
@@ -263,10 +266,10 @@ def parse_config(csv_reader):
             current_device.pollerList.append(current_poller)
             log.info(f"Add poller (start_address={current_poller.start_address}, size={current_poller.size}) "
                      f"to device {current_device.name}")
-        elif "ref" in row[0]:
+        elif "ref" in row[0].lower():
             ref_name = row[1].replace(" ", "_")
             address = int(row[2])
-            dtype = row[3]
+            dtype = row[3].lower()
             rw = row[4] or "r"
             try:
                 unit = row[5]
@@ -286,7 +289,7 @@ def parse_config(csv_reader):
             if not ref.check_sanity(current_poller.start_address, current_poller.size):
                 log.warning(f"Reference {ref.name} failed to pass sanity check, ignoring it.")
                 continue
-            if "r" in rw:
+            if "r" in rw.lower():
                 current_poller.add_readable_reference(ref)
             current_device.add_reference_mapping(ref)
             log.debug(f"Add reference {ref.name} to device {current_device.name}")
@@ -339,26 +342,25 @@ def modbus_poll():
         return
     master.connect()
     for dev in deviceList:
-        log.info(f"polling device {dev.name} ...")
+        log.debug(f"polling device {dev.name} ...")
         for p in dev.pollerList:
             if not p.disabled:
-                ret = p.poll()
+                p.poll()
                 if event_exit.is_set():
                     master.close()
                     return
-                t = time.time()
-                if ret:
-                    p.update_device()
-                while time.time() < t + args.interval:
-                    time.sleep(0.001)
+                event_exit.wait(timeout=args.interval)
     master.close()
-    # Always printout
+    # Always printout result
     modbus_print()
 
 
 def modbus_print():
     for dev in deviceList:
         print(f"===== references from device: {dev.name} =====")
+        if not dev.pollSuccess:
+            print(f"failed to poll device: {dev.name}")
+            continue
         table = PrettyTable(['name', 'unit', 'address', 'value'])
         for ref in dev.referenceMap.values():
             row = [ref.name, ref.unit, ref.address, ref.val]
@@ -368,7 +370,10 @@ def modbus_print():
 
 def modbus_publish(timestamp=None, on_change=False):
     for dev in deviceList:
-        log.info(f"publishing data for device {dev.name} ...")
+        if not dev.pollSuccess:
+            log.debug(f"skip publishing for disconnected device: {dev.name}")
+            continue
+        log.debug(f"publishing data for device: {dev.name} ...")
         payload = {}
         for ref in dev.referenceMap.values():
             if on_change and ref.val == ref.last_val:
@@ -400,7 +405,7 @@ def modbus_export(file):
 
 def modbus_publish_diagnostics():
     for dev in deviceList:
-        log.info(f"publishing diagnostics for device {dev.name} ...")
+        log.debug(f"publishing diagnostics for device {dev.name} ...")
         payload = {'pollCount': dev.pollCount, 'errorCount': dev.errorCount}
         topic = f"{args.mqtt_topic_prefix}diagnostics/{dev.name}"
         mqttc_publish(topic, json.dumps(payload))
