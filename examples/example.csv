@@ -1,35 +1,47 @@
 # Modbus Configuration File
+# --------------------------
+# This configuration file is to describe the Modbus registers of target device(s) and defines poller(s) to help polling data.
 #
-# We need to define a Poller and then one or more References for that poller.
-# The Poller will 'poll' the device and bring back 1 or more registers/bits.
-# The References must then match up with the polled range to define the topic for each.
+# Configuration Types
+# --------------------------
+# device,<device_name>,<device_id>
+# poll,<functioncode>,<start_address>,<size>,<endian>
+# ref,<ref_name>,<address>,<dtype>,<rw>,<unit>,<scale>
 #
-#################################################################################
-# Poller-object
-# Columns: type, device_name, device_id, start_address, size, functioncode, endian
+# Configuration Objects
+# --------------------------
+# <device_name>: any string without spaces to describe the device
+# <device_id>: integer 1 to 254 to describe device ID
+# <functioncode>: coil/input_status/holding_register/input_register
+# <start_address>: integer 0 to 65535 (The start address of Modbus registers to poll)
+# <size>: integer 0 to 65535 (No. of registers to poll and value must not exceed the limits of Modbus)
+# <endian>: byte_order and word_order e.g. BE_BE/BE_LE/LE_LE/LE_BE
+# <ref_name>: any string without spaces to describe the reference
+# <address>: integer 0 to 65535 (the modbus address and should match the poller range)
+# <dtype>: uint16/int16/uint32/int32/float32/bool/stringXXX (defaults to uint16)
+# <rw>: read/write setting e.g. r/w/rw
+# <unit> (optional): the measurement unit of reference
+# <scale> (Optional): a float value to be multiplied with actual register reading
+# 
+# Typical Structure
+# -----------------------------
+# device,dev001,1   <- the first device (dev001)
+# poll,...          <- the first poller of dev001
+# ref,...           <- the references in poller
+# ref,...
+# poll,...          <- the second poller of dev001
+# ref,...
+# ref,...
+# device,dev002,2   <- the second device (dev002)
+# poll,...          <- the first poller of dev002
+# ref,...
 #
-# type: poll
-# device_name: any string without spaces to describe the device
-# device_id: integer 1 to 254
-# start_address: integer 0 to 65535 (The start address of Modbus registers to poll)
-# size: integer 0 to 65535 (No. of registers to poll and value must not exceed the limits of Modbus)
-# functionscode: coil/input_status/holding_register/input_register
-# endian: to describe byte_order and word_order e.g. BE_BE/BE_LE/LE_LE/LE_BE
-#################################################################################
-# Reference-Object
-# Columns: type, name, unit, address, type, rw, scale
-#
-# type: ref
-# name: any string without spaces to describe the reference
-# unit (optional): the measurement unit of reference
-# address: integer 0 to 65535 (the modbus address and should match the poller range)
-# type: uint16/int16/uint32/int32/float32/bool/stringXXX (defaults to uint16)
-# rw: read write setting e.g. r/w/rw
-# scale (optional): float value to be multiplied with actual reading
-#################################################################################
-poll,modsim,1,40001,5,holding_register,BE_BE
-ref,register1,,40001,uint16,rw,
-ref,register2,,40002,uint16,rw,
-ref,register3,,40003,uint16,rw,
-ref,register4,,40004,uint16,rw,
-ref,register5,,40005,uint16,rw,
+# Configuration Example
+# -----------------------------
+device,modsim,1
+poll,holding_register,40001,5,BE_BE
+ref,register1,40001,uint16,rw,,1.0
+ref,register2,40002,uint16,rw,,1.0
+ref,register3,40003,uint16,rw,,1.0
+ref,register4,40004,uint16,rw,,1.0
+ref,register5,40005,uint16,rw,,1.0

@@ -113,7 +113,6 @@ def mqttc_setup(args):
 
 
 def mqttc_publish(topic, msg, qos=0, retain=False):
-    global mqttc
     try:
         if not mqttc:
             return
@@ -130,7 +129,6 @@ def mqttc_publish(topic, msg, qos=0, retain=False):
 
 
 def mqttc_close():
-    global mqttc
     if mqttc:
         mqttc.loop_stop()
         mqttc.disconnect()

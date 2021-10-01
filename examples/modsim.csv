@@ -1,6 +1,7 @@
-poll,modsim,1,40001,5,holding_register,BE_BE
-ref,register1,,40001,uint16,rw,
-ref,register2,,40002,uint16,rw,
-ref,register3,,40003,uint16,rw,
-ref,register4,,40004,uint16,rw,
-ref,register5,,40005,uint16,rw,
+device,modsim,1
+poll,holding_register,40001,5,BE_BE
+ref,register1,40001,uint16,rw,
+ref,register2,40002,uint16,rw,
+ref,register3,40003,uint16,rw,
+ref,register4,40004,uint16,rw,
+ref,register5,40005,uint16,rw,
