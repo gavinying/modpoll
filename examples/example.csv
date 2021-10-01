@@ -1,7 +1,8 @@
 # Modbus Configuration File
 # --------------------------
 # This configuration file is to describe the Modbus registers of target device(s) and defines poller(s) to help polling data.
-#
+# The file format uses "csv" instead of json or yaml because many vendor's modbus registers are described in a table so it is easier to edit the information in excel and export to csv format. 
+# 
 # Configuration Types
 # --------------------------
 # device,<device_name>,<device_id>
@@ -38,10 +39,16 @@
 #
 # Configuration Example
 # -----------------------------
-device,modsim,1
-poll,holding_register,40001,5,BE_BE
-ref,register1,40001,uint16,rw,,1.0
-ref,register2,40002,uint16,rw,,1.0
-ref,register3,40003,uint16,rw,,1.0
-ref,register4,40004,uint16,rw,,1.0
-ref,register5,40005,uint16,rw,,1.0
+device,modsim001,1
+poll,holding_register,41001,5,BE_BE
+ref,register1,41001,uint16,rw,
+ref,register2,41002,uint16,rw,
+ref,register3,41003,uint16,rw,
+ref,register4,41004,uint16,rw,
+ref,register5,41005,uint16,rw,
+device,modsim002,2
+poll,coil,1,4,BE_BE
+ref,coil1-8,1,bool,rw,
+ref,coil9-16,2,bool,rw,
+ref,coil17-24,3,bool,rw,
+ref,coil25-32,4,bool,rw,
