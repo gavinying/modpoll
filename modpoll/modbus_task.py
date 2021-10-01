@@ -19,78 +19,39 @@ args = None
 log = None
 master = None
 deviceList = []
-referenceList = []
-pollers = []
+# global objects
+event_exit = None
 
 
 class Device:
-    def __init__(self, name, devid):
-        self.name = name
-        self.devid = devid
-        self.occupiedTopics = []
-        self.writableReferences = []
+    def __init__(self, device_name, device_id: int):
+        self.name = device_name
+        self.devid = device_id
+        self.pollerList = []
+        self.referenceMap = {}
         self.errorCount = 0
         self.pollCount = 0
-        self.next_due = time.time() + args.diagnostics_rate
+        self.pollSuccess = False
         log.info(f"Added new device {self.name}")
 
-    def publish_diagnostics(self):
-        if args.diagnostics_rate > 0:
-            now = time.time()
-            if now > self.next_due:
-                self.next_due = now + args.diagnostics_rate
-                try:
-                    error_rate = float(self.errorCount) / float(self.pollCount)
-                except ValueError:
-                    error_rate = 0
-                mqttc_publish(
-                    f"{args.mqtt_topic_prefix}{self.name}/diagnostics/error_rate", str(error_rate))
-                mqttc_publish(
-                    f"{args.mqtt_topic_prefix}{self.name}/diagnostics/total_poll", str(self.pollCount))
-                self.pollCount = 0
-                self.errorCount = 0
+    def add_reference_mapping(self, ref):
+        self.referenceMap[ref.name] = ref
+
+    def update_reference(self, ref):
+        self.referenceMap[ref.name].last_val = ref.last_val
+        self.referenceMap[ref.name].val = ref.val
 
 
 class Poller:
-    def __init__(self, name, devid, reference, size, functioncode, endian):
-        self.name = name
-        self.devid = int(devid)
-        self.reference = int(reference)
-        self.size = int(size)
-        self.functioncode = int(functioncode)
+    def __init__(self, device, funccode: int, start_address: int, size: int, endian):
+        self.device = device
+        self.funccode = funccode
+        self.start_address = start_address
+        self.size = size
         self.endian = endian
-        self.device = None
         self.readableReferences = []
         self.disabled = False
         self.failcounter = 0
-
-        for myDev in deviceList:
-            if myDev.name == self.name:
-                self.device = myDev
-                break
-        if not self.device:
-            device = Device(self.name, devid)
-            deviceList.append(device)
-            self.device = device
-
-    def count_success(self, success):
-        self.device.pollCount += 1
-        if success:
-            self.failcounter = 0
-        else:
-            self.failcounter += 1
-            self.device.errorCount += 1
-            if self.failcounter >= 3:
-                if args.autoremove:
-                    self.disabled = True
-                    log.info(f"Poller {self.name} disabled (functioncode: {self.functioncode}, "
-                             f"reference: {self.reference}, size: {self.size}).")
-                # else:
-                #     if master.connect():
-                #         self.failcounter = 0
-                #         log.info("Reconnecting to device... SUCCESS")
-                #     else:
-                #         log.info("Reconnecting to device... FAILED")
 
     def poll(self):
         if self.disabled or not master:
@@ -98,30 +59,30 @@ class Poller:
         try:
             result = None
             data = None
-            if self.functioncode == 1:
+            if self.funccode == 1:
                 result = master.read_coils(
-                    self.reference, self.size, unit=self.devid)
+                    self.start_address, self.size, unit=self.device.devid)
                 if not result.isError():
                     data = result.bits
-            elif self.functioncode == 2:
+            elif self.funccode == 2:
                 result = master.read_discrete_inputs(
-                    self.reference, self.size, unit=self.devid)
+                    self.start_address, self.size, unit=self.device.devid)
                 if not result.isError():
                     data = result.bits
-            elif self.functioncode == 3:
+            elif self.funccode == 3:
                 result = master.read_holding_registers(
-                    self.reference, self.size, unit=self.devid)
+                    self.start_address, self.size, unit=self.device.devid)
                 if not result.isError():
                     data = result.registers
-            elif self.functioncode == 4:
+            elif self.funccode == 4:
                 result = master.read_input_registers(
-                    self.reference, self.size, unit=self.devid)
+                    self.start_address, self.size, unit=self.device.devid)
                 if not result.isError():
                     data = result.registers
             if not data:
-                self.count_success(False)
-                log.warning(f"Reading device:{self.devid}, FuncCode:{self.functioncode}, "
-                            f"Ref:{self.reference}, Size:{self.size}... ERROR")
+                self.update_statistics(False)
+                log.error(f"Reading device:{self.device.name}, FuncCode:{self.funccode}, "
+                          f"Start_address:{self.start_address}, Size:{self.size}... ERROR")
                 log.debug(result)
                 return
             if "BE_BE" == self.endian.upper():
@@ -136,83 +97,73 @@ class Poller:
             else:
                 decoder = BinaryPayloadDecoder.fromRegisters(
                     data, Endian.Big, wordorder=Endian.Little)
-            cur_ref = self.reference
+            cur_ref = self.start_address
             for ref in self.readableReferences:
-                while cur_ref < ref.reference and cur_ref < self.reference + self.size:
+                while cur_ref < ref.address and cur_ref < self.start_address + self.size:
                     decoder.skip_bytes(2)
                     cur_ref += 1
-                if cur_ref >= self.reference + self.size:
+                if cur_ref >= self.start_address + self.size:
                     break
                 if "uint16" == ref.dtype:
                     ref.update_value(decoder.decode_16bit_uint())
-                    cur_ref += 1
+                    cur_ref += ref.length
                 elif "int16" == ref.dtype:
                     ref.update_value(decoder.decode_16bit_int())
-                    cur_ref += 1
+                    cur_ref += ref.length
                 elif "uint32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_uint())
-                    cur_ref += 2
+                    cur_ref += ref.length
                 elif "int32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_int())
-                    cur_ref += 2
+                    cur_ref += ref.length
                 elif "float32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_float())
-                    cur_ref += 2
-                # elif "bool" == ref.dtype:
-                #     ref.update_value(decoder.decode_bits())
-                #     cur_ref += ref.length
-                # elif ref.dtype.startswith("string"):
-                #     ref.update_value(decoder.decode_string())
-                #     cur_ref += ref.length
+                    cur_ref += ref.length
+                elif "bool" == ref.dtype:
+                    ref.update_value(decoder.decode_bits())
+                    cur_ref += ref.length
+                elif ref.dtype.startswith("string"):
+                    ref.update_value(decoder.decode_string())
+                    cur_ref += ref.length
                 else:
                     decoder.decode_16bit_uint()
                     cur_ref += 1
-            self.count_success(True)
-            log.info(f"Reading device:{self.devid}, FuncCode:{self.functioncode}, "
-                     f"Ref:{self.reference}, Size:{self.size}... SUCCESS")
+            self.device.update_reference(ref)
+            self.update_statistics(True)
+            log.info(f"Reading device:{self.device.name}, FuncCode:{self.funccode}, "
+                     f"Start_address:{self.start_address}, Size:{self.size}... SUCCESS")
             return True
         except ModbusException as ex:
-            self.count_success(False)
-            log.warning(f"Reading device:{self.devid}, FuncCode:{self.functioncode}, "
-                        f"Ref:{self.reference}, Size:{self.size}... FAILED")
+            self.update_statistics(False)
+            log.warning(f"Reading device:{self.device.name}, FuncCode:{self.funccode}, "
+                        f"Start_address:{self.start_address}, Size:{self.size}... FAILED")
             log.debug(ex)
             return False
 
     def add_readable_reference(self, ref):
-        if ref.name not in self.device.occupiedTopics:
-            self.device.occupiedTopics.append(ref.name)
-            ref.device = self.device
-            log.debug(f"Added new reference {ref.name} to poller {self.name}")
-            if ref.check_sanity(self.reference, self.size):
-                self.readableReferences.append(ref)
-                referenceList.append(ref)
-            else:
-                log.warning(
-                    f"Reference name {ref.name} failed to pass sanity check, therefore ignoring it.")
-        else:
-            log.warning(
-                f"Reference name ({ref.name}) is already occupied, therefore ignoring it.")
+        if ref not in self.readableReferences:
+            self.readableReferences.append(ref)
 
-    def publish_data(self, timestamp=None, on_change=False):
-        payload = {}
-        for ref in self.readableReferences:
-            if on_change and ref.val == ref.last_val:
-                continue
-            if ref.unit:
-                payload[f'{ref.name}|{ref.unit}'] = ref.val
-            else:
-                payload[f'{ref.name}'] = ref.val
-        if timestamp:
-            payload['timestamp'] = timestamp
-        topic = f"{args.mqtt_topic_prefix}{self.device.name}"
-        mqttc_publish(topic, json.dumps(payload))
+    def update_statistics(self, success):
+        self.device.pollCount += 1
+        if success:
+            self.failcounter = 0
+            self.device.pollSuccess = True
+        else:
+            self.failcounter += 1
+            self.device.errorCount += 1
+            self.device.pollSuccess = False
+            if args.autoremove and self.failcounter >= 3:
+                self.disabled = True
+                log.info(f"Poller {self.name} disabled (functioncode: {self.funccode}, "
+                         f"start_address: {self.start_address}, size: {self.size}).")
 
 
 class Reference:
-    def __init__(self, name, unit, reference, dtype, scale):
-        self.name = name
-        self.unit = unit
-        self.reference = int(reference)
+    def __init__(self, device, ref_name, address: int, dtype, rw, unit, scale):
+        self.device = device
+        self.name = ref_name
+        self.address = address
         self.dtype = dtype
         if "int16" in dtype:
             self.length = 1
@@ -239,16 +190,18 @@ class Reference:
                 log.warning("Data type string: length must be divisible by 2")
         else:
             log.error(f"unknown data type: {dtype}")
+        self.rw = rw
+        self.unit = unit
         self.scale = scale
         self.val = None
-        self.lastval = None
-        self.device = None
+        self.last_val = None
 
     def check_sanity(self, reference, size):
-        if self.reference in range(reference, size + reference) \
-                and self.reference + self.length - 1 in range(reference, size + reference):
-            return True
-        return False
+        if self.address not in range(reference, size + reference):
+            return False
+        if self.address + self.length - 1 not in range(reference, size + reference):
+            return False
+        return True
 
     def update_value(self, v):
         if self.scale:
@@ -256,70 +209,90 @@ class Reference:
                 v = v * float(self.scale)
             except ValueError:
                 pass
-        self.lastval = self.val
+        self.last_val = self.val
         self.val = v
+
+    def __eq__(self, other):
+        """Overrides the default implementation"""
+        if isinstance(other, Reference):
+            return self.address == other.address
+        return False
 
 
 def parse_config(csv_reader):
+    current_device = None
     current_poller = None
     for row in csv_reader:
         if not row or len(row) == 0:
             continue
-        if "poll" in row[0]:
-            name = row[1]
-            devid = int(row[2])
-            reference = int(row[3])
-            size = int(row[4])
-            endian = row[6]
-            if "coil" == row[5]:
-                functioncode = 1
-                if size > 2000:  # some implementations don't seem to support 2008 coils/inputs
-                    current_poller = None
-                    log.error(
-                        "Too many coils (max. 2000). Ignoring poller " + row[1] + ".")
-                    continue
-            elif "input_status" == row[5]:
-                functioncode = 2
-                if size > 2000:
-                    current_poller = None
-                    log.error(
-                        "Too many inputs (max. 2000). Ignoring poller " + row[1] + ".")
-                    continue
-            elif "holding_register" == row[5]:
-                functioncode = 3
-                if size > 123:  # applies to TCP, RTU should support 125 registers. But let's be safe.
-                    current_poller = None
-                    log.error(
-                        "Too many registers (max. 123). Ignoring poller " + row[1] + ".")
-                    continue
-            elif "input_register" == row[5]:
-                functioncode = 4
-                if size > 123:
-                    current_poller = None
-                    log.error(
-                        "Too many registers (max. 123). Ignoring poller " + row[1] + ".")
-                    continue
-            else:
-                log.warning("Unknown function code (" +
-                            row[5] + " ignoring poller " + row[1] + ".")
-                current_poller = None
+        if "device" in row[0].lower():
+            device_name = row[1]
+            device_id = int(row[2])
+            current_device = Device(device_name, device_id)
+            deviceList.append(current_device)
+        elif "poll" in row[0].lower():
+            fc = row[1].lower()
+            start_address = int(row[2])
+            size = int(row[3])
+            endian = row[4]
+            current_poller = None
+            if not current_device:
+                log.error("No device to add poller.")
                 continue
-            current_poller = Poller(
-                name, devid, reference, size, functioncode, endian)
-            pollers.append(current_poller)
-            log.info(f"Added new poller {current_poller.name}, {current_poller.devid}, "
-                     f"{current_poller.reference}, {current_poller.size}")
-        elif "ref" in row[0]:
-            name = row[1].replace(" ", "_")
-            unit = row[2]
-            ref = row[3]
-            dtype = row[4]
-            scale = row[5]
-            if current_poller:
-                current_poller.add_readable_reference(
-                    Reference(name, unit, ref, dtype, scale))
+            if "coil" == fc:
+                function_code = 1
+                if size > 2000:  # some implementations don't seem to support 2008 coils/inputs
+                    log.error("Too many coils (max. 2000). Ignoring poller.")
+                    continue
+            elif "input_status" == fc:
+                function_code = 2
+                if size > 2000:
+                    log.error("Too many inputs (max. 2000). Ignoring poller.")
+                    continue
+            elif "holding_register" == fc:
+                function_code = 3
+                if size > 123:  # applies to TCP, RTU should support 125 registers. But let's be safe.
+                    log.error("Too many registers (max. 123). Ignoring poller.")
+                    continue
+            elif "input_register" == fc:
+                function_code = 4
+                if size > 123:
+                    log.error(f"Too many registers (max. 123). Ignoring poller.")
+                    continue
             else:
-                log.debug(f"No poller for reference {name}.")
+                log.warning(f"Unknown function code ({fc}) ignoring poller.")
+                continue
+            current_poller = Poller(current_device, function_code, start_address, size, endian)
+            current_device.pollerList.append(current_poller)
+            log.info(f"Add poller (start_address={current_poller.start_address}, size={current_poller.size}) "
+                     f"to device {current_device.name}")
+        elif "ref" in row[0].lower():
+            ref_name = row[1].replace(" ", "_")
+            address = int(row[2])
+            dtype = row[3].lower()
+            rw = row[4] or "r"
+            try:
+                unit = row[5]
+            except IndexError:
+                unit = None
+            try:
+                scale = float(row[6])
+            except Exception:
+                scale = None
+            if not current_device or not current_poller:
+                log.debug(f"No device/poller for reference {ref_name}.")
+                continue
+            ref = Reference(current_poller.device, ref_name, address, dtype, rw, unit, scale)
+            if ref in current_poller.readableReferences:
+                log.warning(f"Reference {ref.name} is already added, ignoring it.")
+                continue
+            if not ref.check_sanity(current_poller.start_address, current_poller.size):
+                log.warning(f"Reference {ref.name} failed to pass sanity check, ignoring it.")
+                continue
+            if "r" in rw.lower():
+                current_poller.add_readable_reference(ref)
+            current_device.add_reference_mapping(ref)
+            log.debug(f"Add reference {ref.name} to device {current_device.name}")
 
 
 def load_config(file):
@@ -336,11 +309,13 @@ def load_config(file):
             parse_config(csv_reader)
 
 
-def modbus_setup(config):
+def modbus_setup(config, event):
     global args
     args = config
     global log
     log = logging.getLogger(__name__)
+    global event_exit
+    event_exit = event
     global master
 
     log.info(f"Loading config from: {args.config}")
@@ -363,45 +338,79 @@ def modbus_setup(config):
 
 
 def modbus_poll():
-    global master
     if not master:
         return
     master.connect()
-    for p in pollers:
-        if not p.disabled:
-            ret = p.poll()
-            t = time.time()
-            if ret:
-                p.publish_data()
-            while time.time() < t + args.interval:
-                time.sleep(0.001)
+    for dev in deviceList:
+        log.debug(f"polling device {dev.name} ...")
+        for p in dev.pollerList:
+            if not p.disabled:
+                p.poll()
+                if event_exit.is_set():
+                    master.close()
+                    return
+                event_exit.wait(timeout=args.interval)
     master.close()
-    # print out result
+    # Always printout result
     modbus_print()
-    for d in deviceList:
-        d.publish_diagnostics()
 
 
 def modbus_print():
-    table = PrettyTable(['name', 'unit', 'reference', 'value'])
-    for r in referenceList:
-        row = [r.name, r.unit, r.reference, r.val]
-        table.add_row(row)
-    print(table)
+    for dev in deviceList:
+        print(f"===== references from device: {dev.name} =====")
+        if not dev.pollSuccess:
+            print(f"failed to poll device: {dev.name}")
+            continue
+        table = PrettyTable(['name', 'unit', 'address', 'value'])
+        for ref in dev.referenceMap.values():
+            row = [ref.name, ref.unit, ref.address, ref.val]
+            table.add_row(row)
+        print(table)
+
+
+def modbus_publish(timestamp=None, on_change=False):
+    for dev in deviceList:
+        if not dev.pollSuccess:
+            log.debug(f"skip publishing for disconnected device: {dev.name}")
+            continue
+        log.debug(f"publishing data for device: {dev.name} ...")
+        payload = {}
+        for ref in dev.referenceMap.values():
+            if on_change and ref.val == ref.last_val:
+                continue
+            if ref.unit:
+                payload[f'{ref.name}|{ref.unit}'] = ref.val
+            else:
+                payload[f'{ref.name}'] = ref.val
+        if timestamp:
+            payload['timestamp'] = timestamp
+        topic = f"{args.mqtt_topic_prefix}{dev.name}"
+        mqttc_publish(topic, json.dumps(payload))
 
 
 def modbus_export(file):
+    if not file.endswith(".csv"):
+        file = file + ".csv"
     with open(file, 'w') as f:
         writer = csv.writer(f)
-        header = ['name', 'unit', 'reference', 'value']
-        writer.writerow(header)
-        for r in referenceList:
-            row = [r.name, r.unit, r.reference, r.val]
-            writer.writerow(row)
+        for dev in deviceList:
+            log.info(f"exporting data for device {dev.name} ...")
+            header = ['name', 'unit', 'address', 'value']
+            writer.writerow(header)
+            for ref in dev.referenceMap.values():
+                row = [ref.name, ref.unit, ref.address, ref.val]
+                writer.writerow(row)
     log.info(f"Saved references/registers to {file}")
 
 
+def modbus_publish_diagnostics():
+    for dev in deviceList:
+        log.debug(f"publishing diagnostics for device {dev.name} ...")
+        payload = {'pollCount': dev.pollCount, 'errorCount': dev.errorCount}
+        topic = f"{args.mqtt_topic_prefix}diagnostics/{dev.name}"
+        mqttc_publish(topic, json.dumps(payload))
+
+
 def modbus_close():
-    global master
     if master:
         master.close()
