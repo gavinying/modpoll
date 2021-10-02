@@ -115,6 +115,32 @@ With successful data polling and publishing, you can subscribe the topic `modpol
 
 
 
+### Write registers via MQTT publish
+
+The `modpoll` tool will subscribe to the topic `<mqtt_topic_prefix>/<deviceid>/set` once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish, 
+
+- To write a single holding register (address at `40001`)
+
+  ```json
+  {
+    "object_type": "holding_register",
+    "address": 40001,
+    "value": 12
+  }
+  ```
+
+- To write multiple holding registers (address starting from `40001`)
+
+  ```json
+  {
+    "object_type": "holding_register",
+    "address": 40001,
+    "value": [12, 13, 14, 15]
+  }
+  ```
+
+
+
 ## Run in docker
 
 A docker image has been provided for user to directly run the program without local installation, 
