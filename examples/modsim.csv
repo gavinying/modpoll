@@ -1,10 +1,10 @@
 device,modsim001,1
-poll,holding_register,41001,5,BE_BE
-ref,register1,41001,uint16,rw,
-ref,register2,41002,uint16,rw,
-ref,register3,41003,uint16,rw,
-ref,register4,41004,uint16,rw,
-ref,register5,41005,uint16,rw,
+poll,holding_register,40001,5,BE_BE
+ref,register1,40001,uint16,rw,
+ref,register2,40002,uint16,rw,
+ref,register3,40003,uint16,rw,
+ref,register4,40004,uint16,rw,
+ref,register5,40005,uint16,rw,
 device,modsim002,2
 poll,coil,1,4,BE_BE
 ref,coil1-8,1,bool,rw,
