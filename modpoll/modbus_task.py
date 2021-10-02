@@ -2,7 +2,6 @@ import csv
 import json
 import logging
 import math
-import time
 import requests
 
 from pymodbus.client.sync import ModbusSerialClient
@@ -14,41 +13,39 @@ from prettytable import PrettyTable
 
 from modpoll.mqtt_task import mqttc_publish
 
-# global objects
 args = None
 log = None
 master = None
 deviceList = []
-# global objects
 event_exit = None
 
 
 class Device:
-    def __init__(self, device_name, device_id: int):
+    def __init__(self, device_name: str, device_id: int):
         self.name = device_name
         self.devid = device_id
         self.pollerList = []
-        self.referenceMap = {}
+        self.references = {}
         self.errorCount = 0
         self.pollCount = 0
         self.pollSuccess = False
         log.info(f"Added new device {self.name}")
 
     def add_reference_mapping(self, ref):
-        self.referenceMap[ref.name] = ref
+        self.references[ref.name] = ref
 
     def update_reference(self, ref):
-        self.referenceMap[ref.name].last_val = ref.last_val
-        self.referenceMap[ref.name].val = ref.val
+        self.references[ref.name].last_val = ref.last_val
+        self.references[ref.name].val = ref.val
 
 
 class Poller:
-    def __init__(self, device, funccode: int, start_address: int, size: int, endian):
+    def __init__(self, device, function_code: int, start_address: int, size: int, endian: str):
         self.device = device
-        self.funccode = funccode
+        self.fc = function_code
         self.start_address = start_address
         self.size = size
-        self.endian = endian
+        self.endian = endian.lower()
         self.readableReferences = []
         self.disabled = False
         self.failcounter = 0
@@ -59,29 +56,29 @@ class Poller:
         try:
             result = None
             data = None
-            if self.funccode == 1:
+            if self.fc == 1:
                 result = master.read_coils(
                     self.start_address, self.size, unit=self.device.devid)
                 if not result.isError():
                     data = result.bits
-            elif self.funccode == 2:
+            elif self.fc == 2:
                 result = master.read_discrete_inputs(
                     self.start_address, self.size, unit=self.device.devid)
                 if not result.isError():
                     data = result.bits
-            elif self.funccode == 3:
+            elif self.fc == 3:
                 result = master.read_holding_registers(
                     self.start_address, self.size, unit=self.device.devid)
                 if not result.isError():
                     data = result.registers
-            elif self.funccode == 4:
+            elif self.fc == 4:
                 result = master.read_input_registers(
                     self.start_address, self.size, unit=self.device.devid)
                 if not result.isError():
                     data = result.registers
             if not data:
                 self.update_statistics(False)
-                log.error(f"Reading device:{self.device.name}, FuncCode:{self.funccode}, "
+                log.error(f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
                           f"Start_address:{self.start_address}, Size:{self.size}... ERROR")
                 log.debug(result)
                 return
@@ -130,12 +127,12 @@ class Poller:
                     cur_ref += 1
             self.device.update_reference(ref)
             self.update_statistics(True)
-            log.info(f"Reading device:{self.device.name}, FuncCode:{self.funccode}, "
+            log.info(f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
                      f"Start_address:{self.start_address}, Size:{self.size}... SUCCESS")
             return True
         except ModbusException as ex:
             self.update_statistics(False)
-            log.warning(f"Reading device:{self.device.name}, FuncCode:{self.funccode}, "
+            log.warning(f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
                         f"Start_address:{self.start_address}, Size:{self.size}... FAILED")
             log.debug(ex)
             return False
@@ -155,16 +152,16 @@ class Poller:
             self.device.pollSuccess = False
             if args.autoremove and self.failcounter >= 3:
                 self.disabled = True
-                log.info(f"Poller {self.name} disabled (functioncode: {self.funccode}, "
+                log.info(f"Poller {self.name} disabled (functioncode: {self.fc}, "
                          f"start_address: {self.start_address}, size: {self.size}).")
 
 
 class Reference:
-    def __init__(self, device, ref_name, address: int, dtype, rw, unit, scale):
+    def __init__(self, device, ref_name: str, address: int, dtype: str, rw: str, unit, scale):
         self.device = device
         self.name = ref_name
         self.address = address
-        self.dtype = dtype
+        self.dtype = dtype.lower()
         if "int16" in dtype:
             self.length = 1
         elif "uint16" in dtype:
@@ -190,7 +187,7 @@ class Reference:
                 log.warning("Data type string: length must be divisible by 2")
         else:
             log.error(f"unknown data type: {dtype}")
-        self.rw = rw
+        self.rw = rw.lower()
         self.unit = unit
         self.scale = scale
         self.val = None
@@ -355,6 +352,38 @@ def modbus_poll():
     modbus_print()
 
 
+def modbus_write_coil(device_name, address: int, value):
+    if not master:
+        return False
+    master.connect()
+    for d in deviceList:
+        if d.name == device_name:
+            log.info(f"Writing coil(s): device={device_name}, address={address}, value={value}")
+            if isinstance(value, int):
+                result = master.write_coil(address, value, unit=d.devid)
+            elif isinstance(value, list):
+                result = master.write_coils(address, value, unit=d.devid)
+            return result.function_code < 0x80
+    master.close()
+    return False
+
+
+def modbus_write_register(device_name, address: int, value):
+    if not master:
+        return False
+    master.connect()
+    for d in deviceList:
+        if d.name == device_name:
+            log.info(f"Writing register(s): device={device_name}, address={address}, value={value}")
+            if isinstance(value, int):
+                result = master.write_register(address, value, unit=d.devid)
+            elif isinstance(value, list):
+                result = master.write_registers(address, value, unit=d.devid)
+            return result.function_code < 0x80
+    master.close()
+    return False
+
+
 def modbus_print():
     for dev in deviceList:
         print(f"===== references from device: {dev.name} =====")
@@ -362,7 +391,7 @@ def modbus_print():
             print(f"failed to poll device: {dev.name}")
             continue
         table = PrettyTable(['name', 'unit', 'address', 'value'])
-        for ref in dev.referenceMap.values():
+        for ref in dev.references.values():
             row = [ref.name, ref.unit, ref.address, ref.val]
             table.add_row(row)
         print(table)
@@ -375,7 +404,7 @@ def modbus_publish(timestamp=None, on_change=False):
             continue
         log.debug(f"publishing data for device: {dev.name} ...")
         payload = {}
-        for ref in dev.referenceMap.values():
+        for ref in dev.references.values():
             if on_change and ref.val == ref.last_val:
                 continue
             if ref.unit:
@@ -388,6 +417,14 @@ def modbus_publish(timestamp=None, on_change=False):
         mqttc_publish(topic, json.dumps(payload))
 
 
+def modbus_publish_diagnostics():
+    for dev in deviceList:
+        log.debug(f"publishing diagnostics for device {dev.name} ...")
+        payload = {'pollCount': dev.pollCount, 'errorCount': dev.errorCount}
+        topic = f"{args.mqtt_topic_prefix}diagnostics/{dev.name}"
+        mqttc_publish(topic, json.dumps(payload))
+
+
 def modbus_export(file):
     if not file.endswith(".csv"):
         file = file + ".csv"
@@ -397,18 +434,10 @@ def modbus_export(file):
             log.info(f"exporting data for device {dev.name} ...")
             header = ['name', 'unit', 'address', 'value']
             writer.writerow(header)
-            for ref in dev.referenceMap.values():
+            for ref in dev.references.values():
                 row = [ref.name, ref.unit, ref.address, ref.val]
                 writer.writerow(row)
     log.info(f"Saved references/registers to {file}")
-
-
-def modbus_publish_diagnostics():
-    for dev in deviceList:
-        log.debug(f"publishing diagnostics for device {dev.name} ...")
-        payload = {'pollCount': dev.pollCount, 'errorCount': dev.errorCount}
-        topic = f"{args.mqtt_topic_prefix}diagnostics/{dev.name}"
-        mqttc_publish(topic, json.dumps(payload))
 
 
 def modbus_close():

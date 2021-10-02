@@ -1,19 +1,19 @@
 import logging
+import re
 import threading
 import time
 import sys
 import signal
+import json
 
 from modpoll.arg_parser import get_parser
-from modpoll.mqtt_task import mqttc_setup, mqttc_close
-from modpoll.modbus_task import modbus_setup, modbus_poll, modbus_publish, modbus_publish_diagnostics, modbus_export, modbus_close
+from modpoll.mqtt_task import mqttc_setup, mqttc_close, mqttc_receive
+from modpoll.modbus_task import modbus_setup, modbus_poll, modbus_publish, modbus_publish_diagnostics, modbus_export, \
+    modbus_close, modbus_write_coil, modbus_write_register
 
-# global objects
-event_exit = threading.Event()
-
-# logging format
 LOG_SIMPLE = "%(asctime)s | %(levelname).1s | %(name)s | %(message)s"
 log = None
+event_exit = threading.Event()
 
 
 def _signal_handler(signal, frame):
@@ -70,6 +70,19 @@ def app(name="modpoll"):
         if args.diagnostics_rate > 0 and now > last_diag + args.diagnostics_rate:
             last_diag = now
             modbus_publish_diagnostics()
+        topic, payload = mqttc_receive()
+        if topic and payload:
+            device_name = re.search(f"^{args.mqtt_topic_prefix}([^/\n]*)/set", topic).group(1)
+            if device_name:
+                try:
+                    reg = json.loads(payload)
+                    if "coil" == reg["object_type"]:
+                        if modbus_write_coil(device_name, reg["address"], reg["value"]):
+                            log.info(f"")
+                    elif "holding_register" == reg["object_type"]:
+                        modbus_write_register(device_name, reg["address"], reg["value"])
+                except json.decoder.JSONDecodeError:
+                    log.warning(f"Fail to parse json message: {payload}")
     modbus_close()
     mqttc_close()
 
