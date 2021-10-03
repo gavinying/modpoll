@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "modpoll"
-version = "0.3.11"
+version = "0.4.0"
 description = "A Command Line Tool for Modbus"
 authors = ["Ying Shaodong <helloysd@foxmail.com>"]
 readme = "README.md"
