@@ -83,6 +83,8 @@ def app(name="modpoll"):
                         modbus_write_register(device_name, reg["address"], reg["value"])
                 except json.decoder.JSONDecodeError:
                     log.warning(f"Fail to parse json message: {payload}")
+        if args.once:
+            event_exit.set()
     modbus_close()
     mqttc_close()
 
