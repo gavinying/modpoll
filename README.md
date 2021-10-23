@@ -89,10 +89,40 @@ Let's start expoloring *modpoll* with *modsim* device.
 > the modsim code is also available [here](https://github.com/gavinying/modsim)
 
 
+### Prepare Modbus configure file
+
+Before running *modpoll* tool, we need to prepare a Modbus configuration file, which describes the polling pattern and device's register map according to vendor's documents. 
+
+The configuration can be either a local file or a remote URL resource. 
+
+For the *modsim* device, we will use the following [configuration file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) as an example. 
+
+
+```CSV
+device,modsim001,1
+poll,holding_register,40001,5,BE_BE
+ref,register1,40001,uint16,rw,
+ref,register2,40002,uint16,rw,
+ref,register3,40003,uint16,rw,
+ref,register4,40004,uint16,rw,
+ref,register5,40005,uint16,rw,
+device,modsim002,2
+poll,coil,1,4,BE_BE
+ref,coil1-8,1,bool,rw,
+ref,coil9-16,2,bool,rw,
+ref,coil17-24,3,bool,rw,
+ref,coil25-32,4,bool,rw,
+```
+
+This configuration tells *modpoll* to do the following for each poll,
+
+- Read the first 5 holding registers from device `modsim001` (address = `1`) 
+- Read the first 32 coils from device `modsim002` (address = `2`)
+
 
 ### Poll online device (modsim)
 
-Using *modpoll* tool, you can poll the first 5 holding registers via the following command,
+Run the following command in a terminal, 
 
 ```bash
 modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
@@ -120,7 +150,6 @@ It will create a virtual Modbus TCP device running at `localhost:5020`, and then
 ```bash
 modpoll --tcp localhost --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
-
 
 
 ### Publish data to MQTT broker
