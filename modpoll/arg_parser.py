@@ -4,7 +4,7 @@ from . import __version__
 
 
 def get_parser():
-    parser = argparse.ArgumentParser(description=f'modpoll v{__version__} - A Command Line Tool for Modbus')
+    parser = argparse.ArgumentParser(description=f'modpoll v{__version__} - A New Command Line Tool for Modbus')
     parser.add_argument('-v', '--version', action='version', version=f'modpoll v{__version__}')
     parser.add_argument('-f', '--config', required=True,
                         help='A local path or URL of Modbus configuration file. Required!')
