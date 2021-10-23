@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/pypi/l/modpoll)](https://gitlab.com/helloysd/modpoll/-/blob/master/LICENSE)
 [![Downloads](http://pepy.tech/badge/modpoll)](http://pepy.tech/project/modpoll)
 
-> Learn more about `modpoll` usage at [documentation](https://helloysd.gitlab.io/modpoll) site. 
+> Learn more about *modpoll* usage at [documentation](https://helloysd.gitlab.io/modpoll) site. 
 
 
 
@@ -12,7 +12,9 @@
 
 The initial idea of creating this tool is to help myself debugging new devices during site survey. A site survey usually has limited time and space, working on-site also piles up some pressures. At that time, a portable swiss-knife toolkit is our best friend.
 
-This program can be easily deployed to Raspberry Pi or similar embedded devices, continuously polling data from the connected modbus devices, user can choose to save data locally or publish to a MQTT broker for easy debugging, the MQTT broker can be setup on the same Raspberry Pi or on the cloud. Once data has been successfully published, user can subscribe to a specific MQTT topic to view the collected data via a smart phone. 
+This program can be easily deployed to Raspberry Pi or similar embedded devices, polling data from modbus devices, users can choose to log data locally or publish to a MQTT broker for further debugging. 
+
+The MQTT broker can be setup on the same Raspberry Pi or on the cloud. Once data successfully published, users can subscribe to a specific MQTT topic to view the data via a smart phone at your fingertip. 
 
 
 
@@ -22,9 +24,14 @@ This program can be easily deployed to Raspberry Pi or similar embedded devices,
 
 
 
-Moreover, you can also continuously run this program on any PC or server with Python 3 support. One common use case is to deploy `modpoll` onto a server and keep it running as a gateway, i.e. polling data from local Modbus devices and forward to a centralized cloud server. In that sense, `modpoll` helps to bridge between the traditional world of fieldbus network and the modern world of IoT edge/cloud infrustructure. 
+Moreover, you can also run this program continuously on a server as a Modbus-MQTT gateway, i.e. polling from local Modbus devices and forwarding data to a centralized cloud service. 
 
-> This program is designed to be a standalone tool, it works out-of-the-box. If you are looing for a modbus python library, please consider the following two great open source projects, [pymodbus](https://github.com/riptideio/pymodbus) or [minimalmodbus](https://github.com/pyhys/minimalmodbus)
+In fact, *modpoll* helps to bridge between the traditional fieldbus world and the new IoT world. 
+
+
+> This program is designed to be a standalone tool, it works out-of-the-box on Linux/macOS/Windows. 
+
+> If you are looing for a modbus python library, please consider the following great open source projects, [pymodbus](https://github.com/riptideio/pymodbus) or [minimalmodbus](https://github.com/pyhys/minimalmodbus)
 
 
 
@@ -40,7 +47,11 @@ Moreover, you can also continuously run this program on any PC or server with Py
 
 ## Installation
 
-This program is tested on python 3.6+, the package is available in the Python Package Index, user can easily install it using `pip`.
+This program is tested on python 3.6+, the package is available in the Python Package Index, users can easily install it using `pip` or `pipx`.
+
+### On Linux/macOS
+
+Run the following command in a termial,
 
 ```bash
 pip install modpoll
@@ -52,15 +63,34 @@ Upgrade the tool via the following command,
 pip install -U modpoll
 ```
 
+### On Windows
+
+It is recommended to use `pipx` for installation on Windows, refer to [here](https://pypa.github.io/pipx/installation/) for details. 
+
+Once `pipx` installed, you can run the following command in a Command Prompt termial. 
+
+```PowerShell
+pipx install modpoll
+```
+
+Upgrade the tool via the following command,
+
+```PowerShell
+pipx upgrade modpoll
+```
 
 
 ## Quickstart
 
-As the name tells, *modpoll* is a tool for communicating with Modbus devices, so ideally it makes more sense if you have a real Modbus device on hand for the following test, but it is OK if you don't, we have deployed a virtual Modbus TCP device on cloud at `modsim.topmaker.net:502` for your quick testing purpose, the code is available at [modsim](https://github.com/gavinying/modsim), let's start expoloring *modpoll* tool with the virtual device *modsim*.
+As the name tells, *modpoll* is a tool for communicating with Modbus devices, so ideally it makes more sense if you have a real Modbus device on hand for the following test, but it is OK if you don't, we provide a virtual Modbus TCP device deployed at `modsim.topmaker.net:502` for your quick testing purpose. 
+
+Let's start expoloring *modpoll* with *modsim* device.
+
+> the modsim code is also available [here](https://github.com/gavinying/modsim)
 
 
 
-### Poll modsim service
+### Poll online device (modsim)
 
 Using *modpoll* tool, you can poll the first 5 holding registers via the following command,
 
@@ -75,9 +105,9 @@ modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gav
 
 
 
-### Poll local modsim
+### Poll local device (modsim)
 
-If you prefer a local test, you can launch your own device simulator by running `modsim` locally, 
+If you prefer a local test or behind a company firewall, you can launch your own device simulator by running `modsim` locally, 
 
 ```bash
 docker run -p 5020:5020 helloysd/modsim
@@ -85,7 +115,7 @@ docker run -p 5020:5020 helloysd/modsim
 
 > Use `sudo` before the docker command if you want to use the standard port `502`.
 
-It will create a virtual Modbus TCP device running at `localhost:5020`, and then you can poll it using `modpoll` tool, 
+It will create a virtual Modbus TCP device running at `localhost:5020`, and then you can poll it using *modpoll* tool, 
 
 ```bash
 modpoll --tcp localhost --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
@@ -95,7 +125,7 @@ modpoll --tcp localhost --tcp-port 5020 --config https://raw.githubusercontent.c
 
 ### Publish data to MQTT broker
 
-This is the most useful function of this new *modpoll* tool. `modpoll` provides a very simple way to publish collected data to MQTT broker, so user can view data from a smart phone via any free MQTT client app. 
+This is a useful function of this new *modpoll* tool, which provides a simple way to publish collected modbus data to MQTT broker, so users can view data from a smart phone via a MQTT client. 
 
 The following example uses a public MQTT broker `mqtt.eclipseprojects.io` for test purpose. You can also setup your own MQTT broker locally using [mosquitto](https://mosquitto.org/download/).
 
@@ -117,7 +147,7 @@ With successful data polling and publishing, you can subscribe the topic `modpol
 
 ### Write registers via MQTT publish
 
-The `modpoll` tool will subscribe to the topic `<mqtt_topic_prefix>/<deviceid>/set` once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish, 
+The *modpoll* tool will subscribe to the topic `<mqtt_topic_prefix>/<deviceid>/set` once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish, 
 
 - To write a single holding register (address at `40001`)
 
