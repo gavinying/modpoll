@@ -49,9 +49,9 @@ In fact, *modpoll* helps to bridge between the traditional fieldbus world and th
 
 This program is tested on python 3.6+, the package is available in the Python Package Index, users can easily install it using `pip` or `pipx`.
 
-### On Linux/macOS
+### Using PIP
 
-Run the following command in a termial,
+Python3 is supported by most popular platforms, e.g. Linux/macOS/Windows, on which you can install *modpoll* using `pip` tool, 
 
 ```bash
 pip install modpoll
@@ -65,7 +65,7 @@ pip install -U modpoll
 
 ### On Windows
 
-It is recommended to use `pipx` for installation on Windows, refer to [here](https://pypa.github.io/pipx/installation/) for details. 
+It is recommended to use `pipx` for installing *modpoll* on Windows, refer to [here](https://pypa.github.io/pipx/installation/) for more information about `pipx`. 
 
 Once `pipx` installed, you can run the following command in a Command Prompt termial. 
 
