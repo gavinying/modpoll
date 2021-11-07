@@ -30,7 +30,7 @@ Run in docker
 
   .. code-block:: shell
 
-    docker run helloysd/modpoll --version
+    docker run helloysd/modpoll
 
 
 - Connect to Modbus TCP device
@@ -39,4 +39,4 @@ Run in docker
 
   .. code-block:: shell
 
-    docker run helloysd/modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+    docker run helloysd/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv

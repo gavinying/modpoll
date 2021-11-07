@@ -213,14 +213,14 @@ It shows the version of the program by default.
 Similar to the above `modsim` test, we can poll the first 5 holding registers with `docker run`,
 
   ```bash
-  docker run helloysd/modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+  docker run helloysd/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
   ```
 
 If you want to load a local configure file, you need to mount a local folder onto container volume, 
 for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command, 
 
   ```bash
-  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
+  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
   ```
 
 
