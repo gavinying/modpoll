@@ -4,4 +4,4 @@ services:
   modpoll:
     build: .
     container_name: modpoll
-    command: --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+    command: modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
