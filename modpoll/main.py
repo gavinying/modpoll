@@ -69,7 +69,10 @@ def app(name="modpoll"):
                 else:
                     modbus_publish()
             if args.export:
-                modbus_export(args.export)
+                if args.timestamp:
+                    modbus_export(args.export, timestamp=now)
+                else:
+                    modbus_export(args.export)
         if args.diagnostics_rate > 0 and now > last_diag + args.diagnostics_rate:
             last_diag = now
             modbus_publish_diagnostics()
