@@ -1,7 +1,8 @@
 import logging
 import re
 import threading
-import time
+import datetime
+from datetime import timezone
 import sys
 import signal
 import json
@@ -19,6 +20,12 @@ event_exit = threading.Event()
 def _signal_handler(signal, frame):
     log.info(f'Exiting {sys.argv[0]}')
     event_exit.set()
+
+
+def get_utc_time():
+    dt = datetime.datetime.now(timezone.utc)
+    utc_time = dt.replace(tzinfo=timezone.utc)
+    return utc_time.timestamp()
 
 
 def app(name="modpoll"):
@@ -53,7 +60,7 @@ def app(name="modpoll"):
     last_check = 0
     last_diag = 0
     while not event_exit.is_set():
-        now = time.time()
+        now = get_utc_time()
         # routine check
         if now > last_check + args.rate:
             if last_check == 0:
