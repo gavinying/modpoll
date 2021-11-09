@@ -1,6 +1,6 @@
 ARG PYTHON_TAG="3.6-slim-buster"
 FROM python:$PYTHON_TAG
-ARG APP_TAG="0.4.5"
+ARG APP_TAG="0.4.6"
 WORKDIR /app
 
 RUN pip install modpoll==$APP_TAG

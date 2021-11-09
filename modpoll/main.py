@@ -8,7 +8,7 @@ import signal
 import json
 
 from modpoll.arg_parser import get_parser
-from modpoll.mqtt_task import mqttc_setup, mqttc_close, mqttc_receive, mqtt_initial_connection_made
+from modpoll.mqtt_task import mqttc_setup, mqttc_close, mqttc_receive
 from modpoll.modbus_task import modbus_setup, modbus_poll, modbus_publish, modbus_publish_diagnostics, modbus_export, \
     modbus_close, modbus_write_coil, modbus_write_register
 
@@ -70,7 +70,7 @@ def app(name="modpoll"):
             last_check = now
             log.info(f" ====== modpoll polling at rate:{args.rate}s, actual:{elapsed}s ======")
             modbus_poll()
-            if mqtt_initial_connection_made:
+            if args.mqtt_host:
                 if args.timestamp:
                     modbus_publish(timestamp=now)
                 else:
