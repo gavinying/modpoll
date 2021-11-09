@@ -10,7 +10,7 @@ from paho.mqtt import MQTTException
 args = None
 log = None
 mqttc = None
-initial_connection_made = False
+mqtt_initial_connection_made = False
 rx_queue = Queue(maxsize=1000)
 
 
@@ -113,8 +113,8 @@ def mqttc_setup(config):
         # start loop - let paho manage connection
         mqttc.loop_start()
 
-        global initial_connection_made
-        initial_connection_made = True
+        global mqtt_initial_connection_made
+        mqtt_initial_connection_made = True
         return True
 
     except Exception as ex:
