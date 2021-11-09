@@ -61,7 +61,7 @@ def app(name="modpoll"):
             else:
                 elapsed = round(now - last_check, 6)
             last_check = now
-            log.info(f"\n === modpoll polling at rate:{args.rate}s, actual:{elapsed}s ===")
+            log.info(f" ====== modpoll polling at rate:{args.rate}s, actual:{elapsed}s ======")
             modbus_poll()
             if mqtt_initial_connection_made:
                 if args.timestamp:

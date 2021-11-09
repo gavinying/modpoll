@@ -395,6 +395,7 @@ def modbus_print():
             row = [ref.name, ref.unit, ref.address, ref.val]
             table.add_row(row)
         print(table)
+    print()
 
 
 def modbus_publish(timestamp=None, on_change=False):
