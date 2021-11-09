@@ -63,8 +63,11 @@ def app(name="modpoll"):
             last_check = now
             log.info(f"\n === modpoll polling at rate:{args.rate}s, actual:{elapsed}s ===")
             modbus_poll()
-            if args.mqtt_host:
-                modbus_publish()
+            if mqtt_initial_connection_made:
+                if args.timestamp:
+                    modbus_publish(timestamp=now)
+                else:
+                    modbus_publish()
             if args.export:
                 modbus_export(args.export)
         if args.diagnostics_rate > 0 and now > last_diag + args.diagnostics_rate:

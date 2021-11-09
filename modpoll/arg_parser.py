@@ -54,5 +54,6 @@ def get_parser():
                         help='Automatically remove poller if modbus communication has failed 3 times.')
     parser.add_argument('--loglevel', default='INFO', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Set log level, Defaults to INFO')
-
+    parser.add_argument('--timestamp', action='store_true',
+                        help='Add timestamp to the result')
     return parser

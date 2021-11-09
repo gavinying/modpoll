@@ -412,7 +412,7 @@ def modbus_publish(timestamp=None, on_change=False):
             else:
                 payload[f'{ref.name}'] = ref.val
         if timestamp:
-            payload['timestamp'] = timestamp
+            payload['timestamp_ms'] = int(timestamp * 1000)
         topic = f"{args.mqtt_topic_prefix}{dev.name}"
         mqttc_publish(topic, json.dumps(payload))
 
@@ -425,9 +425,15 @@ def modbus_publish_diagnostics():
         mqttc_publish(topic, json.dumps(payload))
 
 
-def modbus_export(file):
-    if not file.endswith(".csv"):
-        file = file + ".csv"
+def modbus_export(file, timestamp=None):
+    if timestamp:
+        if file.endswith(".csv"):
+            file = file[:-4]
+        file += "_" + str(int(timestamp*1000))
+        file += ".csv"
+    else:
+        if not file.endswith(".csv"):
+            file += ".csv"
     with open(file, 'w') as f:
         writer = csv.writer(f)
         for dev in deviceList:
