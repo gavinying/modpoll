@@ -415,7 +415,7 @@ def modbus_publish(timestamp=None, on_change=False):
         if timestamp:
             payload['timestamp_ms'] = int(timestamp * 1000)
         topic = f"{args.mqtt_topic_prefix}{dev.name}"
-        mqttc_publish(topic, json.dumps(payload))
+        mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
 
 
 def modbus_publish_diagnostics():
@@ -423,7 +423,7 @@ def modbus_publish_diagnostics():
         log.debug(f"publishing diagnostics for device {dev.name} ...")
         payload = {'pollCount': dev.pollCount, 'errorCount': dev.errorCount}
         topic = f"{args.mqtt_topic_prefix}diagnostics/{dev.name}"
-        mqttc_publish(topic, json.dumps(payload))
+        mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
 
 
 def modbus_export(file, timestamp=None):
