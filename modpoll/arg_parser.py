@@ -32,6 +32,8 @@ def get_parser():
                         help='MQTT server address. Skip MQTT setup if not specified')
     parser.add_argument('--mqtt-port', default=1883, type=int,
                         help='1883 for non-TLS or 8883 for TLS, Defaults to 1883')
+    parser.add_argument('--mqtt-clientid', default=None,
+                        help='MQTT client name, If qos > 0, set unique name for multiple clients')
     parser.add_argument('--mqtt-topic-prefix', default='modpoll/',
                         help='Topic prefix for MQTT subscribing/publishing. Defaults to "modpoll/"')
     parser.add_argument('--mqtt-qos', default=0, type=int, choices=[0, 1, 2],

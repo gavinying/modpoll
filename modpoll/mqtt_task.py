@@ -75,8 +75,15 @@ def mqttc_setup(config):
     global log
     log = logging.getLogger(__name__)
     try:
+        if args.mqtt_clientid is None:
+            if args.mqtt_qos == 0:
+                clientid = ""
+            else:
+                clientid = socket.gethostname()
+        else:
+            clientid = args.mqtt_clientid
         global mqttc
-        mqttc = mqtt.Client(socket.gethostname(), clean_session=(args.mqtt_qos == 0))
+        mqttc = mqtt.Client(clientid, clean_session=(args.mqtt_qos == 0))
         if args.mqtt_use_tls:
             if args.mqtt_tls_version == "tlsv1.2":
                 tlsVersion = ssl.PROTOCOL_TLSv1_2
