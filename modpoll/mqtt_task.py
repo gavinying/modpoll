@@ -103,7 +103,7 @@ def mqttc_setup(config):
                           tls_version=tlsVersion, ciphers=None)
 
         if args.mqtt_user:
-            mqttc.username_pw_set(args.mqtt_user, args.mqtt_password)
+            mqttc.username_pw_set(args.mqtt_user, args.mqtt_pass)
 
         mqttc.on_message = _on_message
         mqttc.on_connect = _on_connect

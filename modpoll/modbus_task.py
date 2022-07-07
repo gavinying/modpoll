@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import requests
+import time
 
 from pymodbus.client.sync import ModbusSerialClient
 from pymodbus.client.sync import ModbusTcpClient
@@ -338,6 +339,8 @@ def modbus_poll():
     if not master:
         return
     master.connect()
+    time.sleep(args.delay)
+    log.debug(f"Master connected. Delay of {args.delay} seconds.")
     for dev in deviceList:
         log.debug(f"polling device {dev.name} ...")
         for p in dev.pollerList:
@@ -356,6 +359,8 @@ def modbus_write_coil(device_name, address: int, value):
     if not master:
         return False
     master.connect()
+    time.sleep(args.delay)
+    log.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
             log.info(f"Writing coil(s): device={device_name}, address={address}, value={value}")
@@ -372,6 +377,8 @@ def modbus_write_register(device_name, address: int, value):
     if not master:
         return False
     master.connect()
+    time.sleep(args.delay)
+    log.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
             log.info(f"Writing register(s): device={device_name}, address={address}, value={value}")
