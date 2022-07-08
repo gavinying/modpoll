@@ -419,10 +419,14 @@ def modbus_publish(timestamp=None, on_change=False):
                 payload[f'{ref.name}|{ref.unit}'] = ref.val
             else:
                 payload[f'{ref.name}'] = ref.val
+            if args.mqtt_single:
+                topic = f"{args.mqtt_topic_prefix}{dev.name}/{ref.name}"
+                mqttc_publish(topic, ref.val, qos=args.mqtt_qos)
         if timestamp:
             payload['timestamp_ms'] = int(timestamp * 1000)
-        topic = f"{args.mqtt_topic_prefix}{dev.name}"
-        mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
+        if not args.mqtt_single:
+            topic = f"{args.mqtt_topic_prefix}{dev.name}"
+            mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
 
 
 def modbus_publish_diagnostics():
