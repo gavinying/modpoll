@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import requests
+import time
 
 from pymodbus.client.sync import ModbusSerialClient
 from pymodbus.client.sync import ModbusTcpClient
@@ -338,6 +339,8 @@ def modbus_poll():
     if not master:
         return
     master.connect()
+    time.sleep(args.delay)
+    log.debug(f"Master connected. Delay of {args.delay} seconds.")
     for dev in deviceList:
         log.debug(f"polling device {dev.name} ...")
         for p in dev.pollerList:
@@ -356,6 +359,8 @@ def modbus_write_coil(device_name, address: int, value):
     if not master:
         return False
     master.connect()
+    time.sleep(args.delay)
+    log.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
             log.info(f"Writing coil(s): device={device_name}, address={address}, value={value}")
@@ -372,6 +377,8 @@ def modbus_write_register(device_name, address: int, value):
     if not master:
         return False
     master.connect()
+    time.sleep(args.delay)
+    log.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
             log.info(f"Writing register(s): device={device_name}, address={address}, value={value}")
@@ -412,10 +419,14 @@ def modbus_publish(timestamp=None, on_change=False):
                 payload[f'{ref.name}|{ref.unit}'] = ref.val
             else:
                 payload[f'{ref.name}'] = ref.val
+            if args.mqtt_single:
+                topic = f"{args.mqtt_topic_prefix}{dev.name}/{ref.name}"
+                mqttc_publish(topic, ref.val, qos=args.mqtt_qos)
         if timestamp:
             payload['timestamp_ms'] = int(timestamp * 1000)
-        topic = f"{args.mqtt_topic_prefix}{dev.name}"
-        mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
+        if not args.mqtt_single:
+            topic = f"{args.mqtt_topic_prefix}{dev.name}"
+            mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
 
 
 def modbus_publish_diagnostics():

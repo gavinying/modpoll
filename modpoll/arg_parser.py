@@ -58,4 +58,8 @@ def get_parser():
                         help='Set log level, Defaults to INFO')
     parser.add_argument('--timestamp', action='store_true',
                         help='Add timestamp to the result')
+    parser.add_argument('--delay', default=0, type=int,
+                        help='Time to delay sending first request in seconds after connecting. Default to 0')
+    parser.add_argument('--mqtt-single', action='store_true',
+                        help='Publish each value in a single topic. If not specified groups all values in a single topic.')
     return parser
