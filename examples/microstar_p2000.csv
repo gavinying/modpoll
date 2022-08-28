@@ -1,0 +1,13 @@
+device,microstar_p2000,1,,,
+poll,holding_register,32784,2,BE_BE,
+ref,(current) total import active energy,32784,float32,r,kWh
+poll,holding_register,32800,2,BE_BE,
+ref,(current) total export active energy,32800,float32,r,kWh
+poll,holding_register,42514,6,BE_BE,
+ref,Phase A voltage,42514,float32,r,V
+ref,Phase B voltage,42516,float32,r,V
+ref,Phase C voltage,42518,float32,r,V
+poll,holding_register,42530,6,BE_BE,
+ref,Phase A current,42530,float32,r,A
+ref,Phase B current,42532,float32,r,A
+ref,Phase C current,42534,float32,r,A
