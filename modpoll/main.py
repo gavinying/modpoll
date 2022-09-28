@@ -69,6 +69,8 @@ def app(name="modpoll"):
             last_check = now
             log.info(f" ====== modpoll polling at rate:{args.rate}s, actual:{elapsed}s ======")
             modbus_poll()
+            if event_exit.is_set():
+                break
             if args.mqtt_host:
                 if args.timestamp:
                     modbus_publish(timestamp=now)
@@ -82,6 +84,9 @@ def app(name="modpoll"):
         if args.diagnostics_rate > 0 and now > last_diag + args.diagnostics_rate:
             last_diag = now
             modbus_publish_diagnostics()
+        if event_exit.is_set():
+            break
+        # Check if receive mqtt request
         topic, payload = mqttc_receive()
         if topic and payload:
             device_name = re.search(f"^{args.mqtt_topic_prefix}([^/\n]*)/set", topic).group(1)
@@ -97,6 +102,7 @@ def app(name="modpoll"):
                     log.warning(f"Fail to parse json message: {payload}")
         if args.once:
             event_exit.set()
+            break
     modbus_close()
     mqttc_close()
 
