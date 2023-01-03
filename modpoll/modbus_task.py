@@ -114,11 +114,23 @@ class Poller:
                 elif "int32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_int())
                     cur_ref += ref.length
+                elif "uint64" == ref.dtype:
+                    ref.update_value(decoder.decode_64bit_uint())
+                    cur_ref += ref.length
+                elif "int64" == ref.dtype:
+                    ref.update_value(decoder.decode_64bit_int())
+                    cur_ref += ref.length
                 elif "float32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_float())
                     cur_ref += ref.length
+                elif "float64" == ref.dtype:
+                    ref.update_value(decoder.decode_64bit_float())
+                    cur_ref += ref.length
                 elif "bool" == ref.dtype:
                     ref.update_value(decoder.decode_bits())
+                    cur_ref += ref.length
+                elif "bool16" == ref.dtype:
+                    ref.update_value(decoder.decode_bits() + decoder.decode_bits())
                     cur_ref += ref.length
                 elif ref.dtype.startswith("string"):
                     ref.update_value(decoder.decode_string())
@@ -171,9 +183,17 @@ class Reference:
             self.length = 2
         elif "uint32" in dtype:
             self.length = 2
+        elif "int64" in dtype:
+            self.length = 4
+        elif "uint64" in dtype:
+            self.length = 4
         elif "float32" == dtype:
             self.length = 2
+        elif "float64" == dtype:
+            self.length = 4
         elif "bool" == dtype:
+            self.length = 1
+        elif "bool16" == dtype:
             self.length = 1
         elif dtype.startswith("string"):
             try:
