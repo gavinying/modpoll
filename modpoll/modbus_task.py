@@ -208,9 +208,9 @@ class Reference:
         elif "float64" == dtype:
             self.length = 4
         elif "bool" == dtype:
-            self.length = 1
+            self.length = 8
         elif "bool16" == dtype:
-            self.length = 1
+            self.length = 16
         elif dtype.startswith("string"):
             try:
                 self.length = int(dtype[6:9])
@@ -435,7 +435,11 @@ def modbus_print():
             continue
         table = PrettyTable(['name', 'unit', 'address', 'value'])
         for ref in dev.references.values():
-            row = [ref.name, ref.unit, ref.address, ref.val]
+            if isinstance(ref.val, float):
+                value = f"{ref.val:g}"
+            else:
+                value = ref.val
+            row = [ref.name, ref.unit, ref.address, value]
             table.add_row(row)
         print(table)
     print("Done.\n")
