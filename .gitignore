@@ -131,6 +131,3 @@ dmypy.json
 # added by ysd
 .idea/
 .vscode/
-/*.csv
-/config/
-/public/

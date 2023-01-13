@@ -84,17 +84,33 @@ class Poller:
                 log.debug(result)
                 return
             if "BE_BE" == self.endian.upper():
-                decoder = BinaryPayloadDecoder.fromRegisters(
-                    data, Endian.Big, wordorder=Endian.Big)
+                if self.fc == 1 or self.fc == 2:
+                    decoder = BinaryPayloadDecoder.fromCoils(
+                        data, byteorder=Endian.Big, wordorder=Endian.Big)
+                else:
+                    decoder = BinaryPayloadDecoder.fromRegisters(
+                        data, byteorder=Endian.Big, wordorder=Endian.Big)
             elif "LE_BE" == self.endian.upper():
-                decoder = BinaryPayloadDecoder.fromRegisters(
-                    data, Endian.Little, wordorder=Endian.Big)
+                if self.fc == 1 or self.fc == 2:
+                    decoder = BinaryPayloadDecoder.fromCoils(
+                        data, byteorder=Endian.Little, wordorder=Endian.Big)
+                else:
+                    decoder = BinaryPayloadDecoder.fromRegisters(
+                        data, byteorder=Endian.Little, wordorder=Endian.Big)
             elif "LE_LE" == self.endian.upper():
-                decoder = BinaryPayloadDecoder.fromRegisters(
-                    data, Endian.Little, wordorder=Endian.Little)
+                if self.fc == 1 or self.fc == 2:
+                    decoder = BinaryPayloadDecoder.fromCoils(
+                        data, byteorder=Endian.Little, wordorder=Endian.Little)
+                else:
+                    decoder = BinaryPayloadDecoder.fromRegisters(
+                        data, byteorder=Endian.Little, wordorder=Endian.Little)
             else:
-                decoder = BinaryPayloadDecoder.fromRegisters(
-                    data, Endian.Big, wordorder=Endian.Little)
+                if self.fc == 1 or self.fc == 2:
+                    decoder = BinaryPayloadDecoder.fromCoils(
+                        data, byteorder=Endian.Big, wordorder=Endian.Little)
+                else:
+                    decoder = BinaryPayloadDecoder.fromRegisters(
+                        data, byteorder=Endian.Big, wordorder=Endian.Little)
             cur_ref = self.start_address
             for ref in self.readableReferences:
                 while cur_ref < ref.address and cur_ref < self.start_address + self.size:
