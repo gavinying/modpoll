@@ -10,7 +10,7 @@ stages:
 variables:
   APP_NAME: "modpoll"
   APP_TAG: "${CI_COMMIT_TAG}"
-  PYTHON_TAG: "3.8-slim-buster"
+  PYTHON_TAG: "3.8-slim"
   PIP_CACHE_DIR: "${APP_TAG}/.cache/pip"
 
 cache:
@@ -23,7 +23,7 @@ cache:
     - .cache/pip
     - poetry.lock
 
-image: helloysd/poetry:$PYTHON_TAG
+image: helloysd/poetry:1.3.2-python3.8-slim
 
 # build jobs ------------------------
 
