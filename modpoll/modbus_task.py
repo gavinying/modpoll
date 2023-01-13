@@ -5,8 +5,8 @@ import math
 import requests
 import time
 
-from pymodbus.client.sync import ModbusSerialClient
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusSerialClient
+from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
@@ -59,22 +59,22 @@ class Poller:
             data = None
             if self.fc == 1:
                 result = master.read_coils(
-                    self.start_address, self.size, unit=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid)
                 if not result.isError():
                     data = result.bits
             elif self.fc == 2:
                 result = master.read_discrete_inputs(
-                    self.start_address, self.size, unit=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid)
                 if not result.isError():
                     data = result.bits
             elif self.fc == 3:
                 result = master.read_holding_registers(
-                    self.start_address, self.size, unit=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid)
                 if not result.isError():
                     data = result.registers
             elif self.fc == 4:
                 result = master.read_input_registers(
-                    self.start_address, self.size, unit=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid)
                 if not result.isError():
                     data = result.registers
             if not data:
@@ -385,9 +385,9 @@ def modbus_write_coil(device_name, address: int, value):
         if d.name == device_name:
             log.info(f"Writing coil(s): device={device_name}, address={address}, value={value}")
             if isinstance(value, int):
-                result = master.write_coil(address, value, unit=d.devid)
+                result = master.write_coil(address, value, slave=d.devid)
             elif isinstance(value, list):
-                result = master.write_coils(address, value, unit=d.devid)
+                result = master.write_coils(address, value, slave=d.devid)
             return result.function_code < 0x80
     master.close()
     return False
@@ -403,9 +403,9 @@ def modbus_write_register(device_name, address: int, value):
         if d.name == device_name:
             log.info(f"Writing register(s): device={device_name}, address={address}, value={value}")
             if isinstance(value, int):
-                result = master.write_register(address, value, unit=d.devid)
+                result = master.write_register(address, value, slave=d.devid)
             elif isinstance(value, list):
-                result = master.write_registers(address, value, unit=d.devid)
+                result = master.write_registers(address, value, slave=d.devid)
             return result.function_code < 0x80
     master.close()
     return False

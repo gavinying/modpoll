@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "modpoll"
-version = "0.4.9"
+version = "0.5.0"
 description = "A New Command Line Tool for Modbus"
 authors = ["Ying Shaodong <helloysd@foxmail.com>"]
 readme = "README.md"
@@ -12,22 +12,18 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
-pip = "^21.2"
+python = "^3.8"
 importlib-metadata = {version = "^1.0", python = "<3.8"}
-pymodbus = "^2.5.2"
+pymodbus = "^3.0.2"
 paho-mqtt = "^1.6.1"
-prettytable = "^2.4.0"
-requests = "^2.26.0"
+prettytable = "^3.6.0"
+requests = "^2.28.1"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
-pytest-cov = "^2.11.1"
-#black = "^20.8b1"
-#isort = "^5.8.0"
-#flake8 = "^3.9.0"
-bandit = "^1.7.0"
-safety = "^1.10.3"
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
+bandit = "^1.7.4"
+safety = "^2.3.0"
 sphinx = "^4.2.0"
 sphinx-argparse = "^0.3.1"
 sphinx-rtd-theme = "^1.0.0"
