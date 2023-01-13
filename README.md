@@ -47,7 +47,7 @@ In fact, *modpoll* helps to bridge between the traditional fieldbus world and th
 
 ## Installation
 
-This program tested on python 3.6+, the package is available in the Python Package Index, users can easily install it using `pip` or `pipx`.
+This program tested on python 3.8+, the package is available in the Python Package Index, users can easily install it using `pip` or `pipx`.
 
 ### Using PIP
 

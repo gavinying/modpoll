@@ -5,8 +5,8 @@ import math
 import requests
 import time
 
-from pymodbus.client.sync import ModbusSerialClient
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusSerialClient
+from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
@@ -59,22 +59,22 @@ class Poller:
             data = None
             if self.fc == 1:
                 result = master.read_coils(
-                    self.start_address, self.size, unit=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid)
                 if not result.isError():
                     data = result.bits
             elif self.fc == 2:
                 result = master.read_discrete_inputs(
-                    self.start_address, self.size, unit=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid)
                 if not result.isError():
                     data = result.bits
             elif self.fc == 3:
                 result = master.read_holding_registers(
-                    self.start_address, self.size, unit=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid)
                 if not result.isError():
                     data = result.registers
             elif self.fc == 4:
                 result = master.read_input_registers(
-                    self.start_address, self.size, unit=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid)
                 if not result.isError():
                     data = result.registers
             if not data:
@@ -84,17 +84,33 @@ class Poller:
                 log.debug(result)
                 return
             if "BE_BE" == self.endian.upper():
-                decoder = BinaryPayloadDecoder.fromRegisters(
-                    data, Endian.Big, wordorder=Endian.Big)
+                if self.fc == 1 or self.fc == 2:
+                    decoder = BinaryPayloadDecoder.fromCoils(
+                        data, byteorder=Endian.Big, wordorder=Endian.Big)
+                else:
+                    decoder = BinaryPayloadDecoder.fromRegisters(
+                        data, byteorder=Endian.Big, wordorder=Endian.Big)
             elif "LE_BE" == self.endian.upper():
-                decoder = BinaryPayloadDecoder.fromRegisters(
-                    data, Endian.Little, wordorder=Endian.Big)
+                if self.fc == 1 or self.fc == 2:
+                    decoder = BinaryPayloadDecoder.fromCoils(
+                        data, byteorder=Endian.Little, wordorder=Endian.Big)
+                else:
+                    decoder = BinaryPayloadDecoder.fromRegisters(
+                        data, byteorder=Endian.Little, wordorder=Endian.Big)
             elif "LE_LE" == self.endian.upper():
-                decoder = BinaryPayloadDecoder.fromRegisters(
-                    data, Endian.Little, wordorder=Endian.Little)
+                if self.fc == 1 or self.fc == 2:
+                    decoder = BinaryPayloadDecoder.fromCoils(
+                        data, byteorder=Endian.Little, wordorder=Endian.Little)
+                else:
+                    decoder = BinaryPayloadDecoder.fromRegisters(
+                        data, byteorder=Endian.Little, wordorder=Endian.Little)
             else:
-                decoder = BinaryPayloadDecoder.fromRegisters(
-                    data, Endian.Big, wordorder=Endian.Little)
+                if self.fc == 1 or self.fc == 2:
+                    decoder = BinaryPayloadDecoder.fromCoils(
+                        data, byteorder=Endian.Big, wordorder=Endian.Little)
+                else:
+                    decoder = BinaryPayloadDecoder.fromRegisters(
+                        data, byteorder=Endian.Big, wordorder=Endian.Little)
             cur_ref = self.start_address
             for ref in self.readableReferences:
                 while cur_ref < ref.address and cur_ref < self.start_address + self.size:
@@ -192,9 +208,9 @@ class Reference:
         elif "float64" == dtype:
             self.length = 4
         elif "bool" == dtype:
-            self.length = 1
+            self.length = 8
         elif "bool16" == dtype:
-            self.length = 1
+            self.length = 16
         elif dtype.startswith("string"):
             try:
                 self.length = int(dtype[6:9])
@@ -385,9 +401,9 @@ def modbus_write_coil(device_name, address: int, value):
         if d.name == device_name:
             log.info(f"Writing coil(s): device={device_name}, address={address}, value={value}")
             if isinstance(value, int):
-                result = master.write_coil(address, value, unit=d.devid)
+                result = master.write_coil(address, value, slave=d.devid)
             elif isinstance(value, list):
-                result = master.write_coils(address, value, unit=d.devid)
+                result = master.write_coils(address, value, slave=d.devid)
             return result.function_code < 0x80
     master.close()
     return False
@@ -403,9 +419,9 @@ def modbus_write_register(device_name, address: int, value):
         if d.name == device_name:
             log.info(f"Writing register(s): device={device_name}, address={address}, value={value}")
             if isinstance(value, int):
-                result = master.write_register(address, value, unit=d.devid)
+                result = master.write_register(address, value, slave=d.devid)
             elif isinstance(value, list):
-                result = master.write_registers(address, value, unit=d.devid)
+                result = master.write_registers(address, value, slave=d.devid)
             return result.function_code < 0x80
     master.close()
     return False
@@ -419,7 +435,11 @@ def modbus_print():
             continue
         table = PrettyTable(['name', 'unit', 'address', 'value'])
         for ref in dev.references.values():
-            row = [ref.name, ref.unit, ref.address, ref.val]
+            if isinstance(ref.val, float):
+                value = f"{ref.val:g}"
+            else:
+                value = ref.val
+            row = [ref.name, ref.unit, ref.address, value]
             table.add_row(row)
         print(table)
     print("Done.\n")
