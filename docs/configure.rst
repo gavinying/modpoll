@@ -15,7 +15,7 @@ Here is the basic structure of modbus configure file.
    :linenos:
 
 
-Example 1: Modbus TCP Device Simulator (modsim device)
+Example 1: Modsim device (Modbus TCP device)
 --------------------------------------------------------
 
 This online Modbus TCP device simulator is designed for user to quickly test the modpoll functions.
@@ -34,6 +34,6 @@ SCPM-S6 is designed as a sub-circuit power meter to monitor multiple electrical 
 
 Here is an example of modbus configure file for SCPM-S6.
 
-.. literalinclude:: ../examples/scpms6.csv
+.. literalinclude:: ../contrib/eniwise/scpms6.csv
    :language: default
    :linenos:

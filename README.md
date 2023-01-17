@@ -241,7 +241,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
 - Connect to Modbus RTU device 
 
   ```bash
-  modpoll --rtu /dev/ttyUSB0 --rtu-baud 9600 --config examples/scpms6.csv
+  modpoll --rtu /dev/ttyUSB0 --rtu-baud 9600 --config contrib/eniwise/scpms6.csv
   ```
 
 - Connect to Modbus TCP device and publish data to MQTT broker 

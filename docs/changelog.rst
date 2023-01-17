@@ -5,7 +5,7 @@ Change log
 #####
 
  * fix Coil type issue 
- * support bool16 data type
+ * add bool16 data type
  * add "--mqtt-single" option for easy integration with Home Assistant/OpenHAB 
  * improve documents
  * bugfixes;

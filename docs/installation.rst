@@ -1,7 +1,7 @@
 Installation
 ============
 
-This program is tested on python 3.6+.
+This program is tested on python 3.8+.
 
 Install with pip
 -----------------
