@@ -84,71 +84,76 @@ pipx upgrade modpoll
 
 As the name tells, *modpoll* is a tool for communicating with Modbus devices, so ideally it makes more sense if you have a real Modbus device on hand for the following test, but it is OK if you don't, we provide a virtual Modbus TCP device deployed at `modsim.topmaker.net:502` for your quick testing purpose. 
 
-Let's start expoloring *modpoll* with *modsim* device.
-
-> the modsim code is also available [here](https://github.com/gavinying/modsim)
-
-
-### Prepare Modbus configure file
-
-Before running *modpoll* tool, we need to prepare a Modbus configuration file, which describes the polling pattern and device's register map according to vendor's documents. 
-
-The configuration can be either a local file or a remote URL resource. 
-
-For the *modsim* device, we will use the following [configuration file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) as an example. 
-
-
-```CSV
-device,modsim001,1
-poll,holding_register,40001,5,BE_BE
-ref,register1,40001,uint16,rw,
-ref,register2,40002,uint16,rw,
-ref,register3,40003,uint16,rw,
-ref,register4,40004,uint16,rw,
-ref,register5,40005,uint16,rw,
-device,modsim002,2
-poll,coil,1,4,BE_BE
-ref,coil1-8,1,bool,rw,
-ref,coil9-16,2,bool,rw,
-ref,coil17-24,3,bool,rw,
-ref,coil25-32,4,bool,rw,
-```
-
-This configuration tells *modpoll* to do the following for each poll,
-
-- Read the first 5 holding registers from device `modsim001` (address = `1`) 
-- Read the first 32 coils from device `modsim002` (address = `2`)
-
-
-### Poll online device (modsim)
-
-Run the following command in a terminal, 
+Let's start expoloring *modpoll* with *modsim* device, run the following command to get a first glimpse,
 
 ```bash
 modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
-
 
 <p align="center">
   <img src="docs/assets/screenshot-modpoll.png">
 </p>
 
 
+> the modsim code is also available [here](https://github.com/gavinying/modsim)
+
+
+### Prepare Modbus configure file
+
+The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) for *modsim* device.
+
+```CSV
+device,modsim001,1,,
+poll,holding_register,40000,20,BE_BE
+ref,value1,40000,uint16,rw
+ref,value2,40001,uint16,rw
+ref,value3,40002,uint16,rw
+ref,value4,40003,uint16,rw
+ref,value5,40004,int16,rw
+ref,value6,40005,int16,rw
+ref,value7,40006,int16,rw
+ref,value8,40007,int16,rw
+ref,value9,40008,uint32,rw
+ref,value10,40010,uint32,rw
+ref,value11,40012,int32,rw
+ref,value12,40014,int32,rw
+ref,value13,40016,float32,rw
+ref,value14,40018,float32,rw
+poll,coil,0,24,BE_BE
+ref,coil1-8,0,bool,rw
+ref,coil9-24,8,bool16,rw
+```
+
+This configuration tells *modpoll* to do the following for each poll,
+
+- Read `20` holding registers (register address: `40000-40019`) and parse data accordingly; 
+- Read `24` coils (coil address: `0-23`) and parse data accordingly; 
+
+
+Normally, we need to prepare a Modbus configuration file for your device before running *modpoll* tool, which describes the ideal polling pattern and device's register mappings according to vendor's documents. 
+
+The configuration can be either a local file or a remote public URL resource. 
+
 
 ### Poll local device (modsim)
 
-If you prefer a local test or behind a company firewall, you can launch your own device simulator by running `modsim` locally, 
+If you are blocked by company firewall for online device or prefer a local test, you can launch your own device simulator by running *modsim* locally, 
 
 ```bash
 docker run -p 5020:5020 helloysd/modsim
 ```
 
-> Use `sudo` before the docker command if you want to use the standard port `502`.
-
 It will create a virtual Modbus TCP device running at `localhost:5020`, and then you can poll it using *modpoll* tool, 
 
 ```bash
 modpoll --tcp localhost --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+```
+
+> Use `sudo` before the docker command if you want to use the standard port `502`.
+
+```bash
+sudo docker run -p 502:5020 helloysd/modsim
+modpoll --tcp localhost --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
 
 
@@ -210,7 +215,7 @@ A docker image has been provided for user to directly run the program without lo
 
 It shows the version of the program by default.
 
-Similar to the above `modsim` test, we can poll the first 5 holding registers with `docker run`,
+Similar to the above *modsim* test, we can poll the first 5 holding registers with `docker run`,
 
   ```bash
   docker run helloysd/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
