@@ -100,7 +100,7 @@ modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gav
 
 ### Prepare Modbus configure file
 
-The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) for *modsim* device.
+The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) for *modsim* device as following, 
 
 ```CSV
 device,modsim001,1,,
@@ -121,7 +121,8 @@ ref,value13,40016,float32,rw
 ref,value14,40018,float32,rw
 poll,coil,0,24,BE_BE
 ref,coil1-8,0,bool,rw
-ref,coil9-24,8,bool16,rw
+ref,coil9-16,0,bool,rw
+ref,coil17-24,0,bool,rw
 ```
 
 This configuration tells *modpoll* to do the following for each poll,
@@ -130,10 +131,11 @@ This configuration tells *modpoll* to do the following for each poll,
 - Read `24` coils (coil address: `0-23`) and parse data accordingly; 
 
 
-Normally, we need to prepare a Modbus configuration file for your device before running *modpoll* tool, which describes the ideal polling pattern and device's register mappings according to vendor's documents. 
+Normally, you need to customize a Modbus configuration file for your own device before running *modpoll* tool, which defines the optimal polling patterns and register mappings according to device vendor's documents. 
 
 The configuration can be either a local file or a remote public URL resource. 
 
+> *Refer to the [documentation](https://helloysd.gitlab.io/modpoll/configure.html) site for more details.*
 
 ### Poll local device (modsim)
 
@@ -258,7 +260,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
 
 
 
-> *Please refer to the [documentation](https://helloysd.gitlab.io/modpoll) site for more details about the configuration and examples.*
+> *Refer to the [documentation](https://helloysd.gitlab.io/modpoll) site for more details about the configuration and examples.*
 
 
 

@@ -11,7 +11,7 @@ Here is the basic structure of modbus configure file.
 
 .. literalinclude:: ../examples/example.csv
    :language: default
-   :emphasize-lines: 8-10,23-25
+   :emphasize-lines: 8-10
    :linenos:
 
 
