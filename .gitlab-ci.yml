@@ -56,15 +56,7 @@ pytest:
     - external_pull_requests
     - tags
 
-# deploy jobs ------------------------
-
-pypi:
-  stage: deploy
-  script:
-    - poetry config pypi-token.pypi ${PYPI_TOKEN}
-    - poetry publish
-  only:
-    - tags
+# document jobs ------------------------
 
 pages:
   stage: document
@@ -73,6 +65,19 @@ pages:
   artifacts:
     paths:
       - public
+  only:
+    - master
+    - merge_requests
+    - external_pull_requests
+    - tags
+
+# deploy jobs ------------------------
+
+pypi:
+  stage: deploy
+  script:
+    - poetry config pypi-token.pypi ${PYPI_TOKEN}
+    - poetry publish
   only:
     - tags
 
