@@ -28,6 +28,9 @@ def get_utc_time():
 
 
 def app(name="modpoll"):
+
+    print("\nmodpoll - A New Command Line Tool for Modbus\n", flush=True)
+
     signal.signal(signal.SIGINT, _signal_handler)
 
     # parse args
