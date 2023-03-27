@@ -86,28 +86,28 @@ class Poller:
             if "BE_BE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
                     decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Big, wordorder=Endian.Big)
+                        data, byteorder=Endian.Big)
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
                         data, byteorder=Endian.Big, wordorder=Endian.Big)
             elif "LE_BE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
                     decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Little, wordorder=Endian.Big)
+                        data, byteorder=Endian.Little)
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
                         data, byteorder=Endian.Little, wordorder=Endian.Big)
             elif "LE_LE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
                     decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Little, wordorder=Endian.Little)
+                        data, byteorder=Endian.Little)
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
                         data, byteorder=Endian.Little, wordorder=Endian.Little)
             else:
                 if self.fc == 1 or self.fc == 2:
                     decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Big, wordorder=Endian.Little)
+                        data, byteorder=Endian.Big)
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
                         data, byteorder=Endian.Big, wordorder=Endian.Little)
