@@ -291,7 +291,7 @@ def parse_config(csv_reader):
             elif "input_register" == fc:
                 function_code = 4
                 if size > 123:
-                    log.error(f"Too many registers (max. 123). Ignoring poller.")
+                    log.error(f"Too many registers (max. 123): {size}. Ignoring poller.")
                     continue
             else:
                 log.warning(f"Unknown function code ({fc}) ignoring poller.")
@@ -336,7 +336,7 @@ def load_config(file):
             decoded_content = response.content.decode('utf-8')
             csv_reader = csv.reader(decoded_content.splitlines(), delimiter=',')
             parse_config(csv_reader)
-    except requests.RequestException as exception:
+    except requests.RequestException:
         with open(file, "r") as f:
             f.seek(0)
             csv_reader = csv.reader(f)
