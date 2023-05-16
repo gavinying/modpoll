@@ -387,8 +387,9 @@ def modbus_poll():
                     return
                 event_exit.wait(timeout=args.interval)
     master.close()
-    # Always printout result
-    modbus_print()
+    # printout result, if -p or --print-result are set
+    if args.print_result:
+        modbus_print()
 
 
 def modbus_write_coil(device_name, address: int, value):

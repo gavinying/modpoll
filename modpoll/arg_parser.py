@@ -28,6 +28,8 @@ def get_parser():
                         help='Response time-out seconds for MODBUS devices, Defaults to 3.0')
     parser.add_argument('-o', '--export', default=None,
                         help='The file name to export references/registers')
+    parser.add_argument('-p', '--print-result', action='store_true',
+                        help='Print received data.')
     parser.add_argument('--mqtt-host', default=None,
                         help='MQTT server address. Skip MQTT setup if not specified')
     parser.add_argument('--mqtt-port', default=1883, type=int,
@@ -50,6 +52,8 @@ def get_parser():
                         help="Path to ca keychain")
     parser.add_argument('--mqtt-tls-version', default=None, choices=['tlsv1.2', 'tlsv1.1', 'tlsv1'],
                         help='TLS protocol version, can be one of tlsv1.2 tlsv1.1 or tlsv1')
+    parser.add_argument('--mqtt-single', action='store_true',
+                        help='Publish each value in a single topic. If not specified groups all values in a single topic.')
     parser.add_argument('--diagnostics-rate', default=0, type=float,
                         help='Time in seconds as publishing period for each device diagnostics')
     parser.add_argument('--autoremove', action='store_true',
@@ -60,6 +64,4 @@ def get_parser():
                         help='Add timestamp to the result')
     parser.add_argument('--delay', default=0, type=int,
                         help='Time to delay sending first request in seconds after connecting. Default to 0')
-    parser.add_argument('--mqtt-single', action='store_true',
-                        help='Publish each value in a single topic. If not specified groups all values in a single topic.')
     return parser
