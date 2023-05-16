@@ -362,7 +362,7 @@ def modbus_setup(config, event):
         else:
             parity = "N"
         master = ModbusSerialClient(method="rtu", port=args.rtu, stopbits=1, bytesize=8, parity=parity,
-                                    baudrate=int(args.rtu_baud), reset_socket=True)
+                                    baudrate=int(args.rtu_baud), timeout=args.timeout, reset_socket=True)
     elif args.tcp:
         master = ModbusTcpClient(args.tcp, args.tcp_port, timeout=args.timeout, reset_socket=True)
     else:
