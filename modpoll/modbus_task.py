@@ -291,7 +291,7 @@ def parse_config(csv_reader):
             elif "input_register" == fc:
                 function_code = 4
                 if size > 123:
-                    log.error(f"Too many registers (max. 123). Ignoring poller.")
+                    log.error(f"Too many registers (max. 123): {size}. Ignoring poller.")
                     continue
             else:
                 log.warning(f"Unknown function code ({fc}) ignoring poller.")
@@ -336,7 +336,7 @@ def load_config(file):
             decoded_content = response.content.decode('utf-8')
             csv_reader = csv.reader(decoded_content.splitlines(), delimiter=',')
             parse_config(csv_reader)
-    except requests.RequestException as exception:
+    except requests.RequestException:
         with open(file, "r") as f:
             f.seek(0)
             csv_reader = csv.reader(f)
@@ -362,7 +362,7 @@ def modbus_setup(config, event):
         else:
             parity = "N"
         master = ModbusSerialClient(method="rtu", port=args.rtu, stopbits=1, bytesize=8, parity=parity,
-                                    baudrate=int(args.rtu_baud), reset_socket=True)
+                                    baudrate=int(args.rtu_baud), timeout=args.timeout, reset_socket=True)
     elif args.tcp:
         master = ModbusTcpClient(args.tcp, args.tcp_port, timeout=args.timeout, reset_socket=True)
     else:
@@ -387,8 +387,9 @@ def modbus_poll():
                     return
                 event_exit.wait(timeout=args.interval)
     master.close()
-    # Always printout result
-    modbus_print()
+    # printout result, if -p or --print-result are set
+    if args.print_result:
+        modbus_print()
 
 
 def modbus_write_coil(device_name, address: int, value):

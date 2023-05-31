@@ -9,7 +9,8 @@ import json
 
 from modpoll.arg_parser import get_parser
 from modpoll.mqtt_task import mqttc_setup, mqttc_close, mqttc_receive
-from modpoll.modbus_task import modbus_setup, modbus_poll, modbus_publish, modbus_publish_diagnostics, modbus_export, modbus_close, modbus_write_coil, modbus_write_register
+from modpoll.modbus_task import modbus_setup, modbus_poll, modbus_publish, modbus_publish_diagnostics, modbus_export, \
+    modbus_close, modbus_write_coil, modbus_write_register
 
 LOG_SIMPLE = "%(asctime)s | %(levelname).1s | %(name)s | %(message)s"
 log = None
@@ -98,7 +99,7 @@ def app(name="modpoll"):
                     reg = json.loads(payload)
                     if "coil" == reg["object_type"]:
                         if modbus_write_coil(device_name, reg["address"], reg["value"]):
-                            log.info(f"")
+                            log.info("")
                     elif "holding_register" == reg["object_type"]:
                         modbus_write_register(device_name, reg["address"], reg["value"])
                 except json.decoder.JSONDecodeError:
