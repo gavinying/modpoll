@@ -278,20 +278,20 @@ def parse_config(csv_reader):
                 if size > 2000:  # some implementations don't seem to support 2008 coils/inputs
                     log.error("Too many coils (max. 2000). Ignoring poller.")
                     continue
-            elif "input_status" == fc:
+            elif "discrete_input" == fc:
                 function_code = 2
                 if size > 2000:
-                    log.error("Too many inputs (max. 2000). Ignoring poller.")
+                    log.error("Too many discrete inputs (max. 2000). Ignoring poller.")
                     continue
             elif "holding_register" == fc:
                 function_code = 3
                 if size > 123:  # applies to TCP, RTU should support 125 registers. But let's be safe.
-                    log.error("Too many registers (max. 123). Ignoring poller.")
+                    log.error("Too many holding registers (max. 123). Ignoring poller.")
                     continue
             elif "input_register" == fc:
                 function_code = 4
                 if size > 123:
-                    log.error(f"Too many registers (max. 123): {size}. Ignoring poller.")
+                    log.error(f"Too many input registers (max. 123): {size}. Ignoring poller.")
                     continue
             else:
                 log.warning(f"Unknown function code ({fc}) ignoring poller.")

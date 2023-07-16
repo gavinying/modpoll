@@ -13,7 +13,7 @@
 # --------------------------
 # <device_name>: any string without spaces to describe the device
 # <device_id>: integer 1 to 254 to describe device ID
-# <object_type>: coil/input_status/holding_register/input_register
+# <object_type>: coil/discrete_input/holding_register/input_register
 # <start_address>: integer 0 to 65535 (The start address of Modbus registers to poll)
 # <size>: integer 0 to 65535 (No. of registers to poll and value must not exceed the limits of Modbus)
 # <endian>: byte_order and word_order e.g. BE_BE/BE_LE/LE_LE/LE_BE
