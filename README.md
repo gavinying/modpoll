@@ -104,31 +104,30 @@ The reason we can magically poll data from the online device *modsim* is because
 
 ```CSV
 device,modsim001,1,,
+poll,coil,0,16,BE_BE
+ref,coil01-08,0,bool,rw
+ref,coil09-16,8,bool,rw
 poll,holding_register,40000,20,BE_BE
-ref,value1,40000,uint16,rw
-ref,value2,40001,uint16,rw
-ref,value3,40002,uint16,rw
-ref,value4,40003,uint16,rw
-ref,value5,40004,int16,rw
-ref,value6,40005,int16,rw
-ref,value7,40006,int16,rw
-ref,value8,40007,int16,rw
-ref,value9,40008,uint32,rw
-ref,value10,40010,uint32,rw
-ref,value11,40012,int32,rw
-ref,value12,40014,int32,rw
-ref,value13,40016,float32,rw
-ref,value14,40018,float32,rw
-poll,coil,0,24,BE_BE
-ref,coil1-8,0,bool,rw
-ref,coil9-16,8,bool,rw
+ref,holding_reg01,40000,uint16,rw
+ref,holding_reg02,40001,uint16,rw
+ref,holding_reg03,40002,uint16,rw
+ref,holding_reg04,40003,uint16,rw
+ref,holding_reg05,40004,int16,rw
+ref,holding_reg06,40005,int16,rw
+ref,holding_reg07,40006,int16,rw
+ref,holding_reg08,40007,int16,rw
+ref,holding_reg09,40008,uint32,rw
+ref,holding_reg10,40010,uint32,rw
+ref,holding_reg11,40012,int32,rw
+ref,holding_reg12,40014,int32,rw
+ref,holding_reg13,40016,float32,rw
+ref,holding_reg14,40018,float32,rw
 ```
 
 This configuration tells *modpoll* to do the following for each poll,
 
+- Read `16` coils (coil address: `0-15`) and parse data accordingly; 
 - Read `20` holding registers (register address: `40000-40019`) and parse data accordingly; 
-- Read `24` coils (coil address: `0-23`) and parse data accordingly; 
-
 
 Normally, you need to customize a Modbus configuration file for your own device before running *modpoll* tool, which defines the optimal polling patterns and register mappings according to device vendor's documents. 
 
