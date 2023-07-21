@@ -5,7 +5,7 @@ As the name tells, *modpoll* is a tool for communicating with Modbus devices, so
 
 Test with modsim
 ------------------------
-  *modsim* is a very simple Modbus TCP device simulator deployed on cloud, it populates the first 100 registers for each type of Coil / Discrete input / Input register / Holding register, 
+  *modsim* is a very simple Modbus TCP device simulator deployed on cloud, it populates the first 100 registers for each type of Coil / Discrete input / Input register / Holding register,
 
   .. csv-table:: modsim register configuration
    :header: "Object type","Access","Size","Address Space"
@@ -16,7 +16,7 @@ Test with modsim
    "Input Register", "Read-only", "16 bits", "30001-30100"
    "Holding Register", "Read-write", "16 bits", "40001-40100"
 
-  Using *modpoll* tool, you can poll the first 5 holding registers via the following command, 
+  Using *modpoll* tool, you can poll the first 5 holding registers via the following command,
 
   .. code-block:: shell
 
@@ -29,13 +29,13 @@ Test with modsim
     docker run helloysd/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 
 
-  Meanwhile, if you prefer a local test or simply failed to connect to online *modsim* service, you can always launch your own device simulator via the following command, 
+  Meanwhile, if you prefer a local test or simply failed to connect to online *modsim* service, you can always launch your own device simulator via the following command,
 
   .. code-block:: shell
 
     docker run -p 5020:5020 helloysd/modsim
 
-  It will simulate a Modbus TCP device running at `<localhost:5020>`_, and you shall be able to connect it via the following command, 
+  It will simulate a Modbus TCP device running at `<localhost:5020>`_, and you shall be able to connect it via the following command,
 
   .. code-block:: shell
 

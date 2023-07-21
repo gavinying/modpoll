@@ -35,7 +35,7 @@ Run in docker
 
 - Connect to Modbus TCP device
 
-  In order to quickly explore the functions of *modpoll*, we deployed a dummy Modbus TCP device at `<modsim.topmaker.net:502>`_, you can connect via the following command, 
+  In order to quickly explore the functions of *modpoll*, we deployed a dummy Modbus TCP device at `<modsim.topmaker.net:502>`_, you can connect via the following command,
 
   .. code-block:: shell
 
