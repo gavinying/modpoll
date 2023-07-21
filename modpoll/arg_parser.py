@@ -53,7 +53,7 @@ def get_parser():
     parser.add_argument('--mqtt-tls-version', default=None, choices=['tlsv1.2', 'tlsv1.1', 'tlsv1'],
                         help='TLS protocol version, can be one of tlsv1.2 tlsv1.1 or tlsv1')
     parser.add_argument('--mqtt-single', action='store_true',
-                        help='Publish each value in a single topic. If not specified groups all values in a single topic.')
+                        help='Publish each value in a single topic. If not specified, groups all values in one topic.')
     parser.add_argument('--diagnostics-rate', default=0, type=float,
                         help='Time in seconds as publishing period for each device diagnostics')
     parser.add_argument('--autoremove', action='store_true',

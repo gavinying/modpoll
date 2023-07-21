@@ -54,7 +54,7 @@ def _on_message(client, userdata, msg):
     try:
         rx_queue.put(obj, block=False)
     except queue.Full:
-        log.warning(f"MQTT receiving queue is full, ignoring new message.")
+        log.warning("MQTT receiving queue is full, ignoring new message.")
 
 
 def _on_publish(client, userdata, mid):
