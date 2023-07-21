@@ -1,14 +1,8 @@
-name: Build and Upload Python Package
+name: Build and Publish Python Package
 
 on:
   release:
     types: [published]
-  push:
-    tags:
-      - '**'
-
-# permissions:
-#   contents: read
 
 jobs:
   test:

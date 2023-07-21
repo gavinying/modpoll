@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "feature/gh-actions" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "feature/gh-actions" ]
 
 jobs:
   linting:
