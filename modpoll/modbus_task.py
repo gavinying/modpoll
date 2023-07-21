@@ -2,15 +2,14 @@ import csv
 import json
 import logging
 import math
-import requests
 import time
 
-from pymodbus.client import ModbusSerialClient
-from pymodbus.client import ModbusTcpClient
+import requests
+from prettytable import PrettyTable
+from pymodbus.client import ModbusSerialClient, ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
-from prettytable import PrettyTable
 
 from modpoll.mqtt_task import mqttc_publish
 
@@ -513,7 +512,7 @@ def modbus_publish(timestamp=None, on_change=False):
             if args.mqtt_single:
                 topic = f"{args.mqtt_topic_prefix}{dev.name}/{ref.name}"
                 if isinstance(ref.val, list):
-                    for (i, ref_val_entry) in enumerate(ref.val):
+                    for i, ref_val_entry in enumerate(ref.val):
                         mqttc_publish(
                             topic + "/" + str(i), ref_val_entry, qos=args.mqtt_qos
                         )
