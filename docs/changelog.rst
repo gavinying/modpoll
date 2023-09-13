@@ -5,9 +5,9 @@ Change log
 #####
 
  * support pymodbus v3
- * fix Coil object type issue 
+ * fix Coil object type issue
  * add bool16 data type
- * add "--mqtt-single" option for easy integration with Home Assistant/OpenHAB 
+ * add "--mqtt-single" option for easy integration with Home Assistant/OpenHAB
  * improve documents
  * bugfixes;
 

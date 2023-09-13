@@ -2,9 +2,9 @@
 
 [![pipeline status](https://gitlab.com/helloysd/modpoll/badges/master/pipeline.svg)](https://gitlab.com/helloysd/modpoll/-/commits/master)
 [![License](https://img.shields.io/pypi/l/modpoll)](https://gitlab.com/helloysd/modpoll/-/blob/master/LICENSE)
-[![Downloads](http://pepy.tech/badge/modpoll)](http://pepy.tech/project/modpoll)
+[![Downloads](https://static.pepy.tech/badge/modpoll)](https://pepy.tech/project/modpoll)
 
-> Learn more about *modpoll* usage at [documentation](https://helloysd.gitlab.io/modpoll) site. 
+> Learn more about *modpoll* usage at [documentation](https://helloysd.gitlab.io/modpoll) site.
 
 
 
@@ -12,9 +12,9 @@
 
 The initial idea of creating this tool is to help myself debugging new devices during site survey. A site survey usually has limited time and space, working on-site also piles up some pressures. At that time, a portable swiss-knife toolkit is our best friend.
 
-This program can be easily deployed to Raspberry Pi or similar embedded devices, polling data from modbus devices, users can choose to log data locally or publish to a MQTT broker for further debugging. 
+This program can be easily deployed to Raspberry Pi or similar embedded devices, polling data from modbus devices, users can choose to log data locally or publish to a MQTT broker for further debugging.
 
-The MQTT broker can be setup on the same Raspberry Pi or on the cloud. Once data successfully published, users can subscribe to a specific MQTT topic to view the data via a smart phone at your fingertip. 
+The MQTT broker can be setup on the same Raspberry Pi or on the cloud. Once data successfully published, users can subscribe to a specific MQTT topic to view the data via a smart phone at your fingertip.
 
 
 
@@ -24,12 +24,12 @@ The MQTT broker can be setup on the same Raspberry Pi or on the cloud. Once data
 
 
 
-Moreover, you can also run this program continuously on a server as a Modbus-MQTT gateway, i.e. polling from local Modbus devices and forwarding data to a centralized cloud service. 
+Moreover, you can also run this program continuously on a server as a Modbus-MQTT gateway, i.e. polling from local Modbus devices and forwarding data to a centralized cloud service.
 
-In fact, *modpoll* helps to bridge between the traditional fieldbus world and the new IoT world. 
+In fact, *modpoll* helps to bridge between the traditional fieldbus world and the new IoT world.
 
 
-> This program is designed to be a standalone tool, it works out-of-the-box on Linux/macOS/Windows. 
+> This program is designed to be a standalone tool, it works out-of-the-box on Linux/macOS/Windows.
 
 > If you are looing for a modbus python library, please consider the following great open source projects, [pymodbus](https://github.com/riptideio/pymodbus) or [minimalmodbus](https://github.com/pyhys/minimalmodbus)
 
@@ -51,7 +51,7 @@ This program tested on python 3.8+, the package is available in the Python Packa
 
 ### Using PIP
 
-Python3 is supported by most popular platforms, e.g. Linux/macOS/Windows, on which you can install *modpoll* using `pip` tool, 
+Python3 is supported by most popular platforms, e.g. Linux/macOS/Windows, on which you can install *modpoll* using `pip` tool,
 
 ```bash
 pip install modpoll
@@ -65,9 +65,9 @@ pip install -U modpoll
 
 ### On Windows
 
-It is recommended to use `pipx` for installing *modpoll* on Windows, refer to [here](https://pypa.github.io/pipx/installation/) for more information about `pipx`. 
+It is recommended to use `pipx` for installing *modpoll* on Windows, refer to [here](https://pypa.github.io/pipx/installation/) for more information about `pipx`.
 
-Once `pipx` installed, you can run the following command in a Command Prompt termial. 
+Once `pipx` installed, you can run the following command in a Command Prompt termial.
 
 ```PowerShell
 pipx install modpoll
@@ -82,7 +82,7 @@ pipx upgrade modpoll
 
 ## Quickstart
 
-As the name tells, *modpoll* is a tool for communicating with Modbus devices, so ideally it makes more sense if you have a real Modbus device on hand for the following test, but it is OK if you don't, we provide a virtual Modbus TCP device deployed at `modsim.topmaker.net:502` for your quick testing purpose. 
+As the name tells, *modpoll* is a tool for communicating with Modbus devices, so ideally it makes more sense if you have a real Modbus device on hand for the following test, but it is OK if you don't, we provide a virtual Modbus TCP device deployed at `modsim.topmaker.net:502` for your quick testing purpose.
 
 Let's start expoloring *modpoll* with *modsim* device, run the following command to get a first glimpse,
 
@@ -100,7 +100,7 @@ modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gav
 
 ### Prepare Modbus configure file
 
-The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) for *modsim* device as following, 
+The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) for *modsim* device as following,
 
 ```CSV
 device,modsim001,1,,
@@ -126,24 +126,24 @@ ref,holding_reg14,40018,float32,rw
 
 This configuration tells *modpoll* to do the following for each poll,
 
-- Read `16` coils (coil address: `0-15`) and parse data accordingly; 
-- Read `20` holding registers (register address: `40000-40019`) and parse data accordingly; 
+- Read `16` coils (coil address: `0-15`) and parse data accordingly;
+- Read `20` holding registers (register address: `40000-40019`) and parse data accordingly;
 
-Normally, you need to customize a Modbus configuration file for your own device before running *modpoll* tool, which defines the optimal polling patterns and register mappings according to device vendor's documents. 
+Normally, you need to customize a Modbus configuration file for your own device before running *modpoll* tool, which defines the optimal polling patterns and register mappings according to device vendor's documents.
 
-The configuration can be either a local file or a remote public URL resource. 
+The configuration can be either a local file or a remote public URL resource.
 
 > *Refer to the [documentation](https://helloysd.gitlab.io/modpoll/configure.html) site for more details.*
 
 ### Poll local device (modsim)
 
-If you are blocked by company firewall for online device or prefer a local test, you can launch your own device simulator by running *modsim* locally, 
+If you are blocked by company firewall for online device or prefer a local test, you can launch your own device simulator by running *modsim* locally,
 
 ```bash
 docker run -p 5020:5020 helloysd/modsim
 ```
 
-It will create a virtual Modbus TCP device running at `localhost:5020`, and then you can poll it using *modpoll* tool, 
+It will create a virtual Modbus TCP device running at `localhost:5020`, and then you can poll it using *modpoll* tool,
 
 ```bash
 modpoll --tcp localhost --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
@@ -159,7 +159,7 @@ modpoll --tcp localhost --config https://raw.githubusercontent.com/gavinying/mod
 
 ### Publish data to MQTT broker
 
-This is a useful function of this new *modpoll* tool, which provides a simple way to publish collected modbus data to MQTT broker, so users can view data from a smart phone via a MQTT client. 
+This is a useful function of this new *modpoll* tool, which provides a simple way to publish collected modbus data to MQTT broker, so users can view data from a smart phone via a MQTT client.
 
 The following example uses a public MQTT broker `mqtt.eclipseprojects.io` for test purpose. You can also setup your own MQTT broker locally using [mosquitto](https://mosquitto.org/download/).
 
@@ -167,9 +167,9 @@ The following example uses a public MQTT broker `mqtt.eclipseprojects.io` for te
 modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv --mqtt-host mqtt.eclipseprojects.io
 ```
 
-With successful data polling and publishing, you can subscribe the topic `modpoll/modsim` on the same MQTT broker `mqtt.eclipseprojects.io` to view the collected data. 
+With successful data polling and publishing, you can subscribe the topic `modpoll/modsim` on the same MQTT broker `mqtt.eclipseprojects.io` to view the collected data.
 
-> The MQTT topic uses `<mqtt_topic_prefix>/<deviceid>` pattern, <mqtt_topic_prefix> is provided by `--mqtt-topic-prefix` argument, the default value is `modpoll/`  and <deviceid> is provided by the Modbus configure file. 
+> The MQTT topic uses `<mqtt_topic_prefix>/<deviceid>` pattern, <mqtt_topic_prefix> is provided by `--mqtt-topic-prefix` argument, the default value is `modpoll/`  and <deviceid> is provided by the Modbus configure file.
 
 
 
@@ -181,7 +181,7 @@ With successful data polling and publishing, you can subscribe the topic `modpol
 
 ### Write registers via MQTT publish
 
-The *modpoll* tool will subscribe to the topic `<mqtt_topic_prefix>/<deviceid>/set` once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish, 
+The *modpoll* tool will subscribe to the topic `<mqtt_topic_prefix>/<deviceid>/set` once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish,
 
 - To write a single holding register (address at `40001`)
 
@@ -207,7 +207,7 @@ The *modpoll* tool will subscribe to the topic `<mqtt_topic_prefix>/<deviceid>/s
 
 ## Run in docker
 
-A docker image has been provided for user to directly run the program without local installation, 
+A docker image has been provided for user to directly run the program without local installation,
 
   ```bash
   docker run helloysd/modpoll
@@ -221,8 +221,8 @@ Similar to the above *modsim* test, we can poll the first 5 holding registers wi
   docker run helloysd/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
   ```
 
-If you want to load a local configure file, you need to mount a local folder onto container volume, 
-for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command, 
+If you want to load a local configure file, you need to mount a local folder onto container volume,
+for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command,
 
   ```bash
   docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
@@ -238,13 +238,13 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   modpoll --tcp 192.168.1.10 --config examples/modsim.csv
   ```
 
-- Connect to Modbus RTU device 
+- Connect to Modbus RTU device
 
   ```bash
   modpoll --rtu /dev/ttyUSB0 --rtu-baud 9600 --config contrib/eniwise/scpms6.csv
   ```
 
-- Connect to Modbus TCP device and publish data to MQTT broker 
+- Connect to Modbus TCP device and publish data to MQTT broker
 
   ```bash
   modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config examples/modsim.csv --mqtt-host mqtt.eclipseprojects.io
@@ -268,7 +268,7 @@ The implementation of this project is heavily inspired by the following two proj
 - https://github.com/owagner/modbus2mqtt (MIT license)
 - https://github.com/mbs38/spicierModbus2mqtt (MIT license)
 
-Thanks to Max Brueggemann and Oliver Wagner for their great work. 
+Thanks to Max Brueggemann and Oliver Wagner for their great work.
 
 
 

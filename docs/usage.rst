@@ -14,16 +14,16 @@ Commandline Usage
 - Connect to Modbus TCP device
 
   .. code-block:: shell
-  
+
     modpoll --tcp 192.168.1.10 --config examples/modsim.csv
 
-- Connect to Modbus RTU device 
+- Connect to Modbus RTU device
 
   .. code-block:: shell
 
     modpoll --rtu /dev/ttyUSB0 --rtu-baud 9600 --config contrib/eniwise/scpms6.csv
 
-- Connect to Modbus TCP device and publish data to remote MQTT broker 
+- Connect to Modbus TCP device and publish data to remote MQTT broker
 
   .. code-block:: shell
 

@@ -3,6 +3,3 @@ try:
 except ModuleNotFoundError:
     import importlib_metadata
 __version__ = importlib_metadata.version(__name__)
-
-from .main import app
-from . import arg_parser

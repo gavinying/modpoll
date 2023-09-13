@@ -4,10 +4,10 @@ Configuration
 Modbus Configure File
 ----------------------
 
-In order to communicate with modbus devices, a proper modbus configure file is required. 
-It is mainly to describe the device address and register mappings. 
+In order to communicate with modbus devices, a proper modbus configure file is required.
+It is mainly to describe the device address and register mappings.
 
-Here is the basic structure of modbus configure file. 
+Here is the basic structure of modbus configure file.
 
 .. literalinclude:: ../examples/example.csv
    :language: default
@@ -30,7 +30,7 @@ Here is an example of modbus configure file for reading modsim device.
 Example 2: SCPM-S6 Power Meter (Modbus RTU device)
 ---------------------------------------------------
 
-SCPM-S6 is designed as a sub-circuit power meter to monitor multiple electrical circuit power consumptions. 
+SCPM-S6 is designed as a sub-circuit power meter to monitor multiple electrical circuit power consumptions.
 
 Here is an example of modbus configure file for SCPM-S6.
 

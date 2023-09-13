@@ -1,8 +1,8 @@
 # Modbus Configuration File
 # --------------------------
 # This configuration file is to describe the Modbus registers of target device(s) and defines poller(s) to help polling data.
-# The file format uses "csv" instead of json or yaml because many vendor's modbus registers are described in a table so it is easier to edit the information in excel and export to csv format. 
-# 
+# The file format uses "csv" instead of json or yaml because many vendor's modbus registers are described in a table so it is easier to edit the information in excel and export to csv format.
+#
 # Configuration Types
 # --------------------------
 # device,<device_name>,<device_id>
@@ -23,7 +23,7 @@
 # <rw>: read/write setting e.g. r/w/rw
 # <unit> (optional): the measurement unit of reference
 # <scale> (Optional): a float value to be multiplied with actual register reading
-# 
+#
 # Typical Structure
 # -----------------------------
 # device,dev001,1   <- the first device (dev001)

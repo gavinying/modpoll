@@ -54,7 +54,7 @@ def _on_message(client, userdata, msg):
     try:
         rx_queue.put(obj, block=False)
     except queue.Full:
-        log.warning(f"MQTT receiving queue is full, ignoring new message.")
+        log.warning("MQTT receiving queue is full, ignoring new message.")
 
 
 def _on_publish(client, userdata, mid):
@@ -99,8 +99,14 @@ def mqttc_setup(config):
             else:
                 cert_required = ssl.CERT_NONE
 
-            mqttc.tls_set(ca_certs=args.mqtt_cacerts, certfile=None, keyfile=None, cert_reqs=cert_required,
-                          tls_version=tlsVersion, ciphers=None)
+            mqttc.tls_set(
+                ca_certs=args.mqtt_cacerts,
+                certfile=None,
+                keyfile=None,
+                cert_reqs=cert_required,
+                tls_version=tlsVersion,
+                ciphers=None,
+            )
 
         if args.mqtt_user:
             mqttc.username_pw_set(args.mqtt_user, args.mqtt_pass)
@@ -138,7 +144,9 @@ def mqttc_publish(topic, msg, qos=0, retain=False):
             return
         pubinfo = mqttc.publish(topic, msg, qos, retain)
         # pubinfo.wait_for_publish()
-        log.debug(f"publishing MQTT topic: {topic}, msg: {msg}, qos: {qos}, RC: {pubinfo.rc}")
+        log.debug(
+            f"publishing MQTT topic: {topic}, msg: {msg}, qos: {qos}, RC: {pubinfo.rc}"
+        )
         log.info(f"published message to topic: {topic}")
         return pubinfo
     except MQTTException as ex:
