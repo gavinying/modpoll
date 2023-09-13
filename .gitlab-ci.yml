@@ -34,7 +34,7 @@ build-module:
     - poetry install --no-root
     - poetry build
   artifacts:
-    paths: 
+    paths:
       - dist
   only:
     - master

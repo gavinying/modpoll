@@ -1,16 +1,24 @@
+import datetime
+import json
 import logging
 import re
-import threading
-import datetime
-from datetime import timezone
-import sys
 import signal
-import json
+import sys
+import threading
+from datetime import timezone
 
 from modpoll.arg_parser import get_parser
-from modpoll.mqtt_task import mqttc_setup, mqttc_close, mqttc_receive
-from modpoll.modbus_task import modbus_setup, modbus_poll, modbus_publish, modbus_publish_diagnostics, modbus_export, \
-    modbus_close, modbus_write_coil, modbus_write_register
+from modpoll.modbus_task import (
+    modbus_close,
+    modbus_export,
+    modbus_poll,
+    modbus_publish,
+    modbus_publish_diagnostics,
+    modbus_setup,
+    modbus_write_coil,
+    modbus_write_register,
+)
+from modpoll.mqtt_task import mqttc_close, mqttc_receive, mqttc_setup
 
 LOG_SIMPLE = "%(asctime)s | %(levelname).1s | %(name)s | %(message)s"
 log = None
@@ -18,7 +26,7 @@ event_exit = threading.Event()
 
 
 def _signal_handler(signal, frame):
-    log.info(f'Exiting {sys.argv[0]}')
+    log.info(f"Exiting {sys.argv[0]}")
     event_exit.set()
 
 
@@ -29,7 +37,6 @@ def get_utc_time():
 
 
 def app(name="modpoll"):
-
     print("\nmodpoll - A New Command Line Tool for Modbus\n", flush=True)
 
     signal.signal(signal.SIGINT, _signal_handler)
@@ -71,7 +78,9 @@ def app(name="modpoll"):
             else:
                 elapsed = round(now - last_check, 6)
             last_check = now
-            log.info(f" ====== modpoll polling at rate:{args.rate}s, actual:{elapsed}s ======")
+            log.info(
+                f" ====== modpoll polling at rate:{args.rate}s, actual:{elapsed}s ======"
+            )
             modbus_poll()
             if event_exit.is_set():
                 break
@@ -93,7 +102,9 @@ def app(name="modpoll"):
         # Check if receive mqtt request
         topic, payload = mqttc_receive()
         if topic and payload:
-            device_name = re.search(f"^{args.mqtt_topic_prefix}([^/\n]*)/set", topic).group(1)
+            device_name = re.search(
+                f"^{args.mqtt_topic_prefix}([^/\n]*)/set", topic
+            ).group(1)
             if device_name:
                 try:
                     reg = json.loads(payload)

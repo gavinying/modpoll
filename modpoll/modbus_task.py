@@ -2,15 +2,14 @@ import csv
 import json
 import logging
 import math
-import requests
 import time
 
-from pymodbus.client import ModbusSerialClient
-from pymodbus.client import ModbusTcpClient
+import requests
+from prettytable import PrettyTable
+from pymodbus.client import ModbusSerialClient, ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
-from prettytable import PrettyTable
 
 from modpoll.mqtt_task import mqttc_publish
 
@@ -41,7 +40,9 @@ class Device:
 
 
 class Poller:
-    def __init__(self, device, function_code: int, start_address: int, size: int, endian: str):
+    def __init__(
+        self, device, function_code: int, start_address: int, size: int, endian: str
+    ):
         self.device = device
         self.fc = function_code
         self.start_address = start_address
@@ -59,61 +60,73 @@ class Poller:
             data = None
             if self.fc == 1:
                 result = master.read_coils(
-                    self.start_address, self.size, slave=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid
+                )
                 if not result.isError():
                     data = result.bits
             elif self.fc == 2:
                 result = master.read_discrete_inputs(
-                    self.start_address, self.size, slave=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid
+                )
                 if not result.isError():
                     data = result.bits
             elif self.fc == 3:
                 result = master.read_holding_registers(
-                    self.start_address, self.size, slave=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid
+                )
                 if not result.isError():
                     data = result.registers
             elif self.fc == 4:
                 result = master.read_input_registers(
-                    self.start_address, self.size, slave=self.device.devid)
+                    self.start_address, self.size, slave=self.device.devid
+                )
                 if not result.isError():
                     data = result.registers
             if not data:
                 self.update_statistics(False)
-                log.error(f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
-                          f"Start_address:{self.start_address}, Size:{self.size}... ERROR")
+                log.error(
+                    f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
+                    f"Start_address:{self.start_address}, Size:{self.size}... ERROR"
+                )
                 log.debug(result)
                 return
             if "BE_BE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
-                    decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Big)
+                    decoder = BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.Big)
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
-                        data, byteorder=Endian.Big, wordorder=Endian.Big)
+                        data, byteorder=Endian.Big, wordorder=Endian.Big
+                    )
             elif "LE_BE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
                     decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Little)
+                        data, byteorder=Endian.Little
+                    )
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
-                        data, byteorder=Endian.Little, wordorder=Endian.Big)
+                        data, byteorder=Endian.Little, wordorder=Endian.Big
+                    )
             elif "LE_LE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
                     decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Little)
+                        data, byteorder=Endian.Little
+                    )
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
-                        data, byteorder=Endian.Little, wordorder=Endian.Little)
+                        data, byteorder=Endian.Little, wordorder=Endian.Little
+                    )
             else:
                 if self.fc == 1 or self.fc == 2:
-                    decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Big)
+                    decoder = BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.Big)
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
-                        data, byteorder=Endian.Big, wordorder=Endian.Little)
+                        data, byteorder=Endian.Big, wordorder=Endian.Little
+                    )
             cur_ref = self.start_address
             for ref in self.readableReferences:
-                while cur_ref < ref.address and cur_ref < self.start_address + self.size:
+                while (
+                    cur_ref < ref.address and cur_ref < self.start_address + self.size
+                ):
                     decoder.skip_bytes(2)
                     cur_ref += 1
                 if cur_ref >= self.start_address + self.size:
@@ -156,13 +169,17 @@ class Poller:
                     cur_ref += 1
             self.device.update_reference(ref)
             self.update_statistics(True)
-            log.info(f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
-                     f"Start_address:{self.start_address}, Size:{self.size}... SUCCESS")
+            log.info(
+                f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
+                f"Start_address:{self.start_address}, Size:{self.size}... SUCCESS"
+            )
             return True
         except ModbusException as ex:
             self.update_statistics(False)
-            log.warning(f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
-                        f"Start_address:{self.start_address}, Size:{self.size}... FAILED")
+            log.warning(
+                f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
+                f"Start_address:{self.start_address}, Size:{self.size}... FAILED"
+            )
             log.debug(ex)
             return False
 
@@ -181,12 +198,16 @@ class Poller:
             self.device.pollSuccess = False
             if args.autoremove and self.failcounter >= 3:
                 self.disabled = True
-                log.info(f"Poller {self.name} disabled (functioncode: {self.fc}, "
-                         f"start_address: {self.start_address}, size: {self.size}).")
+                log.info(
+                    f"Poller {self.name} disabled (functioncode: {self.fc}, "
+                    f"start_address: {self.start_address}, size: {self.size})."
+                )
 
 
 class Reference:
-    def __init__(self, device, ref_name: str, address: int, dtype: str, rw: str, unit, scale):
+    def __init__(
+        self, device, ref_name: str, address: int, dtype: str, rw: str, unit, scale
+    ):
         self.device = device
         self.name = ref_name
         self.address = address
@@ -275,7 +296,9 @@ def parse_config(csv_reader):
                 continue
             if "coil" == fc:
                 function_code = 1
-                if size > 2000:  # some implementations don't seem to support 2008 coils/inputs
+                if (
+                    size > 2000
+                ):  # some implementations don't seem to support 2008 coils/inputs
                     log.error("Too many coils (max. 2000). Ignoring poller.")
                     continue
             elif "discrete_input" == fc:
@@ -285,21 +308,29 @@ def parse_config(csv_reader):
                     continue
             elif "holding_register" == fc:
                 function_code = 3
-                if size > 123:  # applies to TCP, RTU should support 125 registers. But let's be safe.
+                if (
+                    size > 123
+                ):  # applies to TCP, RTU should support 125 registers. But let's be safe.
                     log.error("Too many holding registers (max. 123). Ignoring poller.")
                     continue
             elif "input_register" == fc:
                 function_code = 4
                 if size > 123:
-                    log.error(f"Too many input registers (max. 123): {size}. Ignoring poller.")
+                    log.error(
+                        f"Too many input registers (max. 123): {size}. Ignoring poller."
+                    )
                     continue
             else:
                 log.warning(f"Unknown function code ({fc}) ignoring poller.")
                 continue
-            current_poller = Poller(current_device, function_code, start_address, size, endian)
+            current_poller = Poller(
+                current_device, function_code, start_address, size, endian
+            )
             current_device.pollerList.append(current_poller)
-            log.info(f"Add poller (start_address={current_poller.start_address}, size={current_poller.size}) "
-                     f"to device {current_device.name}")
+            log.info(
+                f"Add poller (start_address={current_poller.start_address}, size={current_poller.size}) "
+                f"to device {current_device.name}"
+            )
         elif "ref" in row[0].lower():
             ref_name = row[1].replace(" ", "_")
             address = int(row[2])
@@ -316,12 +347,16 @@ def parse_config(csv_reader):
             if not current_device or not current_poller:
                 log.debug(f"No device/poller for reference {ref_name}.")
                 continue
-            ref = Reference(current_poller.device, ref_name, address, dtype, rw, unit, scale)
+            ref = Reference(
+                current_poller.device, ref_name, address, dtype, rw, unit, scale
+            )
             if ref in current_poller.readableReferences:
                 log.warning(f"Reference {ref.name} is already added, ignoring it.")
                 continue
             if not ref.check_sanity(current_poller.start_address, current_poller.size):
-                log.warning(f"Reference {ref.name} failed to pass sanity check, ignoring it.")
+                log.warning(
+                    f"Reference {ref.name} failed to pass sanity check, ignoring it."
+                )
                 continue
             if "r" in rw.lower():
                 current_poller.add_readable_reference(ref)
@@ -333,8 +368,8 @@ def load_config(file):
     try:
         with requests.Session() as s:
             response = s.get(file)
-            decoded_content = response.content.decode('utf-8')
-            csv_reader = csv.reader(decoded_content.splitlines(), delimiter=',')
+            decoded_content = response.content.decode("utf-8")
+            csv_reader = csv.reader(decoded_content.splitlines(), delimiter=",")
             parse_config(csv_reader)
     except requests.RequestException:
         with open(file, "r") as f:
@@ -361,10 +396,20 @@ def modbus_setup(config, event):
             parity = "E"
         else:
             parity = "N"
-        master = ModbusSerialClient(method="rtu", port=args.rtu, stopbits=1, bytesize=8, parity=parity,
-                                    baudrate=int(args.rtu_baud), timeout=args.timeout, reset_socket=True)
+        master = ModbusSerialClient(
+            method="rtu",
+            port=args.rtu,
+            stopbits=1,
+            bytesize=8,
+            parity=parity,
+            baudrate=int(args.rtu_baud),
+            timeout=args.timeout,
+            reset_socket=True,
+        )
     elif args.tcp:
-        master = ModbusTcpClient(args.tcp, args.tcp_port, timeout=args.timeout, reset_socket=True)
+        master = ModbusTcpClient(
+            args.tcp, args.tcp_port, timeout=args.timeout, reset_socket=True
+        )
     else:
         log.error("You must specify a modbus access method, either --rtu or --tcp")
         return False
@@ -400,7 +445,9 @@ def modbus_write_coil(device_name, address: int, value):
     log.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
-            log.info(f"Writing coil(s): device={device_name}, address={address}, value={value}")
+            log.info(
+                f"Writing coil(s): device={device_name}, address={address}, value={value}"
+            )
             if isinstance(value, int):
                 result = master.write_coil(address, value, slave=d.devid)
             elif isinstance(value, list):
@@ -418,7 +465,9 @@ def modbus_write_register(device_name, address: int, value):
     log.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
-            log.info(f"Writing register(s): device={device_name}, address={address}, value={value}")
+            log.info(
+                f"Writing register(s): device={device_name}, address={address}, value={value}"
+            )
             if isinstance(value, int):
                 result = master.write_register(address, value, slave=d.devid)
             elif isinstance(value, list):
@@ -434,7 +483,7 @@ def modbus_print():
         if not dev.pollSuccess:
             print(f"failed to poll device: {dev.name}")
             continue
-        table = PrettyTable(['name', 'unit', 'address', 'value'])
+        table = PrettyTable(["name", "unit", "address", "value"])
         for ref in dev.references.values():
             if isinstance(ref.val, float):
                 value = f"{ref.val:g}"
@@ -457,18 +506,20 @@ def modbus_publish(timestamp=None, on_change=False):
             if on_change and ref.val == ref.last_val:
                 continue
             if ref.unit:
-                payload[f'{ref.name}|{ref.unit}'] = ref.val
+                payload[f"{ref.name}|{ref.unit}"] = ref.val
             else:
-                payload[f'{ref.name}'] = ref.val
+                payload[f"{ref.name}"] = ref.val
             if args.mqtt_single:
                 topic = f"{args.mqtt_topic_prefix}{dev.name}/{ref.name}"
                 if isinstance(ref.val, list):
-                    for (i, ref_val_entry) in enumerate(ref.val):
-                        mqttc_publish(topic + "/" + str(i), ref_val_entry, qos=args.mqtt_qos)
+                    for i, ref_val_entry in enumerate(ref.val):
+                        mqttc_publish(
+                            topic + "/" + str(i), ref_val_entry, qos=args.mqtt_qos
+                        )
                 else:
                     mqttc_publish(topic, ref.val, qos=args.mqtt_qos)
         if timestamp:
-            payload['timestamp_ms'] = int(timestamp * 1000)
+            payload["timestamp_ms"] = int(timestamp * 1000)
         if not args.mqtt_single:
             topic = f"{args.mqtt_topic_prefix}{dev.name}"
             mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
@@ -477,7 +528,7 @@ def modbus_publish(timestamp=None, on_change=False):
 def modbus_publish_diagnostics():
     for dev in deviceList:
         log.debug(f"publishing diagnostics for device {dev.name} ...")
-        payload = {'pollCount': dev.pollCount, 'errorCount': dev.errorCount}
+        payload = {"pollCount": dev.pollCount, "errorCount": dev.errorCount}
         topic = f"{args.mqtt_topic_prefix}diagnostics/{dev.name}"
         mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
 
@@ -486,16 +537,16 @@ def modbus_export(file, timestamp=None):
     if timestamp:
         if file.endswith(".csv"):
             file = file[:-4]
-        file += "_" + str(int(timestamp*1000))
+        file += "_" + str(int(timestamp * 1000))
         file += ".csv"
     else:
         if not file.endswith(".csv"):
             file += ".csv"
-    with open(file, 'w') as f:
+    with open(file, "w") as f:
         writer = csv.writer(f)
         for dev in deviceList:
             log.info(f"exporting data for device {dev.name} ...")
-            header = ['name', 'unit', 'address', 'value']
+            header = ["name", "unit", "address", "value"]
             writer.writerow(header)
             for ref in dev.references.values():
                 row = [ref.name, ref.unit, ref.address, ref.val]
