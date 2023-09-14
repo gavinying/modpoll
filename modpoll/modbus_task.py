@@ -92,78 +92,85 @@ class Poller:
                 return
             if "BE_BE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
-                    decoder = BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.Big)
+                    decoder = BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.BIG)
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
-                        data, byteorder=Endian.Big, wordorder=Endian.Big
+                        data, byteorder=Endian.BIG, wordorder=Endian.BIG
                     )
             elif "LE_BE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
                     decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Little
+                        data, byteorder=Endian.LITTLE
                     )
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
-                        data, byteorder=Endian.Little, wordorder=Endian.Big
+                        data, byteorder=Endian.LITTLE, wordorder=Endian.BIG
                     )
             elif "LE_LE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
                     decoder = BinaryPayloadDecoder.fromCoils(
-                        data, byteorder=Endian.Little
+                        data, byteorder=Endian.LITTLE
                     )
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
-                        data, byteorder=Endian.Little, wordorder=Endian.Little
+                        data, byteorder=Endian.LITTLE, wordorder=Endian.LITTLE
                     )
             else:
                 if self.fc == 1 or self.fc == 2:
-                    decoder = BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.Big)
+                    decoder = BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.BIG)
                 else:
                     decoder = BinaryPayloadDecoder.fromRegisters(
-                        data, byteorder=Endian.Big, wordorder=Endian.Little
+                        data, byteorder=Endian.BIG, wordorder=Endian.LITTLE
                     )
             cur_ref = self.start_address
             for ref in self.readableReferences:
-                while (
-                    cur_ref < ref.address and cur_ref < self.start_address + self.size
-                ):
-                    decoder.skip_bytes(2)
+                if self.fc == 1 or self.fc == 2:
+                    ref_count = math.ceil(self.size / 8)
+                else:
+                    ref_count = self.size
+                # skip all registers before current reference address
+                while cur_ref < ref.address:
+                    if self.fc == 1 or self.fc == 2:
+                        decoder.skip_bytes(1)
+                    else:
+                        decoder.skip_bytes(2)
                     cur_ref += 1
-                if cur_ref >= self.start_address + self.size:
+                if cur_ref >= self.start_address + ref_count:
                     break
                 if "uint16" == ref.dtype:
                     ref.update_value(decoder.decode_16bit_uint())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
                 elif "int16" == ref.dtype:
                     ref.update_value(decoder.decode_16bit_int())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
                 elif "uint32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_uint())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
                 elif "int32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_int())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
                 elif "uint64" == ref.dtype:
                     ref.update_value(decoder.decode_64bit_uint())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
                 elif "int64" == ref.dtype:
                     ref.update_value(decoder.decode_64bit_int())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
                 elif "float32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_float())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
                 elif "float64" == ref.dtype:
                     ref.update_value(decoder.decode_64bit_float())
-                    cur_ref += ref.length
-                elif "bool" == ref.dtype:
-                    ref.update_value(decoder.decode_bits())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
+                elif "bool8" == ref.dtype or "bool" == ref.dtype:
+                    v = decoder.decode_bits()
+                    ref.update_value(v)
+                    cur_ref += ref.ref_width
                 elif "bool16" == ref.dtype:
                     ref.update_value(decoder.decode_bits() + decoder.decode_bits())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
                 elif ref.dtype.startswith("string"):
                     ref.update_value(decoder.decode_string())
-                    cur_ref += ref.length
+                    cur_ref += ref.ref_width
                 else:
                     decoder.decode_16bit_uint()
                     cur_ref += 1
@@ -212,36 +219,36 @@ class Reference:
         self.name = ref_name
         self.address = address
         self.dtype = dtype.lower()
-        if "int16" in dtype:
-            self.length = 1
-        elif "uint16" in dtype:
-            self.length = 1
-        elif "int32" in dtype:
-            self.length = 2
-        elif "uint32" in dtype:
-            self.length = 2
-        elif "int64" in dtype:
-            self.length = 4
-        elif "uint64" in dtype:
-            self.length = 4
+        if "int16" == dtype:
+            self.ref_width = 1
+        elif "uint16" == dtype:
+            self.ref_width = 1
+        elif "int32" == dtype:
+            self.ref_width = 2
+        elif "uint32" == dtype:
+            self.ref_width = 2
+        elif "int64" == dtype:
+            self.ref_width = 4
+        elif "uint64" == dtype:
+            self.ref_width = 4
         elif "float32" == dtype:
-            self.length = 2
+            self.ref_width = 2
         elif "float64" == dtype:
-            self.length = 4
-        elif "bool" == dtype:
-            self.length = 8
+            self.ref_width = 4
+        elif "bool8" == dtype or "bool" == dtype:
+            self.ref_width = 1
         elif "bool16" == dtype:
-            self.length = 16
+            self.ref_width = 2
         elif dtype.startswith("string"):
             try:
-                self.length = int(dtype[6:9])
+                self.ref_width = int(dtype[6:9])
             except ValueError:
-                self.length = 2
-            if self.length > 100:
-                log.warning("Data type string: length too long")
-                self.length = 100
-            if math.fmod(self.length, 2) != 0:
-                self.length = self.length - 1
+                self.ref_width = 2
+            if self.ref_width > 100:
+                log.warning("Data type string: length must be less than 100")
+                self.ref_width = 100
+            if math.fmod(self.ref_width, 2) != 0:
+                self.ref_width = self.ref_width - 1
                 log.warning("Data type string: length must be divisible by 2")
         else:
             log.error(f"unknown data type: {dtype}")
@@ -254,7 +261,7 @@ class Reference:
     def check_sanity(self, reference, size):
         if self.address not in range(reference, size + reference):
             return False
-        if self.address + self.length - 1 not in range(reference, size + reference):
+        if self.address + self.ref_width - 1 not in range(reference, size + reference):
             return False
         return True
 
