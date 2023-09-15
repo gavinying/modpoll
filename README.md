@@ -2,10 +2,9 @@
 
 [![pipeline status](https://gitlab.com/helloysd/modpoll/badges/master/pipeline.svg)](https://gitlab.com/helloysd/modpoll/-/commits/master)
 [![License](https://img.shields.io/pypi/l/modpoll)](https://gitlab.com/helloysd/modpoll/-/blob/master/LICENSE)
-[![Downloads](https://static.pepy.tech/badge/modpoll)](https://pepy.tech/project/modpoll)
+[![Downloads](https://static.pepy.tech/badge/modpoll/week)](https://pepy.tech/project/modpoll)
 
 > Learn more about *modpoll* usage at [documentation](https://helloysd.gitlab.io/modpoll) site.
-
 
 
 ## Motivation
@@ -105,8 +104,26 @@ The reason we can magically poll data from the online device *modsim* is because
 ```CSV
 device,modsim001,1,,
 poll,coil,0,16,BE_BE
-ref,coil01-08,0,bool,rw
-ref,coil09-16,8,bool,rw
+ref,coil01-08,0,bool8,rw
+ref,coil09-16,1,bool8,rw
+poll,discrete_input,10000,16,BE_BE
+ref,di01-08,10000,bool8,rw
+ref,di09-16,10001,bool8,rw
+poll,input_register,30000,20,BE_BE
+ref,input_reg01,30000,uint16,rw
+ref,input_reg02,30001,uint16,rw
+ref,input_reg03,30002,uint16,rw
+ref,input_reg04,30003,uint16,rw
+ref,input_reg05,30004,int16,rw
+ref,input_reg06,30005,int16,rw
+ref,input_reg07,30006,int16,rw
+ref,input_reg08,30007,int16,rw
+ref,input_reg09,30008,uint32,rw
+ref,input_reg10,30010,uint32,rw
+ref,input_reg11,30012,int32,rw
+ref,input_reg12,30014,int32,rw
+ref,input_reg13,30016,float32,rw
+ref,input_reg14,30018,float32,rw
 poll,holding_register,40000,20,BE_BE
 ref,holding_reg01,40000,uint16,rw
 ref,holding_reg02,40001,uint16,rw
@@ -126,10 +143,14 @@ ref,holding_reg14,40018,float32,rw
 
 This configuration tells *modpoll* to do the following for each poll,
 
-- Read `16` coils (coil address: `0-15`) and parse data accordingly;
-- Read `20` holding registers (register address: `40000-40019`) and parse data accordingly;
+- Read `16` coils from the address starting from `0` and parse the response as two 8-bits boolean values;
+- Read `16` discrete inputs from the address starting from `10000` and parse the response as two 8-bits boolean values;
+- Read `20` input registers from the address starting from `30000` and parse data accordingly;
+- Read `20` holding registers from the address starting from `40000` and parse data accordingly;
 
-Normally, you need to customize a Modbus configuration file for your own device before running *modpoll* tool, which defines the optimal polling patterns and register mappings according to device vendor's documents.
+In practical, you usually need to customize a Modbus configuration file for your own device before running *modpoll* tool, which defines the optimal polling patterns and register mappings according to device vendor's documents.
+
+You can also take a look at [contrib](https://github.com/gavinying/modpoll/tree/master/contrib) folder, which collects a few types of device configuration shared by contributors.
 
 The configuration can be either a local file or a remote public URL resource.
 
