@@ -430,14 +430,14 @@ test = ["black", "coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mypy", "pre-commit"
 
 [[package]]
 name = "identify"
-version = "2.5.28"
+version = "2.5.29"
 description = "File identification library for Python"
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "identify-2.5.28-py2.py3-none-any.whl", hash = "sha256:87816de144bf46d161bd5b3e8f5596b16cade3b80be537087334b26bc5c177f3"},
-    {file = "identify-2.5.28.tar.gz", hash = "sha256:94bb59643083ebd60dc996d043497479ee554381fbc5307763915cda49b0e78f"},
+    {file = "identify-2.5.29-py2.py3-none-any.whl", hash = "sha256:24437fbf6f4d3fe6efd0eb9d67e24dd9106db99af5ceb27996a5f7895f24bf1b"},
+    {file = "identify-2.5.29.tar.gz", hash = "sha256:d43d52b86b15918c137e3a74fff5224f60385cd0e9c38e99d07c257f02f151a5"},
 ]
 
 [package.extras]
@@ -1437,4 +1437,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.2,<4.0"
-content-hash = "12fc660b5561f0606cdaf5651794ab289c1bf56bf1bf162a4c41de6707cb369e"
+content-hash = "c78144fec3faac1723fff2ea3ecd50e5ff3b5eb104a1ac82f44aaf24aede712d"
