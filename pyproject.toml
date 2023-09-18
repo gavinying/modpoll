@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "modpoll"
-version = "0.6.1"
+version = "0.6.2"
 description = "A New Command Line Tool for Modbus"
 authors = ["Ying Shaodong <helloysd@foxmail.com>"]
 readme = "README.md"
@@ -36,4 +36,4 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-modpoll = "modpoll:app"
+modpoll = "modpoll.main:app"
