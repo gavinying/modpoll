@@ -38,6 +38,12 @@ def get_parser():
     parser.add_argument(
         "--tcp-port", default=502, type=int, help="Port for MODBUS TCP. Defaults to 502"
     )
+    parser.add_argument(
+        "--udp", help="Act as a Modbus UDP master, connecting to host UDP"
+    )
+    parser.add_argument(
+        "--udp-port", default=502, type=int, help="Port for MODBUS UDP. Defaults to 502"
+    )
     parser.add_argument("--rtu", help="pyserial URL (or port name) for RTU serial port")
     parser.add_argument(
         "--rtu-baud",

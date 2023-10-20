@@ -6,7 +6,7 @@ import time
 
 import requests
 from prettytable import PrettyTable
-from pymodbus.client import ModbusSerialClient, ModbusTcpClient
+from pymodbus.client import ModbusSerialClient, ModbusTcpClient, ModbusUdpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
@@ -417,8 +417,12 @@ def modbus_setup(config, event):
         master = ModbusTcpClient(
             args.tcp, args.tcp_port, timeout=args.timeout, reset_socket=True
         )
+    elif args.udp:
+        master = ModbusUdpClient(
+            args.udp, args.udp_port, timeout=args.timeout, reset_socket=True
+        )
     else:
-        log.error("You must specify a modbus access method, either --rtu or --tcp")
+        log.error("You must specify a modbus access method, either --rtu, --tcp or --udp")
         return False
     return True
 
