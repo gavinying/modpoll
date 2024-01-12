@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "modpoll"
-version = "0.6.2"
+version = "0.6.3"
 description = "A New Command Line Tool for Modbus"
-authors = ["Ying Shaodong <helloysd@foxmail.com>"]
+authors = ["Ying Shaodong <helloysd@gmail.com>"]
 readme = "README.md"
 homepage = "https://helloysd.gitlab.io/modpoll"
 repository = "https://github.com/gavinying/modpoll"
@@ -13,10 +13,11 @@ include = [
 
 [tool.poetry.dependencies]
 python = ">=3.8.2,<4.0"
-pymodbus = "^3.5.2"
+pymodbus = "^3.5.4"
 paho-mqtt = "^1.6.1"
 prettytable = "^3.6.0"
 requests = "^2.28.1"
+pyserial = { version = "^3.5", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
@@ -29,7 +30,10 @@ safety = "^2.3.0"
 sphinx = "^4.2.0"
 sphinx-argparse = "^0.3.1"
 sphinx-rtd-theme = "^1.0.0"
-pre-commit = "^3.3.3"
+pre-commit = "^3.5.0"
+
+[tool.poetry.extras]
+serial = ["pyserial"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
