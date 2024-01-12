@@ -1,6 +1,16 @@
 Change log
 ==========
 
+0.6.0
+#####
+
+ * upgrade pymodbus to v3.5.2
+ * upgrade poetry to v1.6.1
+ * add UDP support
+ * add [serial] as extra dependency
+ * improve documents
+ * bugfixes;
+
 0.5.0
 #####
 

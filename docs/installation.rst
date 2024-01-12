@@ -10,6 +10,10 @@ The package is available in the Python Package Index::
 
     pip install modpoll
 
+Optionally, pyserial library can be installed for Modbus-RTU communication::
+
+    pip install modpoll[serial]
+
 Run the following command to check if there is new version available::
 
     pip install -U modpoll
