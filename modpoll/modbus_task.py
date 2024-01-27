@@ -29,7 +29,7 @@ class Device:
         self.errorCount = 0
         self.pollCount = 0
         self.pollSuccess = False
-        log.info(f"Added new device {self.name}")
+        log.info(f"Adding new device {self.name}")
 
     def add_reference_mapping(self, ref):
         self.references[ref.name] = ref
@@ -251,7 +251,7 @@ class Reference:
                 self.ref_width = self.ref_width - 1
                 log.warning("Data type string: length must be divisible by 2")
         else:
-            log.error(f"unknown data type: {dtype}")
+            log.error(f"Unknown data type: {dtype}")
         self.rw = rw.lower()
         self.unit = unit
         self.scale = scale
@@ -284,91 +284,101 @@ class Reference:
 def parse_config(csv_reader):
     current_device = None
     current_poller = None
-    for row in csv_reader:
-        if not row or len(row) == 0:
-            continue
-        if "device" in row[0].lower():
-            device_name = row[1]
-            device_id = int(row[2])
-            current_device = Device(device_name, device_id)
-            deviceList.append(current_device)
-        elif "poll" in row[0].lower():
-            fc = row[1].lower()
-            start_address = int(row[2])
-            size = int(row[3])
-            endian = row[4]
-            current_poller = None
-            if not current_device:
-                log.error("No device to add poller.")
+    try:
+        for row in csv_reader:
+            if not row or len(row) == 0:
                 continue
-            if "coil" == fc:
-                function_code = 1
-                if (
-                    size > 2000
-                ):  # some implementations don't seem to support 2008 coils/inputs
-                    log.error("Too many coils (max. 2000). Ignoring poller.")
+            if "device" in row[0].lower():
+                device_name = row[1]
+                device_id = int(row[2])
+                current_device = Device(device_name, device_id)
+                deviceList.append(current_device)
+            elif "poll" in row[0].lower():
+                fc = row[1].lower()
+                start_address = int(row[2])
+                size = int(row[3])
+                endian = row[4]
+                current_poller = None
+                if not current_device:
+                    log.error("No device to add poller.")
                     continue
-            elif "discrete_input" == fc:
-                function_code = 2
-                if size > 2000:
-                    log.error("Too many discrete inputs (max. 2000). Ignoring poller.")
+                if "coil" == fc:
+                    function_code = 1
+                    if (
+                        size > 2000
+                    ):  # some implementations don't seem to support 2008 coils/inputs
+                        log.error("Too many coils (max. 2000). Ignoring poller.")
+                        continue
+                elif "discrete_input" == fc:
+                    function_code = 2
+                    if size > 2000:
+                        log.error(
+                            "Too many discrete inputs (max. 2000). Ignoring poller."
+                        )
+                        continue
+                elif "holding_register" == fc:
+                    function_code = 3
+                    if (
+                        size > 123
+                    ):  # applies to TCP, RTU should support 125 registers. But let's be safe.
+                        log.error(
+                            "Too many holding registers (max. 123). Ignoring poller."
+                        )
+                        continue
+                elif "input_register" == fc:
+                    function_code = 4
+                    if size > 123:
+                        log.error(
+                            f"Too many input registers (max. 123): {size}. Ignoring poller."
+                        )
+                        continue
+                else:
+                    log.warning(f"Unknown function code ({fc}) ignoring poller.")
                     continue
-            elif "holding_register" == fc:
-                function_code = 3
-                if (
-                    size > 123
-                ):  # applies to TCP, RTU should support 125 registers. But let's be safe.
-                    log.error("Too many holding registers (max. 123). Ignoring poller.")
+                current_poller = Poller(
+                    current_device, function_code, start_address, size, endian
+                )
+                current_device.pollerList.append(current_poller)
+                log.info(
+                    f"Add poller (start_address={current_poller.start_address}, size={current_poller.size}) "
+                    f"to device {current_device.name}"
+                )
+            elif "ref" in row[0].lower():
+                ref_name = row[1].replace(" ", "_")
+                address = int(row[2])
+                dtype = row[3].lower()
+                rw = row[4] or "r"
+                try:
+                    unit = row[5]
+                except IndexError:
+                    unit = None
+                try:
+                    scale = float(row[6])
+                except Exception:
+                    scale = None
+                if not current_device or not current_poller:
+                    log.debug(f"No device/poller for reference {ref_name}.")
                     continue
-            elif "input_register" == fc:
-                function_code = 4
-                if size > 123:
-                    log.error(
-                        f"Too many input registers (max. 123): {size}. Ignoring poller."
+                ref = Reference(
+                    current_poller.device, ref_name, address, dtype, rw, unit, scale
+                )
+                if ref in current_poller.readableReferences:
+                    log.warning(f"Reference {ref.name} is already added, ignoring it.")
+                    continue
+                if not ref.check_sanity(
+                    current_poller.start_address, current_poller.size
+                ):
+                    log.warning(
+                        f"Reference {ref.name} failed to pass sanity check, ignoring it."
                     )
                     continue
-            else:
-                log.warning(f"Unknown function code ({fc}) ignoring poller.")
-                continue
-            current_poller = Poller(
-                current_device, function_code, start_address, size, endian
-            )
-            current_device.pollerList.append(current_poller)
-            log.info(
-                f"Add poller (start_address={current_poller.start_address}, size={current_poller.size}) "
-                f"to device {current_device.name}"
-            )
-        elif "ref" in row[0].lower():
-            ref_name = row[1].replace(" ", "_")
-            address = int(row[2])
-            dtype = row[3].lower()
-            rw = row[4] or "r"
-            try:
-                unit = row[5]
-            except IndexError:
-                unit = None
-            try:
-                scale = float(row[6])
-            except Exception:
-                scale = None
-            if not current_device or not current_poller:
-                log.debug(f"No device/poller for reference {ref_name}.")
-                continue
-            ref = Reference(
-                current_poller.device, ref_name, address, dtype, rw, unit, scale
-            )
-            if ref in current_poller.readableReferences:
-                log.warning(f"Reference {ref.name} is already added, ignoring it.")
-                continue
-            if not ref.check_sanity(current_poller.start_address, current_poller.size):
-                log.warning(
-                    f"Reference {ref.name} failed to pass sanity check, ignoring it."
-                )
-                continue
-            if "r" in rw.lower():
-                current_poller.add_readable_reference(ref)
-            current_device.add_reference_mapping(ref)
-            log.debug(f"Add reference {ref.name} to device {current_device.name}")
+                if "r" in rw.lower():
+                    current_poller.add_readable_reference(ref)
+                current_device.add_reference_mapping(ref)
+                log.debug(f"Add reference {ref.name} to device {current_device.name}")
+    except Exception:
+        log.error("Failed to parse the config file. Exiting.")
+        exit(1)
 
 
 def load_config(file):
@@ -396,6 +406,11 @@ def modbus_setup(config, event):
 
     log.info(f"Loading config from: {args.config}")
     load_config(args.config)
+    if len(deviceList) > 0:
+        log.info(f"Polling {len(deviceList)} device(s)...")
+    else:
+        log.error("No device found in the config file. Exiting.")
+        exit(1)
     if args.rtu:
         if args.rtu_parity == "odd":
             parity = "O"
@@ -422,7 +437,9 @@ def modbus_setup(config, event):
             args.udp, args.udp_port, timeout=args.timeout, reset_socket=True
         )
     else:
-        log.error("You must specify a modbus access method, either --rtu, --tcp or --udp")
+        log.error(
+            "You must specify a modbus access method, either --rtu, --tcp or --udp"
+        )
         return False
     return True
 
@@ -434,7 +451,7 @@ def modbus_poll():
     time.sleep(args.delay)
     log.debug(f"Master connected. Delay of {args.delay} seconds.")
     for dev in deviceList:
-        log.debug(f"polling device {dev.name} ...")
+        log.debug(f"Polling device {dev.name} ...")
         for p in dev.pollerList:
             if not p.disabled:
                 p.poll()
@@ -492,7 +509,7 @@ def modbus_print():
     for dev in deviceList:
         print(f"===== references from device: {dev.name} =====")
         if not dev.pollSuccess:
-            print(f"failed to poll device: {dev.name}")
+            print(f"Failed to poll device: {dev.name}")
             continue
         table = PrettyTable(["name", "unit", "address", "value"])
         for ref in dev.references.values():
@@ -509,9 +526,9 @@ def modbus_print():
 def modbus_publish(timestamp=None, on_change=False):
     for dev in deviceList:
         if not dev.pollSuccess:
-            log.debug(f"skip publishing for disconnected device: {dev.name}")
+            log.debug(f"Skip publishing for disconnected device: {dev.name}")
             continue
-        log.debug(f"publishing data for device: {dev.name} ...")
+        log.debug(f"Publishing data for device: {dev.name} ...")
         payload = {}
         for ref in dev.references.values():
             if on_change and ref.val == ref.last_val:
@@ -538,7 +555,7 @@ def modbus_publish(timestamp=None, on_change=False):
 
 def modbus_publish_diagnostics():
     for dev in deviceList:
-        log.debug(f"publishing diagnostics for device {dev.name} ...")
+        log.debug(f"Publishing diagnostics for device {dev.name} ...")
         payload = {"pollCount": dev.pollCount, "errorCount": dev.errorCount}
         topic = f"{args.mqtt_topic_prefix}diagnostics/{dev.name}"
         mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
@@ -556,7 +573,7 @@ def modbus_export(file, timestamp=None):
     with open(file, "w") as f:
         writer = csv.writer(f)
         for dev in deviceList:
-            log.info(f"exporting data for device {dev.name} ...")
+            log.info(f"Exporting data for device {dev.name} ...")
             header = ["name", "unit", "address", "value"]
             writer.writerow(header)
             for ref in dev.references.values():

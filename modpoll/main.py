@@ -53,7 +53,7 @@ def app(name="modpoll"):
     if args.mqtt_host:
         log.info(f"Setup MQTT connection to {args.mqtt_host}")
         if not mqttc_setup(args):
-            log.error("fail to setup MQTT client")
+            log.error("Failed to setup MQTT client")
             mqttc_close()
             exit(1)
     else:
@@ -61,7 +61,7 @@ def app(name="modpoll"):
 
     # setup modbus
     if not modbus_setup(args, event_exit):
-        log.error("fail to setup modbus client(master)")
+        log.error("Failed to setup modbus client(master)")
         modbus_close()
         mqttc_close()
         exit(1)
@@ -114,7 +114,7 @@ def app(name="modpoll"):
                     elif "holding_register" == reg["object_type"]:
                         modbus_write_register(device_name, reg["address"], reg["value"])
                 except json.decoder.JSONDecodeError:
-                    log.warning(f"Fail to parse json message: {payload}")
+                    log.warning(f"Failed to parse json message: {payload}")
         if args.once:
             event_exit.set()
             break
