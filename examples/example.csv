@@ -38,6 +38,7 @@
 # ref,...
 #
 # Configuration Example
+# !!! Please remove all comments for your config file !!!
 # -----------------------------
 device,modsim001,1,,
 poll,coil,0,12,BE_BE
