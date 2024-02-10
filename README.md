@@ -52,7 +52,7 @@ pip install modpoll
 Optionally, pyserial library can be installed for Modbus-RTU communication,
 
 ```bash
-pip install modpoll[serial]
+pip install 'modpoll[serial]'
 ```
 
 Upgrade the tool via the following command,
