@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  modpoll:
+    image: helloysd/modpoll
+    container_name: modpoll
+    restart: unless-stopped
+    command: >
+      modpoll -d --tcp modsim.topmaker.net
+        --mqtt-host mqtt.eclipseprojects.io
+        --mqtt-topic-prefix mytest/modsim/
+        --mqtt-qos 1
+        --rate 30
+        --timestamp
+        --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv

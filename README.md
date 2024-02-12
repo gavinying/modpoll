@@ -224,7 +224,7 @@ The *modpoll* tool will subscribe to the topic `<mqtt_topic_prefix>/<deviceid>/s
   ```
 
 
-## Run in docker
+## Run with docker
 
 A docker image has been provided for user to directly run the program without local installation,
 
@@ -234,7 +234,7 @@ A docker image has been provided for user to directly run the program without lo
 
 It shows the version of the program by default.
 
-Similar to the above *modsim* test, we can poll data with `docker run`,
+Similar to the above *modsim* test, we can poll data with `docker run`, in order to avoid printing out received data, the argument `--daemon` or `-d` is recommended to use with docker.
 
   ```bash
   docker run helloysd/modpoll modpoll -d --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv

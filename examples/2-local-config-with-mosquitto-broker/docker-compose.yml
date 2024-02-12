@@ -1,0 +1,36 @@
+version: '2'
+
+volumes:
+  vol-mosquitto-config:
+  vol-mosquitto-data:
+
+services:
+  modpoll:
+    image: helloysd/modpoll
+    container_name: modpoll
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    volumes:
+      - ./config/:/app/config/
+    command: >
+      modpoll -d --tcp 192.168.133.85
+        --mqtt-host mosquitto
+        --mqtt-topic-prefix modpoll/test/
+        --mqtt-qos 1
+        --rate 30
+        --timestamp
+        --config config/my-device.csv
+
+  mosquitto:
+    image: helloysd/mosquitto:2.0.14
+    container_name: mosquitto
+    restart: unless-stopped
+    environment:
+      - MOSQUITTO_USERNAME=${MQTT_USERNAME}
+      - MOSQUITTO_PASSWORD=${MQTT_PASSWORD}
+    volumes:
+      - vol-mosquitto-config:/mosquitto/config
+      - vol-mosquitto-data:/mosquitto/data
+    ports:
+      - 1883:1883
