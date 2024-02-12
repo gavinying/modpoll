@@ -29,8 +29,8 @@ def get_parser():
         "-r",
         "--rate",
         type=float,
-        default=5.0,
-        help="The sampling rate (s) to poll modbus device, Defaults to 5.0",
+        default=10.0,
+        help="The sampling rate (s) to poll modbus device, Defaults to 10.0",
     )
     parser.add_argument(
         "-1", "--once", action="store_true", help="Only run polling at one time"
