@@ -418,24 +418,39 @@ def modbus_setup(config, event):
             parity = "E"
         else:
             parity = "N"
-        master = ModbusSerialClient(
-            method="rtu",
-            port=args.rtu,
-            stopbits=1,
-            bytesize=8,
-            parity=parity,
-            baudrate=int(args.rtu_baud),
-            timeout=args.timeout,
-            reset_socket=True,
-        )
+        if args.framer == "default":
+            master = ModbusSerialClient(
+                args.rtu,
+                baudrate=int(args.rtu_baud),
+                bytesize=8,
+                parity=parity,
+                stopbits=1,
+                timeout=args.timeout,
+            )
+        else:
+            master = ModbusSerialClient(
+                args.rtu,
+                baudrate=int(args.rtu_baud),
+                bytesize=8,
+                parity=parity,
+                stopbits=1,
+                framer=args.framer,
+                timeout=args.timeout,
+            )
     elif args.tcp:
-        master = ModbusTcpClient(
-            args.tcp, args.tcp_port, timeout=args.timeout, reset_socket=True
-        )
+        if args.framer == "default":
+            master = ModbusTcpClient(args.tcp, port=args.tcp_port, timeout=args.timeout)
+        else:
+            master = ModbusTcpClient(
+                args.tcp, port=args.tcp_port, framer=args.framer, timeout=args.timeout
+            )
     elif args.udp:
-        master = ModbusUdpClient(
-            args.udp, args.udp_port, timeout=args.timeout, reset_socket=True
-        )
+        if args.framer == "default":
+            master = ModbusUdpClient(args.udp, port=args.udp_port, timeout=args.timeout)
+        else:
+            master = ModbusUdpClient(
+                args.udp, port=args.udp_port, framer=args.framer, timeout=args.timeout
+            )
     else:
         log.error(
             "You must specify a modbus access method, either --rtu, --tcp or --udp"
@@ -460,8 +475,8 @@ def modbus_poll():
                     return
                 event_exit.wait(timeout=args.interval)
     master.close()
-    # printout result, if -p or --print-result are set
-    if args.print_result:
+    # print out result, if not in daemon mode
+    if not args.daemon:
         modbus_print()
 
 

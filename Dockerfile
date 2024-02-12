@@ -1,6 +1,6 @@
 ARG PYTHON_TAG="3.8-slim"
 FROM python:$PYTHON_TAG
-ARG APP_TAG="0.6.4"
+ARG APP_TAG="0.6.5"
 WORKDIR /app
 
 RUN pip3 install modpoll==$APP_TAG
