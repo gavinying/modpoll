@@ -84,7 +84,8 @@ pipx upgrade modpoll
 Let's start exploring *modpoll* with *modsim* device, run the following command to get a first glimpse,
 
 ```bash
-modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+modpoll --tcp modsim.topmaker.net \
+        --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
 
 <p align="center">
@@ -163,14 +164,17 @@ docker run -p 5020:5020 helloysd/modsim
 It will create a virtual Modbus TCP device running at `localhost:5020`, and then you can poll it using *modpoll* tool,
 
 ```bash
-modpoll --tcp localhost --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+modpoll --tcp localhost \
+        --tcp-port 5020 \
+        --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
 
 > Use `sudo` before the docker command if you want to use the standard port `502`.
 
 ```bash
 sudo docker run -p 502:5020 helloysd/modsim
-modpoll --tcp localhost --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+modpoll --tcp localhost \
+        --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
 
 ### Publish data to MQTT broker
@@ -180,7 +184,9 @@ This is a useful function of this new *modpoll* tool, which provides a simple wa
 The following example uses a public MQTT broker `mqtt.eclipseprojects.io` for test purpose. You can also set up your own MQTT broker locally using [mosquitto](https://mosquitto.org/download/).
 
 ```bash
-modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv --mqtt-host mqtt.eclipseprojects.io
+modpoll --tcp modsim.topmaker.net \
+        --mqtt-host mqtt.eclipseprojects.io \
+        --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
 
 With successful data polling and publishing, you can subscribe the topic `modpoll/modsim` on the same MQTT broker `mqtt.eclipseprojects.io` to view the collected data.
@@ -228,17 +234,17 @@ A docker image has been provided for user to directly run the program without lo
 
 It shows the version of the program by default.
 
-Similar to the above *modsim* test, we can poll the first 5 holding registers with `docker run`,
+Similar to the above *modsim* test, we can poll data with `docker run`,
 
   ```bash
-  docker run helloysd/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+  docker run helloysd/modpoll modpoll -d --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
   ```
 
 If you want to load a local configure file, you need to mount a local folder onto container volume,
 for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command,
 
   ```bash
-  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll --tcp modsim.topmaker.net --config /app/examples/modsim.csv
+  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll modpoll -d --tcp modsim.topmaker.net --config /app/examples/modsim.csv
   ```
 
 
@@ -247,25 +253,34 @@ for example, if the child folder `examples` contains the config file `modsim.csv
 - Connect to Modbus TCP device
 
   ```bash
-  modpoll --tcp 192.168.1.10 --config examples/modsim.csv
+  modpoll --tcp 192.168.1.10 \
+          --config examples/modsim.csv
   ```
 
 - Connect to Modbus RTU device
 
   ```bash
-  modpoll --rtu /dev/ttyUSB0 --rtu-baud 9600 --config contrib/eniwise/scpms6.csv
+  modpoll --rtu /dev/ttyUSB0 \
+          --rtu-baud 9600 \
+          --config contrib/eniwise/scpms6.csv
   ```
 
 - Connect to Modbus TCP device and publish data to MQTT broker
 
   ```bash
-  modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config examples/modsim.csv --mqtt-host mqtt.eclipseprojects.io
+  modpoll --tcp modsim.topmaker.net \
+          --tcp-port 5020 \
+          --mqtt-host mqtt.eclipseprojects.io \
+          --config examples/modsim.csv
   ```
 
 - Connect to Modbus TCP device and export data to local csv file
 
   ```bash
-  modpoll --tcp modsim.topmaker.net --tcp-port 5020 --config examples/modsim.csv --export data.csv
+  modpoll --tcp modsim.topmaker.net \
+          --tcp-port 5020 \
+          --export data.csv \
+          --config examples/modsim.csv
   ```
 
 
