@@ -8,7 +8,7 @@ services:
     command: >
       modpoll -d --tcp modsim.topmaker.net
         --mqtt-host mqtt.eclipseprojects.io
-        --mqtt-topic-prefix mytest/modsim/
+        --mqtt-topic-prefix modpoll/test/
         --mqtt-qos 1
         --rate 30
         --timestamp
