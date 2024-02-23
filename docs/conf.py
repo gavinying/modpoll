@@ -20,11 +20,11 @@ print(sys.path)
 # -- Project information -----------------------------------------------------
 
 project = "Modpoll"
-copyright = "2021-2023, Ying Shaodong"
+copyright = "2021-2024, Ying Shaodong"
 author = "Ying Shaodong"
 
 # The full version, including alpha/beta/rc tags
-release = "0.5.0"
+release = "0.7.1"
 
 
 # -- General configuration ---------------------------------------------------

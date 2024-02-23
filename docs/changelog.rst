@@ -1,6 +1,15 @@
 Change log
 ==========
 
+0.7.0
+#####
+
+ * upgrade pymodbus to v3.5.4
+ * add --framer argument
+ * improve error messages
+ * improve documents
+ * bugfixes;
+
 0.6.0
 #####
 
