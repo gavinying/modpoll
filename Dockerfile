@@ -3,7 +3,7 @@ FROM python:$PYTHON_TAG
 ARG APP_TAG="0.7.0"
 WORKDIR /app
 
-RUN pip3 install modpoll==$APP_TAG
+RUN pip3 install modpoll[serial]==$APP_TAG
 
 COPY docker-entrypoint.sh .
 ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
