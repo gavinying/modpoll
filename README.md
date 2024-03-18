@@ -159,10 +159,10 @@ The configuration can be either a local file or a remote public URL resource.
 If you are blocked by company firewall for online device or prefer a local test, you can launch your own device simulator by running *modsim* locally,
 
 ```bash
-docker run -p 5020:5020 helloysd/modsim
+docker run --rm -p 5020:5020 helloysd/modsim
 ```
 
-It will create a virtual Modbus TCP device running at `localhost:5020`, and then you can poll it using *modpoll* tool,
+It will create a virtual Modbus TCP device running at `localhost:5020`, and you can open a new terminal, poll the virtual device using *modpoll* tool,
 
 ```bash
 modpoll \
@@ -174,7 +174,12 @@ modpoll \
 > Use `sudo` before the docker command if you want to use the standard port `502`.
 
 ```bash
-sudo docker run -p 502:5020 helloysd/modsim
+sudo docker run --rm -p 502:5020 helloysd/modsim
+```
+
+In a new terminal,
+
+```
 modpoll \
   --tcp localhost \
   --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
@@ -233,7 +238,7 @@ The *modpoll* tool will subscribe to the topic `<mqtt_topic_prefix>/<deviceid>/s
 A docker image has been provided for user to directly run the program without local installation,
 
   ```bash
-  docker run helloysd/modpoll
+  docker run --rm helloysd/modpoll
   ```
 
 It shows the version of the program by default.
@@ -241,7 +246,7 @@ It shows the version of the program by default.
 Similar to the above *modsim* test, we can poll data with `docker run`, in order to avoid printing out received data, the argument `--daemon` or `-d` is recommended to use with docker.
 
   ```bash
-  docker run helloysd/modpoll \
+  docker run --rm helloysd/modpoll \
     modpoll -d \
       --tcp modsim.topmaker.net \
       --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
@@ -251,7 +256,7 @@ If you want to load a local configure file, you need to mount a local folder ont
 for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command,
 
   ```bash
-  docker run -v $(pwd)/examples:/app/examples helloysd/modpoll \
+  docker run --rm -v $(pwd)/examples:/app/examples helloysd/modpoll \
     modpoll -d \
       --tcp modsim.topmaker.net \
       --config /app/examples/modsim.csv
