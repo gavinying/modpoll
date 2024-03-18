@@ -1,4 +1,4 @@
-# modpoll - A New Command-line Tool for Modbus
+# modpoll - A New Command-line Tool for Modbus and MQTT
 
 [![pipeline status](https://gitlab.com/helloysd/modpoll/badges/master/pipeline.svg)](https://gitlab.com/helloysd/modpoll/-/commits/master)
 [![License](https://img.shields.io/pypi/l/modpoll)](https://gitlab.com/helloysd/modpoll/-/blob/master/LICENSE)
