@@ -26,7 +26,8 @@ def _on_connect(client, userdata, flags, rc, properties=None):
         log.info("Connection successful")
         # Subscribing in on_connect() means that if we lose the connection and
         # reconnect then subscriptions will be renewed.
-        client.subscribe(f"{args.mqtt_topic_prefix}+/set")
+        qos = userdata.get("qos", 0)  # Default to QoS 0 if not provided
+        client.subscribe(f"{args.mqtt_topic_prefix}+/set", qos)
     elif rc == 1:
         log.warning("Connection refused - incorrect protocol version")
     elif rc == 2:
@@ -83,7 +84,11 @@ def mqttc_setup(config):
         else:
             clientid = args.mqtt_clientid
         global mqttc
-        mqttc = mqtt.Client(clientid, clean_session=(args.mqtt_qos == 0))
+        mqttc = mqtt.Client(
+            clientid,
+            clean_session=(args.mqtt_qos == 0),
+            userdata={"qos": args.mqtt_qos},
+        )
         if args.mqtt_use_tls:
             if args.mqtt_tls_version == "tlsv1.2":
                 tlsVersion = ssl.PROTOCOL_TLSv1_2
