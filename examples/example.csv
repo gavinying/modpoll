@@ -19,7 +19,7 @@
 # <endian>: byte_order and word_order e.g. BE_BE/BE_LE/LE_LE/LE_BE
 # <ref_name>: any string without spaces to describe the reference
 # <address>: integer 0 to 65535 (the modbus address and should match the poller range)
-# <dtype>: uint16/int16/uint32/int32/float32/bool8/bool16/stringXXX (defaults to uint16)
+# <dtype>: uint16/int16/uint32/int32/float16/float32/bool8/bool16/stringXXX (defaults to uint16)
 # <rw>: read/write setting e.g. r/w/rw
 # <unit> (optional): the measurement unit of reference
 # <scale> (Optional): a float value to be multiplied with actual register reading
