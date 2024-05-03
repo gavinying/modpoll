@@ -155,6 +155,9 @@ class Poller:
                 elif "int64" == ref.dtype:
                     ref.update_value(decoder.decode_64bit_int())
                     cur_ref += ref.ref_width
+                elif "float16" == ref.dtype:
+                    ref.update_value(decoder.decode_16bit_float())
+                    cur_ref += ref.ref_width
                 elif "float32" == ref.dtype:
                     ref.update_value(decoder.decode_32bit_float())
                     cur_ref += ref.ref_width
@@ -231,6 +234,8 @@ class Reference:
             self.ref_width = 4
         elif "uint64" == dtype:
             self.ref_width = 4
+        elif "float16" == dtype:
+            self.ref_width = 1
         elif "float32" == dtype:
             self.ref_width = 2
         elif "float64" == dtype:
