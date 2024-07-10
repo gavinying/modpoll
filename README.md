@@ -317,4 +317,4 @@ Thanks to Max Brueggemann and Oliver Wagner for their great work.
 
 ## License
 
-MIT © [helloysd](helloysd@gmail.com)
+MIT © 2021-2024, Ying Shaodong
