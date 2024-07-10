@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration &mdash; Modpoll  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changelog" href="changelog.html" />
+    <link rel="prev" title="Basic Usage" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Modpoll
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Basic Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#modbus-configure-file">Modbus Configure File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-1-modsim-device-modbus-tcp-device">Example 1: Modsim device (Modbus TCP device)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-2-scpm-s6-power-meter-modbus-rtu-device">Example 2: SCPM-S6 Power Meter (Modbus RTU device)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Modpoll</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/configure.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline"></a></h1>
+<section id="modbus-configure-file">
+<h2>Modbus Configure File<a class="headerlink" href="#modbus-configure-file" title="Permalink to this headline"></a></h2>
+<p>In order to communicate with modbus devices, a proper modbus configure file is required.
+It is mainly to describe the device address and register mappings.</p>
+<p>Here is the basic structure of modbus configure file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Modbus Configuration File</span>
+<span class="linenos"> 2</span><span class="c1"># --------------------------</span>
+<span class="linenos"> 3</span><span class="c1"># This configuration file is to describe the Modbus registers of target device(s) and defines poller(s) to help polling data.</span>
+<span class="linenos"> 4</span><span class="c1"># The file format uses &quot;csv&quot; instead of json or yaml because many vendor&#39;s modbus registers are described in a table so it is easier to edit the information in excel and export to csv format.</span>
+<span class="linenos"> 5</span><span class="c1">#</span>
+<span class="linenos"> 6</span><span class="c1"># Configuration Types</span>
+<span class="linenos"> 7</span><span class="c1"># --------------------------</span>
+<span class="hll"><span class="linenos"> 8</span><span class="c1"># device,&lt;device_name&gt;,&lt;device_id&gt;</span>
+</span><span class="hll"><span class="linenos"> 9</span><span class="c1"># poll,&lt;object_type&gt;,&lt;start_address&gt;,&lt;size&gt;,&lt;endian&gt;</span>
+</span><span class="hll"><span class="linenos">10</span><span class="c1"># ref,&lt;ref_name&gt;,&lt;address&gt;,&lt;dtype&gt;,&lt;rw&gt;,&lt;unit&gt;,&lt;scale&gt;</span>
+</span><span class="linenos">11</span><span class="c1">#</span>
+<span class="linenos">12</span><span class="c1"># Configuration Objects</span>
+<span class="linenos">13</span><span class="c1"># --------------------------</span>
+<span class="linenos">14</span><span class="c1"># &lt;device_name&gt;: any string without spaces to describe the device</span>
+<span class="linenos">15</span><span class="c1"># &lt;device_id&gt;: integer 1 to 254 to describe device ID</span>
+<span class="linenos">16</span><span class="c1"># &lt;object_type&gt;: coil/discrete_input/holding_register/input_register</span>
+<span class="linenos">17</span><span class="c1"># &lt;start_address&gt;: integer 0 to 65535 (The start address of Modbus registers to poll)</span>
+<span class="linenos">18</span><span class="c1"># &lt;size&gt;: integer 0 to 65535 (No. of registers to poll and value must not exceed the limits of Modbus)</span>
+<span class="linenos">19</span><span class="c1"># &lt;endian&gt;: byte_order and word_order e.g. BE_BE/BE_LE/LE_LE/LE_BE</span>
+<span class="linenos">20</span><span class="c1"># &lt;ref_name&gt;: any string without spaces to describe the reference</span>
+<span class="linenos">21</span><span class="c1"># &lt;address&gt;: integer 0 to 65535 (the modbus address and should match the poller range)</span>
+<span class="linenos">22</span><span class="c1"># &lt;dtype&gt;: uint16/int16/uint32/int32/float16/float32/bool8/bool16/stringXXX (defaults to uint16)</span>
+<span class="linenos">23</span><span class="c1"># &lt;rw&gt;: read/write setting e.g. r/w/rw</span>
+<span class="linenos">24</span><span class="c1"># &lt;unit&gt; (optional): the measurement unit of reference</span>
+<span class="linenos">25</span><span class="c1"># &lt;scale&gt; (Optional): a float value to be multiplied with actual register reading</span>
+<span class="linenos">26</span><span class="c1">#</span>
+<span class="linenos">27</span><span class="c1"># Typical Structure</span>
+<span class="linenos">28</span><span class="c1"># -----------------------------</span>
+<span class="linenos">29</span><span class="c1"># device,dev001,1   &lt;- the first device (dev001)</span>
+<span class="linenos">30</span><span class="c1"># poll,...          &lt;- the first poller of dev001</span>
+<span class="linenos">31</span><span class="c1"># ref,...           &lt;- the references in poller</span>
+<span class="linenos">32</span><span class="c1"># ref,...</span>
+<span class="linenos">33</span><span class="c1"># poll,...          &lt;- the second poller of dev001</span>
+<span class="linenos">34</span><span class="c1"># ref,...</span>
+<span class="linenos">35</span><span class="c1"># ref,...</span>
+<span class="linenos">36</span><span class="c1"># device,dev002,2   &lt;- the second device (dev002)</span>
+<span class="linenos">37</span><span class="c1"># poll,...          &lt;- the first poller of dev002</span>
+<span class="linenos">38</span><span class="c1"># ref,...</span>
+<span class="linenos">39</span><span class="c1">#</span>
+<span class="linenos">40</span><span class="c1"># Configuration Example</span>
+<span class="linenos">41</span><span class="c1"># !!! Please remove all comments for your config file !!!</span>
+<span class="linenos">42</span><span class="c1"># -----------------------------</span>
+<span class="linenos">43</span><span class="n">device</span><span class="p">,</span><span class="n">modsim001</span><span class="p">,</span><span class="mi">1</span><span class="p">,,</span>
+<span class="linenos">44</span><span class="n">poll</span><span class="p">,</span><span class="n">coil</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="n">BE_BE</span>
+<span class="linenos">45</span><span class="n">ref</span><span class="p">,</span><span class="n">coil01</span><span class="o">-</span><span class="mi">08</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">46</span><span class="n">ref</span><span class="p">,</span><span class="n">coil09</span><span class="o">-</span><span class="mi">12</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">47</span><span class="n">poll</span><span class="p">,</span><span class="n">holding_register</span><span class="p">,</span><span class="mi">40000</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="n">BE_BE</span>
+<span class="linenos">48</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg01</span><span class="p">,</span><span class="mi">40000</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">49</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg02</span><span class="p">,</span><span class="mi">40001</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">50</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg03</span><span class="p">,</span><span class="mi">40002</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">51</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg04</span><span class="p">,</span><span class="mi">40003</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">52</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg05</span><span class="p">,</span><span class="mi">40004</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">53</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg06</span><span class="p">,</span><span class="mi">40005</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">54</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg07</span><span class="p">,</span><span class="mi">40006</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">55</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg08</span><span class="p">,</span><span class="mi">40007</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">56</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg09</span><span class="p">,</span><span class="mi">40008</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">57</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg10</span><span class="p">,</span><span class="mi">40010</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">58</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg11</span><span class="p">,</span><span class="mi">40012</span><span class="p">,</span><span class="n">int32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">59</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg12</span><span class="p">,</span><span class="mi">40014</span><span class="p">,</span><span class="n">int32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">60</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg13</span><span class="p">,</span><span class="mi">40016</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">61</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg14</span><span class="p">,</span><span class="mi">40018</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
+</pre></div>
+</div>
+</section>
+<section id="example-1-modsim-device-modbus-tcp-device">
+<h2>Example 1: Modsim device (Modbus TCP device)<a class="headerlink" href="#example-1-modsim-device-modbus-tcp-device" title="Permalink to this headline"></a></h2>
+<p>This online Modbus TCP device simulator is designed for user to quickly test the modpoll functions.</p>
+<p>Here is an example of modbus configure file for reading modsim device.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">device</span><span class="p">,</span><span class="n">modsim001</span><span class="p">,</span><span class="mi">1</span><span class="p">,,</span>
+<span class="linenos"> 2</span><span class="n">poll</span><span class="p">,</span><span class="n">coil</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="n">BE_BE</span>
+<span class="linenos"> 3</span><span class="n">ref</span><span class="p">,</span><span class="n">coil01</span><span class="o">-</span><span class="mi">08</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos"> 4</span><span class="n">ref</span><span class="p">,</span><span class="n">coil09</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos"> 5</span><span class="n">poll</span><span class="p">,</span><span class="n">discrete_input</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="n">BE_BE</span>
+<span class="linenos"> 6</span><span class="n">ref</span><span class="p">,</span><span class="n">di01</span><span class="o">-</span><span class="mi">08</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos"> 7</span><span class="n">ref</span><span class="p">,</span><span class="n">di09</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span><span class="mi">10001</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos"> 8</span><span class="n">poll</span><span class="p">,</span><span class="n">input_register</span><span class="p">,</span><span class="mi">30000</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="n">BE_BE</span>
+<span class="linenos"> 9</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg01</span><span class="p">,</span><span class="mi">30000</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">10</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg02</span><span class="p">,</span><span class="mi">30001</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">11</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg03</span><span class="p">,</span><span class="mi">30002</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">12</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg04</span><span class="p">,</span><span class="mi">30003</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">13</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg05</span><span class="p">,</span><span class="mi">30004</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">14</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg06</span><span class="p">,</span><span class="mi">30005</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">15</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg07</span><span class="p">,</span><span class="mi">30006</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">16</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg08</span><span class="p">,</span><span class="mi">30007</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">17</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg09</span><span class="p">,</span><span class="mi">30008</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">18</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg10</span><span class="p">,</span><span class="mi">30010</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">19</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg11</span><span class="p">,</span><span class="mi">30012</span><span class="p">,</span><span class="n">int32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">20</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg12</span><span class="p">,</span><span class="mi">30014</span><span class="p">,</span><span class="n">int32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">21</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg13</span><span class="p">,</span><span class="mi">30016</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">22</span><span class="n">ref</span><span class="p">,</span><span class="n">input_reg14</span><span class="p">,</span><span class="mi">30018</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">23</span><span class="n">poll</span><span class="p">,</span><span class="n">holding_register</span><span class="p">,</span><span class="mi">40000</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="n">BE_BE</span>
+<span class="linenos">24</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg01</span><span class="p">,</span><span class="mi">40000</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">25</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg02</span><span class="p">,</span><span class="mi">40001</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">26</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg03</span><span class="p">,</span><span class="mi">40002</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">27</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg04</span><span class="p">,</span><span class="mi">40003</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">28</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg05</span><span class="p">,</span><span class="mi">40004</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">29</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg06</span><span class="p">,</span><span class="mi">40005</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">30</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg07</span><span class="p">,</span><span class="mi">40006</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">31</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg08</span><span class="p">,</span><span class="mi">40007</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">32</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg09</span><span class="p">,</span><span class="mi">40008</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">33</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg10</span><span class="p">,</span><span class="mi">40010</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">34</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg11</span><span class="p">,</span><span class="mi">40012</span><span class="p">,</span><span class="n">int32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">35</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg12</span><span class="p">,</span><span class="mi">40014</span><span class="p">,</span><span class="n">int32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">36</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg13</span><span class="p">,</span><span class="mi">40016</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">37</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg14</span><span class="p">,</span><span class="mi">40018</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
+</pre></div>
+</div>
+</section>
+<section id="example-2-scpm-s6-power-meter-modbus-rtu-device">
+<h2>Example 2: SCPM-S6 Power Meter (Modbus RTU device)<a class="headerlink" href="#example-2-scpm-s6-power-meter-modbus-rtu-device" title="Permalink to this headline"></a></h2>
+<p>SCPM-S6 is designed as a sub-circuit power meter to monitor multiple electrical circuit power consumptions.</p>
+<p>Here is an example of modbus configure file for SCPM-S6.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">device</span><span class="p">,</span><span class="n">scpm001</span><span class="p">,</span><span class="mi">1</span><span class="p">,,,</span>
+<span class="linenos"> 2</span><span class="n">poll</span><span class="p">,</span><span class="n">holding_register</span><span class="p">,</span><span class="mi">46001</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="n">BE_BE</span><span class="p">,</span>
+<span class="linenos"> 3</span><span class="n">ref</span><span class="p">,</span><span class="n">CT_TYPE</span><span class="p">,</span><span class="mi">46001</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span><span class="p">,</span>
+<span class="linenos"> 4</span><span class="n">ref</span><span class="p">,</span><span class="n">CT_RATING</span><span class="p">,</span><span class="mi">46002</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span><span class="p">,</span>
+<span class="linenos"> 5</span><span class="n">ref</span><span class="p">,</span><span class="n">DATA_SCALAR</span><span class="p">,</span><span class="mi">46003</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span><span class="p">,</span>
+<span class="linenos"> 6</span><span class="n">ref</span><span class="p">,</span><span class="n">ReservedA</span><span class="p">,</span><span class="mi">46004</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span><span class="p">,</span>
+<span class="linenos"> 7</span><span class="n">ref</span><span class="p">,</span><span class="n">ReservedB</span><span class="p">,</span><span class="mi">46005</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span><span class="p">,</span>
+<span class="linenos"> 8</span><span class="n">ref</span><span class="p">,</span><span class="n">SIGNED_MODE</span><span class="p">,</span><span class="mi">46006</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span><span class="p">,</span>
+<span class="linenos"> 9</span><span class="n">poll</span><span class="p">,</span><span class="n">holding_register</span><span class="p">,</span><span class="mi">46011</span><span class="p">,</span><span class="mi">92</span><span class="p">,</span><span class="n">BE_BE</span><span class="p">,</span>
+<span class="linenos">10</span><span class="n">ref</span><span class="p">,</span><span class="n">Hz</span><span class="p">,</span><span class="mi">46011</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">Hz</span>
+<span class="linenos">11</span><span class="n">ref</span><span class="p">,</span><span class="n">V</span><span class="p">,</span><span class="mi">46012</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">V</span>
+<span class="linenos">12</span><span class="n">ref</span><span class="p">,</span><span class="n">CH1_A</span><span class="p">,</span><span class="mi">46013</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">A</span>
+<span class="linenos">13</span><span class="n">ref</span><span class="p">,</span><span class="n">CH2_A</span><span class="p">,</span><span class="mi">46014</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">A</span>
+<span class="linenos">14</span><span class="n">ref</span><span class="p">,</span><span class="n">CH3_A</span><span class="p">,</span><span class="mi">46015</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">A</span>
+<span class="linenos">15</span><span class="n">ref</span><span class="p">,</span><span class="n">CH4_A</span><span class="p">,</span><span class="mi">46016</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">A</span>
+<span class="linenos">16</span><span class="n">ref</span><span class="p">,</span><span class="n">CH5_A</span><span class="p">,</span><span class="mi">46017</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">A</span>
+<span class="linenos">17</span><span class="n">ref</span><span class="p">,</span><span class="n">CH6_A</span><span class="p">,</span><span class="mi">46018</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">A</span>
+<span class="linenos">18</span><span class="n">ref</span><span class="p">,</span><span class="n">CH1_kWh</span><span class="p">,</span><span class="mi">46019</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">19</span><span class="n">ref</span><span class="p">,</span><span class="n">CH2_kWh</span><span class="p">,</span><span class="mi">46021</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">20</span><span class="n">ref</span><span class="p">,</span><span class="n">CH3_kWh</span><span class="p">,</span><span class="mi">46023</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">21</span><span class="n">ref</span><span class="p">,</span><span class="n">CH4_kWh</span><span class="p">,</span><span class="mi">46025</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">22</span><span class="n">ref</span><span class="p">,</span><span class="n">CH5_kWh</span><span class="p">,</span><span class="mi">46027</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">23</span><span class="n">ref</span><span class="p">,</span><span class="n">CH6_kWh</span><span class="p">,</span><span class="mi">46029</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">24</span><span class="n">ref</span><span class="p">,</span><span class="n">CH1_kWh_P</span><span class="p">,</span><span class="mi">46031</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">25</span><span class="n">ref</span><span class="p">,</span><span class="n">CH2_kWh_P</span><span class="p">,</span><span class="mi">46033</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">26</span><span class="n">ref</span><span class="p">,</span><span class="n">CH3_kWh_P</span><span class="p">,</span><span class="mi">46035</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">27</span><span class="n">ref</span><span class="p">,</span><span class="n">CH4_kWh_P</span><span class="p">,</span><span class="mi">46037</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">28</span><span class="n">ref</span><span class="p">,</span><span class="n">CH5_kWh_P</span><span class="p">,</span><span class="mi">46039</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">29</span><span class="n">ref</span><span class="p">,</span><span class="n">CH6_kWh_P</span><span class="p">,</span><span class="mi">46041</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">30</span><span class="n">ref</span><span class="p">,</span><span class="n">CH1_kWh_N</span><span class="p">,</span><span class="mi">46043</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">31</span><span class="n">ref</span><span class="p">,</span><span class="n">CH2_kWh_N</span><span class="p">,</span><span class="mi">46045</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">32</span><span class="n">ref</span><span class="p">,</span><span class="n">CH3_kWh_N</span><span class="p">,</span><span class="mi">46047</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">33</span><span class="n">ref</span><span class="p">,</span><span class="n">CH4_kWh_N</span><span class="p">,</span><span class="mi">46049</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">34</span><span class="n">ref</span><span class="p">,</span><span class="n">CH5_kWh_N</span><span class="p">,</span><span class="mi">46051</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">35</span><span class="n">ref</span><span class="p">,</span><span class="n">CH6_kWh_N</span><span class="p">,</span><span class="mi">46053</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kWh</span>
+<span class="linenos">36</span><span class="n">ref</span><span class="p">,</span><span class="n">CH1_kVARh</span><span class="p">,</span><span class="mi">46055</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">37</span><span class="n">ref</span><span class="p">,</span><span class="n">CH2_kVARh</span><span class="p">,</span><span class="mi">46057</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">38</span><span class="n">ref</span><span class="p">,</span><span class="n">CH3_kVARh</span><span class="p">,</span><span class="mi">46059</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">39</span><span class="n">ref</span><span class="p">,</span><span class="n">CH4_kVARh</span><span class="p">,</span><span class="mi">46061</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">40</span><span class="n">ref</span><span class="p">,</span><span class="n">CH5_kVARh</span><span class="p">,</span><span class="mi">46063</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">41</span><span class="n">ref</span><span class="p">,</span><span class="n">CH6_kVARh</span><span class="p">,</span><span class="mi">46065</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">42</span><span class="n">ref</span><span class="p">,</span><span class="n">CH1_kVARh_P</span><span class="p">,</span><span class="mi">46067</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">43</span><span class="n">ref</span><span class="p">,</span><span class="n">CH2_kVARh_P</span><span class="p">,</span><span class="mi">46069</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">44</span><span class="n">ref</span><span class="p">,</span><span class="n">CH3_kVARh_P</span><span class="p">,</span><span class="mi">46071</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">45</span><span class="n">ref</span><span class="p">,</span><span class="n">CH4_kVARh_P</span><span class="p">,</span><span class="mi">46073</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">46</span><span class="n">ref</span><span class="p">,</span><span class="n">CH5_kVARh_P</span><span class="p">,</span><span class="mi">46075</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">47</span><span class="n">ref</span><span class="p">,</span><span class="n">CH6_kVARh_P</span><span class="p">,</span><span class="mi">46077</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">48</span><span class="n">ref</span><span class="p">,</span><span class="n">CH1_kVARh_N</span><span class="p">,</span><span class="mi">46079</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">49</span><span class="n">ref</span><span class="p">,</span><span class="n">CH2_kVARh_N</span><span class="p">,</span><span class="mi">46081</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">50</span><span class="n">ref</span><span class="p">,</span><span class="n">CH3_kVARh_N</span><span class="p">,</span><span class="mi">46083</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">51</span><span class="n">ref</span><span class="p">,</span><span class="n">CH4_kVARh_N</span><span class="p">,</span><span class="mi">46085</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">52</span><span class="n">ref</span><span class="p">,</span><span class="n">CH5_kVARh_N</span><span class="p">,</span><span class="mi">46087</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">53</span><span class="n">ref</span><span class="p">,</span><span class="n">CH6_kVARh_N</span><span class="p">,</span><span class="mi">46089</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVARh</span>
+<span class="linenos">54</span><span class="n">ref</span><span class="p">,</span><span class="n">CH1_kVA</span><span class="p">,</span><span class="mi">46091</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVA</span>
+<span class="linenos">55</span><span class="n">ref</span><span class="p">,</span><span class="n">CH2_kVA</span><span class="p">,</span><span class="mi">46092</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVA</span>
+<span class="linenos">56</span><span class="n">ref</span><span class="p">,</span><span class="n">CH3_kVA</span><span class="p">,</span><span class="mi">46093</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVA</span>
+<span class="linenos">57</span><span class="n">ref</span><span class="p">,</span><span class="n">CH4_kVA</span><span class="p">,</span><span class="mi">46094</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVA</span>
+<span class="linenos">58</span><span class="n">ref</span><span class="p">,</span><span class="n">CH5_kVA</span><span class="p">,</span><span class="mi">46095</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVA</span>
+<span class="linenos">59</span><span class="n">ref</span><span class="p">,</span><span class="n">CH6_kVA</span><span class="p">,</span><span class="mi">46096</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">kVA</span>
+<span class="linenos">60</span><span class="n">ref</span><span class="p">,</span><span class="n">CH1_PF</span><span class="p">,</span><span class="mi">46097</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span>
+<span class="linenos">61</span><span class="n">ref</span><span class="p">,</span><span class="n">CH2_PF</span><span class="p">,</span><span class="mi">46098</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span>
+<span class="linenos">62</span><span class="n">ref</span><span class="p">,</span><span class="n">CH3_PF</span><span class="p">,</span><span class="mi">46099</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span>
+<span class="linenos">63</span><span class="n">ref</span><span class="p">,</span><span class="n">Reserved1</span><span class="p">,</span><span class="mi">46100</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span>
+<span class="linenos">64</span><span class="n">ref</span><span class="p">,</span><span class="n">Reserved2</span><span class="p">,</span><span class="mi">46101</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span>
+<span class="linenos">65</span><span class="n">ref</span><span class="p">,</span><span class="n">Reserved3</span><span class="p">,</span><span class="mi">46102</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">r</span><span class="p">,</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="Basic Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="changelog.html" class="btn btn-neutral float-right" title="Changelog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021-2024, Ying Shaodong.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
