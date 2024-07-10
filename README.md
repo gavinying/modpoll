@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/github/license/gavinying/modpoll)](https://img.shields.io/github/license/gavinying/modpoll)
 [![Downloads](https://static.pepy.tech/badge/modpoll/week)](https://pepy.tech/project/modpoll)
 
-> Learn more about *modpoll* usage at [documentation](https://helloysd.gitlab.io/modpoll) site.
+> Learn more about *modpoll* usage at [documentation](https://gavinying.github.io/modpoll) site.
 
 ## Motivation
 
@@ -152,7 +152,7 @@ You can also take a look at [contrib](https://github.com/gavinying/modpoll/tree/
 
 The configuration can be either a local file or a remote public URL resource.
 
-> *Refer to the [documentation](https://helloysd.gitlab.io/modpoll/configure.html) site for more details.*
+> *Refer to the [documentation](https://gavinying.github.io/modpoll/configure.html) site for more details.*
 
 ### Poll local device (modsim)
 
@@ -303,7 +303,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```
 
 
-> *Refer to the [documentation](https://helloysd.gitlab.io/modpoll) site for more details about the configuration and examples.*
+> *Refer to the [documentation](https://gavinying.github.io/modpoll) site for more details about the configuration and examples.*
 
 
 ## Credits
