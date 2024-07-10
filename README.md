@@ -1,11 +1,11 @@
-# modpoll - A New Command-line Tool for Modbus and MQTT
+# Modpoll - A New Command-line Tool for Modbus and MQTT
 
-[![pipeline status](https://gitlab.com/helloysd/modpoll/badges/master/pipeline.svg)](https://gitlab.com/helloysd/modpoll/-/commits/master)
-[![License](https://img.shields.io/pypi/l/modpoll)](https://gitlab.com/helloysd/modpoll/-/blob/master/LICENSE)
+[![Release](https://img.shields.io/github/v/release/gavinying/modpoll)](https://img.shields.io/github/v/release/gavinying/modpoll)
+[![Build status](https://img.shields.io/github/actions/workflow/status/gavinying/modpoll/main.yml?branch=main)](https://github.com/gavinying/modpoll/actions/workflows/main.yml?query=branch%3Amain)
+[![License](https://img.shields.io/github/license/gavinying/modpoll)](https://img.shields.io/github/license/gavinying/modpoll)
 [![Downloads](https://static.pepy.tech/badge/modpoll/week)](https://pepy.tech/project/modpoll)
 
 > Learn more about *modpoll* usage at [documentation](https://helloysd.gitlab.io/modpoll) site.
-
 
 ## Motivation
 
@@ -39,17 +39,17 @@ In fact, *modpoll* helps to bridge between the traditional field-bus world and t
 
 ## Installation
 
-This program tested on python 3.8+, the package is available in the Python Package Index, users can easily install it using `pip` or `pipx`.
+This program tested on Python 3.8+, the package is available in the [Python Package Index](https://pypi.org/), users can easily install it using `pip` or `pipx`.
 
 ### Using PIP
 
-Python3 is supported by most popular platforms, e.g. Linux/macOS/Windows, on which you can install *modpoll* using `pip` tool,
+Install *modpoll* using the following command,
 
 ```bash
 pip install modpoll
 ```
 
-Optionally, pyserial library can be installed for Modbus-RTU communication,
+Optionally, [pyserial](https://pyserial.readthedocs.io/) library can be installed for Modbus-RTU communication,
 
 ```bash
 pip install 'modpoll[serial]'

@@ -3,44 +3,66 @@ Installation
 
 This program is tested on python 3.8+.
 
-Install with pip
+Install with pip or pipx
 -----------------
 
-The package is available in the Python Package Index::
+The package is available in the `Python Package Index <https://pypi.org/>`_,
+
+.. code-block:: shell
 
     pip install modpoll
 
-Optionally, pyserial library can be installed for Modbus-RTU communication::
+Optionally, pyserial library can be installed for Modbus-RTU communication,
+
+.. code-block:: shell
 
     pip install 'modpoll[serial]'
 
-Run the following command to check if there is new version available::
+Run the following command to check if there is new version available,
+
+.. code-block:: shell
 
     pip install -U modpoll
 
+On Windows, it's recommended to use ``pipx`` for installing *modpoll*. Refer to `pipx <https://pypa.github.io/pipx/installation/>`_ installation guide for detailed instructions.
 
-Uninstall with pip
+To install *modpoll*, open a Command Prompt terminal and run:
+
+.. code-block:: shell
+
+    pipx install modpoll
+
+To upgrade *modpoll* to the latest version, use the following command:
+
+.. code-block:: shell
+
+    pipx upgrade modpoll
+
+
+Uninstall
 -------------------
 
-The program can be uninstalled by the following command::
+The program can be uninstalled by the following command,
+
+.. code-block:: shell
 
     pip uninstall modpoll
 
+or,
 
-Run in docker
--------------------------------------
+.. code-block:: shell
 
-- Check app version
-
-  .. code-block:: shell
-
-    docker run helloysd/modpoll
+    pipx uninstall modpoll
 
 
-- Connect to Modbus TCP device
+Run with docker
+---------------
 
-  In order to quickly explore the functions of *modpoll*, we deployed a dummy Modbus TCP device at `<modsim.topmaker.net:502>`_, you can connect via the following command,
+A docker image has been provided for user to directly use the tool
+without the local installation,
 
-  .. code-block:: shell
+.. code-block:: shell
 
-    docker run helloysd/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+    docker run --rm helloysd/modpoll
+
+It shows the version of the tool by default.
