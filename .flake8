@@ -1,4 +1,0 @@
-[flake8]
-exclude =
-    docs/conf.py,
-max-line-length = 120
