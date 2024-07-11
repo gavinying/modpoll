@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.8.2](https://github.com/gavinying/modpoll/compare/v0.8.1...v0.8.2) (2024-07-11)
+
+
+### Bug Fixes
+
+* docker run error ([#47](https://github.com/gavinying/modpoll/issues/47)) ([e896664](https://github.com/gavinying/modpoll/commit/e8966640debd822fb1a52f3692a47bb37f11246b))
+* type issue with '--mqtt-qos' ([e22d2c7](https://github.com/gavinying/modpoll/commit/e22d2c7daa6b99b5cfe1ed85a7be86b40462c02c))
+
+
+### Documentation
+
+* add changelog.rst ([b66396b](https://github.com/gavinying/modpoll/commit/b66396b7ff4b02a78809941761daba3d9465a8c3))
+
 ## [0.8.1](https://github.com/gavinying/modpoll/compare/v0.8.0...v0.8.1) (2024-07-10)
 
 
