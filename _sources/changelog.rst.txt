@@ -1,8 +1,21 @@
 Changelog
 =========
 
+`0.8.3 <https://github.com/gavinying/modpoll/compare/v0.8.2...v0.8.3>`__ (2024-07-11)
+-------------------------------------------------------------------------------------
+
+Bug Fixes
+~~~~~~~~~
+
+-  missing shell in docker
+   (`56d5bb4 <https://github.com/gavinying/modpoll/commit/56d5bb4dc7fb2aee8cbcbace34d978cea9f63c3e>`__)
+
+.. _section-1:
+
 `0.8.2 <https://github.com/gavinying/modpoll/compare/v0.8.1...v0.8.2>`__ (2024-07-11)
 -------------------------------------------------------------------------------------
+
+.. _bug-fixes-1:
 
 Bug Fixes
 ~~~~~~~~~
@@ -19,12 +32,12 @@ Documentation
 -  add changelog.rst
    (`b66396b <https://github.com/gavinying/modpoll/commit/b66396b7ff4b02a78809941761daba3d9465a8c3>`__)
 
-.. _section-1:
+.. _section-2:
 
 `0.8.1 <https://github.com/gavinying/modpoll/compare/v0.8.0...v0.8.1>`__ (2024-07-10)
 -------------------------------------------------------------------------------------
 
-.. _bug-fixes-1:
+.. _bug-fixes-2:
 
 Bug Fixes
 ~~~~~~~~~
@@ -32,7 +45,7 @@ Bug Fixes
 -  ci issue (`#44 <https://github.com/gavinying/modpoll/issues/44>`__)
    (`af9fdeb <https://github.com/gavinying/modpoll/commit/af9fdebbba5ee4b9b03d51462a1efc84fd491d9b>`__)
 
-.. _section-2:
+.. _section-3:
 
 `0.8.0 <https://github.com/gavinying/modpoll/compare/v0.7.2...v0.8.0>`__ (2024-07-10)
 -------------------------------------------------------------------------------------
