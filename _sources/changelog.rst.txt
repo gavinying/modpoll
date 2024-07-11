@@ -1,6 +1,22 @@
 Changelog
 =========
 
+`1.0.0 <https://github.com/gavinying/modpoll/compare/0.8.4...1.0.0>`__ (2024-07-11)
+-----------------------------------------------------------------------------------
+
+⚠ BREAKING CHANGES
+~~~~~~~~~~~~~~~~~~
+
+-  Release v1.0.0
+
+Features
+~~~~~~~~
+
+-  Major refactor to enhance CI/CD automation
+   (`8ffa015 <https://github.com/gavinying/modpoll/commit/8ffa0154b540c00b6fa2027ef38690e29911aafa>`__)
+
+.. _section-1:
+
 `0.8.4 <https://github.com/gavinying/modpoll/compare/v0.8.3...0.8.4>`__ (2024-07-11)
 ------------------------------------------------------------------------------------
 
@@ -10,7 +26,7 @@ Bug Fixes
 -  disable poetry virtualenv creation in docker
    (`10db8d1 <https://github.com/gavinying/modpoll/commit/10db8d11b9eefc42e9e498ac95119906880e4274>`__)
 
-.. _section-1:
+.. _section-2:
 
 `0.8.3 <https://github.com/gavinying/modpoll/compare/v0.8.2...v0.8.3>`__ (2024-07-11)
 -------------------------------------------------------------------------------------
@@ -23,7 +39,7 @@ Bug Fixes
 -  missing shell in docker
    (`56d5bb4 <https://github.com/gavinying/modpoll/commit/56d5bb4dc7fb2aee8cbcbace34d978cea9f63c3e>`__)
 
-.. _section-2:
+.. _section-3:
 
 `0.8.2 <https://github.com/gavinying/modpoll/compare/v0.8.1...v0.8.2>`__ (2024-07-11)
 -------------------------------------------------------------------------------------
@@ -45,7 +61,7 @@ Documentation
 -  add changelog.rst
    (`b66396b <https://github.com/gavinying/modpoll/commit/b66396b7ff4b02a78809941761daba3d9465a8c3>`__)
 
-.. _section-3:
+.. _section-4:
 
 `0.8.1 <https://github.com/gavinying/modpoll/compare/v0.8.0...v0.8.1>`__ (2024-07-10)
 -------------------------------------------------------------------------------------
@@ -58,7 +74,7 @@ Bug Fixes
 -  ci issue (`#44 <https://github.com/gavinying/modpoll/issues/44>`__)
    (`af9fdeb <https://github.com/gavinying/modpoll/commit/af9fdebbba5ee4b9b03d51462a1efc84fd491d9b>`__)
 
-.. _section-4:
+.. _section-5:
 
 `0.8.0 <https://github.com/gavinying/modpoll/compare/v0.7.2...v0.8.0>`__ (2024-07-10)
 -------------------------------------------------------------------------------------
