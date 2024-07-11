@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/gavinying/modpoll/compare/0.8.4...1.0.0) (2024-07-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* Release v1.0.0
+
+### Features
+
+* Major refactor to enhance CI/CD automation ([8ffa015](https://github.com/gavinying/modpoll/commit/8ffa0154b540c00b6fa2027ef38690e29911aafa))
+
 ## [0.8.4](https://github.com/gavinying/modpoll/compare/v0.8.3...0.8.4) (2024-07-11)
 
 
