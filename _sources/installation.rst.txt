@@ -4,7 +4,7 @@ Installation
 This program is tested on python 3.8+.
 
 Install with pip or pipx
------------------
+-------------------------
 
 The package is available in the `Python Package Index <https://pypi.org/>`_,
 
