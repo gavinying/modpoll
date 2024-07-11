@@ -42,13 +42,18 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker images
         env:
           DOCKER_REGISTRY: ${{ vars.DOCKER_REGISTRY }}
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           IMAGE_NAME: modpoll
+          TAG: ${{ steps.vars.outputs.tag }}
         run: |
-          docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:${{ steps.vars.outputs.tag }} --push .
+          TAG=${TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG"
+          docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:$TAG --push .
+          docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:${MAJOR} --push .
+          docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:${MAJOR}.${MINOR} --push .
 
   deploy-docs:
     needs: build-and-publish
