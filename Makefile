@@ -45,8 +45,8 @@ publish: ## Publish a release to PyPI.
 .PHONY: build-and-publish
 build-and-publish: build publish ## Build and publish.
 
-.PHONY: docker
-docker: ## Build docker using docker buildx
+.PHONY: docker-dev
+docker-dev: ## Build docker using docker buildx
 	@echo "🚀 Login to docker registry"
 	@echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin "${DOCKER_REGISTRY}"
 	@echo "🚀 Set up QEMU"
@@ -54,7 +54,7 @@ docker: ## Build docker using docker buildx
 	@echo "🚀 Create the builder if not exists"
 	@docker buildx inspect mybuilder &>/dev/null || docker buildx create --name mybuilder ; docker buildx use mybuilder
 	@echo "🚀 Creating docker image file"
-	@docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/modsim:latest --push .
+	@docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/modpoll:dev --push .
 
 .PHONY: docs
 docs: ## Build docs into html files

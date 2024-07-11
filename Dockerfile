@@ -15,4 +15,6 @@ COPY . /app/
 # Install project
 RUN poetry install --no-interaction --no-ansi --all-extras --without dev,docs
 
+COPY docker-entrypoint.sh .
+ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
 CMD ["modpoll", "--version"]
