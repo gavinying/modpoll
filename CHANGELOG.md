@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/gavinying/modpoll/compare/v0.8.3...0.8.4) (2024-07-11)
+
+
+### Bug Fixes
+
+* disable poetry virtualenv creation in docker ([10db8d1](https://github.com/gavinying/modpoll/commit/10db8d11b9eefc42e9e498ac95119906880e4274))
+
 ## [0.8.3](https://github.com/gavinying/modpoll/compare/v0.8.2...v0.8.3) (2024-07-11)
 
 
