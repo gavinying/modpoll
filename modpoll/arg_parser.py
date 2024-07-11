@@ -102,6 +102,7 @@ def get_parser():
     parser.add_argument(
         "--mqtt-qos",
         choices=[0, 1, 2],
+        type=int,
         default=0,
         help="MQTT QoS value. Defaults to 0",
     )
