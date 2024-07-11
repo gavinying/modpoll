@@ -8,14 +8,11 @@ ENV POETRY_VERSION=1.8.3 \
 # Install poetry
 RUN pip install "poetry==$POETRY_VERSION"
 
-# Copy only requirements to cache them in docker layer
+# Copy project
 WORKDIR /app
-COPY poetry.lock pyproject.toml /app/
+COPY . /app/
 
-# Project initialization:
-RUN poetry install --no-interaction --no-ansi --no-root --no-dev
+# Install project
+RUN poetry install --no-interaction --no-ansi --all-extras --without dev,docs
 
-# Copy Python app to the Docker image
-COPY modpoll /app/modpoll/
-
-CMD [ "python", "-m", "modpoll"]
+CMD ["modpoll", "--version"]
