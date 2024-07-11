@@ -2,7 +2,8 @@
   "packages": {
     ".": {
       "release-type": "python",
-      "include-v-in-tag": false
+      "include-v-in-tag": false,
+      "draft": false
     }
   }
 }
