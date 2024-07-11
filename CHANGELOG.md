@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.3](https://github.com/gavinying/modpoll/compare/v0.8.2...v0.8.3) (2024-07-11)
+
+
+### Bug Fixes
+
+* missing shell in docker ([56d5bb4](https://github.com/gavinying/modpoll/commit/56d5bb4dc7fb2aee8cbcbace34d978cea9f63c3e))
+
 ## [0.8.2](https://github.com/gavinying/modpoll/compare/v0.8.1...v0.8.2) (2024-07-11)
 
 
