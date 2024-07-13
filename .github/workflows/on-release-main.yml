@@ -13,8 +13,8 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Set up the environment
-        uses: ./.github/actions/setup-env
+      - name: Set up poetry
+        uses: ./.github/actions/setup-poetry
 
       - name: Export tag
         id: vars
@@ -60,8 +60,11 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Set up the environment
-        uses: ./.github/actions/setup-env
+      - name: Set up poetry
+        uses: ./.github/actions/setup-poetry
+
+      - name: Set up pandoc
+        uses: ./.github/actions/setup-pandoc
 
       - name: Build documentation
         run: make docs

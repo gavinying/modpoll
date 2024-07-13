@@ -1,0 +1,17 @@
+name: "setup-pandoc"
+description: "Composite action to setup pandoc."
+
+inputs:
+  pandoc-version:
+    required: false
+    description: "The pandoc version to use"
+    default: "3.2.1"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Pandoc
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y pandoc
+      shell: bash

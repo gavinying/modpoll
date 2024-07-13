@@ -1,5 +1,5 @@
-name: "setup-env"
-description: "Composite action to setup the Python and poetry environment, and install Pandoc."
+name: "setup-poetry"
+description: "Composite action to setup the Python and poetry environment."
 
 inputs:
   python-version:
