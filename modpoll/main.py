@@ -20,6 +20,8 @@ from modpoll.modbus_task import (
 )
 from modpoll.mqtt_task import mqttc_close, mqttc_receive, mqttc_setup
 
+from . import __version__
+
 LOG_SIMPLE = "%(asctime)s | %(levelname).1s | %(name)s | %(message)s"
 log = None
 event_exit = threading.Event()
@@ -37,12 +39,18 @@ def get_utc_time():
 
 
 def app(name="modpoll"):
-    print("\nmodpoll - A New Command-line Tool for Modbus and MQTT\n", flush=True)
+    print(
+        f"\nModpoll v{__version__} - A New Command-line Tool for Modbus and MQTT\n",
+        flush=True,
+    )
 
     signal.signal(signal.SIGINT, _signal_handler)
 
     # parse args
     args = get_parser().parse_args()
+    # sanity check
+    if args.mqtt_topic_prefix.endswith("/"):
+        args.mqtt_topic_prefix = args.mqtt_topic_prefix[:-1]
 
     # get logger
     logging.basicConfig(level=args.loglevel, format=LOG_SIMPLE)

@@ -79,6 +79,12 @@ def get_parser():
         help="The file name to export references/registers",
     )
     parser.add_argument(
+        "--mqtt-version",
+        choices=["3.1.1", "5.0"],
+        default="3.1.1",
+        help="MQTT version. Defaults to MQTT v3.1.1",
+    )
+    parser.add_argument(
         "--mqtt-host",
         default=None,
         help="MQTT server address. Skip MQTT setup if not specified",
