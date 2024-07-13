@@ -51,9 +51,7 @@ jobs:
         run: |
           TAG=${TAG#v}
           IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG"
-          docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:$TAG --push .
-          docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:${MAJOR} --push .
-          docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:${MAJOR}.${MINOR} --push .
+          docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:$TAG -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:${MAJOR} -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:${MAJOR}.${MINOR} -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/$IMAGE_NAME:latest --push .
 
   deploy-docs:
     needs: build-and-publish
