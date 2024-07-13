@@ -558,7 +558,7 @@ def modbus_publish(timestamp=None, on_change=False):
             else:
                 payload[f"{ref.name}"] = ref.val
             if args.mqtt_single:
-                topic = f"{args.mqtt_topic_prefix}{dev.name}/{ref.name}"
+                topic = f"{args.mqtt_topic_prefix}/{dev.name}/{ref.name}"
                 if isinstance(ref.val, list):
                     for i, ref_val_entry in enumerate(ref.val):
                         mqttc_publish(
@@ -569,7 +569,7 @@ def modbus_publish(timestamp=None, on_change=False):
         if timestamp:
             payload["timestamp_ms"] = int(timestamp * 1000)
         if not args.mqtt_single:
-            topic = f"{args.mqtt_topic_prefix}{dev.name}"
+            topic = f"{args.mqtt_topic_prefix}/{dev.name}"
             mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
 
 
@@ -577,7 +577,7 @@ def modbus_publish_diagnostics():
     for dev in deviceList:
         log.debug(f"Publishing diagnostics for device {dev.name} ...")
         payload = {"pollCount": dev.pollCount, "errorCount": dev.errorCount}
-        topic = f"{args.mqtt_topic_prefix}diagnostics/{dev.name}"
+        topic = f"{args.mqtt_topic_prefix}/diagnostics/{dev.name}"
         mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
 
 
