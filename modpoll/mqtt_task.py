@@ -4,7 +4,12 @@ import socket
 import ssl
 from multiprocessing import Queue
 
-import paho.mqtt.client as mqtt
+from paho.mqtt.client import (
+    Client as MQTTClient,
+    CallbackAPIVersion,
+    ReasonCode,
+    MQTTProtocolVersion,
+)
 from paho.mqtt import MQTTException
 
 args = None
@@ -21,53 +26,69 @@ class MqttMsg:
 
 
 # Callbacks
-def _on_connect(client, userdata, flags, rc, properties=None):
+def _on_connect(client, userdata, flags, reason_code, properties):
+    # check if the broker already has a persistent session for this client
+    if isinstance(flags, dict):  # MQTTv5
+        session_present = flags.get("session present", False)
+    else:  # MQTTv3
+        session_present = flags.session_present
+
+    if isinstance(reason_code, ReasonCode):
+        rc = reason_code.value
+    else:
+        rc = reason_code
+
     if rc == 0:
         log.info("Connection successful")
-        # Subscribing in on_connect() means that if we lose the connection and
-        # reconnect then subscriptions will be renewed.
-        qos = userdata.get("qos", 0)  # Default to QoS 0 if not provided
-        client.subscribe(f"{args.mqtt_topic_prefix}+/set", qos)
-    elif rc == 1:
-        log.warning("Connection refused - incorrect protocol version")
-    elif rc == 2:
-        log.warning("Connection refused - invalid client identifier")
-    elif rc == 3:
-        log.warning("Connection refused - server unavailable")
-    elif rc == 4:
-        log.warning("Connection refused - bad username or password")
-    elif rc == 5:
-        log.warning("Connection refused - not authorised")
+        if session_present:
+            log.info("Session present, reusing existing session")
+        else:
+            log.info("New session created")
+            # Subscribing in on_connect() means that if we lose the connection and
+            # reconnect then subscriptions will be renewed.
+            if "subscribe_topic" in userdata:
+                topic = userdata.get("subscribe_topic")
+                qos = userdata.get("subscribe_qos", 0)  # Default to QoS 0
+                log.info(f"Subscribe to topic: {topic} with QoS: {qos}")
+                client.subscribe(topic, qos)
     else:
-        log.warning("Unknown error")
+        log.warning(f"Connection failed with reason code: {reason_code}")
 
 
-def _on_disconnect(client, userdata, rc):
-    log.info(f"disconnected. rc={rc}.")
+def _on_subscribe(client, userdata, mid, reason_codes, properties):
+    for sub_result in reason_codes:
+        if sub_result == 1:
+            log.info("Subscribed.")
+        # Any reason code >= 128 is a failure.
+        if sub_result >= 128:
+            log.warning("Failed to subscribe.")
 
 
-def _on_message(client, userdata, msg):
-    if msg.retain == 0:
-        log.info(f"Receive message ({msg.topic}): {msg.payload}")
+def _on_publish(client, userdata, mid, reason_codes, properties):
+    log.debug("Sent.")
+
+
+def _on_message(client, userdata, message):
+    if message.retain == 0:
+        log.info(f"Receive message ({message.topic}): {message.payload}")
     else:
-        log.info(f"Receive retained message ({msg.topic}): {msg.payload}")
-    obj = msg.topic, msg.payload
+        log.info(f"Receive retained message ({message.topic}): {message.payload}")
+    obj = message.topic, message.payload
     try:
         rx_queue.put(obj, block=False)
     except queue.Full:
         log.warning("MQTT receiving queue is full, ignoring new message.")
 
 
-def _on_publish(client, userdata, mid):
-    log.debug("Sent.")
+def _on_disconnect(client, userdata, flags, reason_code, properties):
+    if reason_code == 0:
+        log.info("Disconnected.")
+    if reason_code > 0:
+        log.warning(f"Disconnected with error, reason_code={reason_code}.")
 
 
-def _on_subscribe(client, userdata, mid, granted_qos):
-    log.debug("Subscribed.")
-
-
-def _on_log(client, userdata, level, string):
-    log.debug(f"{level} | {string}")
+def _on_log(client, userdata, level, buf):
+    log.debug(f"{level} | {buf}")
 
 
 def mqttc_setup(config):
@@ -84,11 +105,7 @@ def mqttc_setup(config):
         else:
             clientid = args.mqtt_clientid
         global mqttc
-        mqttc = mqtt.Client(
-            clientid,
-            clean_session=(args.mqtt_qos == 0),
-            userdata={"qos": args.mqtt_qos},
-        )
+
         if args.mqtt_use_tls:
             if args.mqtt_tls_version == "tlsv1.2":
                 tlsVersion = ssl.PROTOCOL_TLSv1_2
@@ -116,17 +133,46 @@ def mqttc_setup(config):
         if args.mqtt_user:
             mqttc.username_pw_set(args.mqtt_user, args.mqtt_pass)
 
-        mqttc.on_message = _on_message
-        mqttc.on_connect = _on_connect
-        mqttc.on_disconnect = _on_disconnect
-        mqttc.on_publish = _on_publish
-        mqttc.on_subscribe = _on_subscribe
+        clean_start_or_session = args.mqtt_qos == 0
 
-        if "DEBUG" == args.loglevel.upper():
-            mqttc.on_log = _on_log
+        if args.mqtt_version == "5.0":
+            mqttc = MQTTClient(
+                CallbackAPIVersion.VERSION2,
+                client_id=clientid,
+                userdata={"qos": args.mqtt_qos},
+                protocol=MQTTProtocolVersion.MQTTv5,
+            )
+            mqttc.on_connect = _on_connect
+            mqttc.on_subscribe = _on_subscribe
+            mqttc.on_message = _on_message
+            mqttc.on_publish = _on_publish
+            mqttc.on_disconnect = _on_disconnect
 
-        # try to connect
-        mqttc.connect(host=args.mqtt_host, port=args.mqtt_port, keepalive=60)
+            if "DEBUG" == args.loglevel.upper():
+                mqttc.on_log = _on_log
+            mqttc.connect(
+                host=args.mqtt_host,
+                port=args.mqtt_port,
+                keepalive=60,
+                clean_start=clean_start_or_session,
+            )
+        else:
+            mqttc = MQTTClient(
+                CallbackAPIVersion.VERSION2,
+                client_id=clientid,
+                clean_session=clean_start_or_session,
+                userdata={"qos": args.mqtt_qos},
+                protocol=MQTTProtocolVersion.MQTTv311,
+            )
+            mqttc.on_connect = _on_connect
+            mqttc.on_subscribe = _on_subscribe
+            mqttc.on_message = _on_message
+            mqttc.on_publish = _on_publish
+            mqttc.on_disconnect = _on_disconnect
+
+            if "DEBUG" == args.loglevel.upper():
+                mqttc.on_log = _on_log
+            mqttc.connect(host=args.mqtt_host, port=args.mqtt_port, keepalive=60)
 
         # start loop - let paho manage connection
         mqttc.loop_start()
@@ -137,7 +183,6 @@ def mqttc_setup(config):
 
     except Exception as ex:
         log.error(f"mqtt connection error: {ex}")
-        # raise ex
         return False
 
 
@@ -148,14 +193,13 @@ def mqttc_publish(topic, msg, qos=0, retain=False):
         if not mqttc.is_connected() and qos == 0:
             return
         pubinfo = mqttc.publish(topic, msg, qos, retain)
-        # pubinfo.wait_for_publish()
         log.debug(
-            f"publishing MQTT topic: {topic}, msg: {msg}, qos: {qos}, RC: {pubinfo.rc}"
+            f"Publishing MQTT topic: {topic}, msg: {msg}, qos: {qos}, RC: {pubinfo.rc}"
         )
-        log.info(f"published message to topic: {topic}")
+        log.info(f"Publish message to topic: {topic}")
         return pubinfo
     except MQTTException as ex:
-        log.error(f"Error publishing MQTT topic: {topic}, msg: {msg}, qos: {qos}")
+        log.error(f"Failed to publish MQTT topic: {topic}, msg: {msg}, qos: {qos}")
         raise ex
 
 
