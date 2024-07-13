@@ -1,3 +1,5 @@
+PROJECT_NAME ?= modpoll
+
 .PHONY: install
 install: ## Install the poetry environment and install the pre-commit hooks
 	@echo "🚀 Creating virtual environment using pyenv and poetry"
@@ -45,8 +47,8 @@ publish: ## Publish a release to PyPI.
 .PHONY: build-and-publish
 build-and-publish: build publish ## Build and publish.
 
-.PHONY: docker-dev
-docker-dev: ## Build docker using docker buildx
+.PHONY: docker-build-dev
+docker-build-dev: ## Build docker using docker buildx
 	@echo "🚀 Login to docker registry"
 	@echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin "${DOCKER_REGISTRY}"
 	@echo "🚀 Set up QEMU"
@@ -54,7 +56,14 @@ docker-dev: ## Build docker using docker buildx
 	@echo "🚀 Create the builder if not exists"
 	@docker buildx inspect mybuilder &>/dev/null || docker buildx create --name mybuilder ; docker buildx use mybuilder
 	@echo "🚀 Creating docker image file"
-	@docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/modpoll:dev --push .
+	@docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${PROJECT_NAME}:dev --push .
+
+.PHONY: docker-run-dev
+docker-run-dev: docker-build-dev ## run in docker
+	@echo "🚀 Docker run: ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${PROJECT_NAME}:dev"
+	@docker run --rm ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${PROJECT_NAME}:dev \
+		modpoll -1 --tcp modsim.topmaker.net \
+		-f https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 
 .PHONY: docs
 docs: ## Build docs into html files
