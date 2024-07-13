@@ -48,6 +48,9 @@ def app(name="modpoll"):
 
     # parse args
     args = get_parser().parse_args()
+    # sanity check
+    if args.mqtt_topic_prefix.endswith("/"):
+        args.mqtt_topic_prefix = args.mqtt_topic_prefix[:-1]
 
     # get logger
     logging.basicConfig(level=args.loglevel, format=LOG_SIMPLE)
