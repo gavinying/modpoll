@@ -20,3 +20,5 @@ jobs:
       - uses: googleapis/release-please-action@v4
         with:
           token: ${{ steps.app-token.outputs.token }}
+          release-type: python
+          include-v-in-tag: false
