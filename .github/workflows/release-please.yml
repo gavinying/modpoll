@@ -21,4 +21,3 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           release-type: python
-          include-v-in-tag: false
