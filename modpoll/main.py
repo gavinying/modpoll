@@ -9,16 +9,21 @@ from datetime import timezone
 
 from modpoll.arg_parser import get_parser
 from modpoll.modbus_task import (
-    modbus_close,
-    modbus_export,
+    modbus_setup,
     modbus_poll,
     modbus_publish,
     modbus_publish_diagnostics,
-    modbus_setup,
     modbus_write_coil,
     modbus_write_register,
+    modbus_export,
+    modbus_close,
 )
-from modpoll.mqtt_task import mqttc_close, mqttc_receive, mqttc_setup
+from modpoll.mqtt_task import (
+    mqttc_setup,
+    mqttc_connect,
+    mqttc_receive,
+    mqttc_close,
+)
 
 from . import __version__
 
@@ -66,6 +71,10 @@ def app(name="modpoll"):
         logger.info(f"Setup MQTT connection to {args.mqtt_host}")
         if not mqttc_setup(args):
             logger.error("Failed to setup MQTT client")
+            mqttc_close()
+            exit(1)
+        if not mqttc_connect():
+            logger.error("Failed to connect to MQTT host")
             mqttc_close()
             exit(1)
     else:
