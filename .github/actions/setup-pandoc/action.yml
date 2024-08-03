@@ -17,9 +17,11 @@ runs:
         path: /usr/local/bin/pandoc
         key: pandoc-${{ runner.os }}-${{ hashFiles('.tool-versions') }}
 
-    - name: Install Pandoc
-      if: steps.cached-pandoc.outputs.cache-hit != 'true'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y pandoc=${{ inputs.pandoc-version }}
+    - name: Install
+      uses: pandoc/actions/setup@v1
+      with:
+        version: ${{ inputs.pandoc-version }}
+
+    - name: Run pandoc
+      run: pandoc --version
       shell: bash
