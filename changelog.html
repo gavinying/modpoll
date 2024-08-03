@@ -47,30 +47,16 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configure.html">Configuration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">1.0.0 (2024-07-11)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#breaking-changes">⚠ BREAKING CHANGES</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">1.1.0 (2024-08-03)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#section-1">0.8.4 (2024-07-11)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#section-2">0.8.3 (2024-07-11)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#bug-fixes-1">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#section-3">0.8.2 (2024-07-11)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#bug-fixes-2">Bug Fixes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reverts">Reverts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#section-4">0.8.1 (2024-07-10)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#bug-fixes-3">Bug Fixes</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#section-5">0.8.0 (2024-07-10)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#code-refactoring">Code Refactoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#section-1">1.0.0 (2024-07-11)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#breaking-changes">⚠ BREAKING CHANGES</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#features-1">Features</a></li>
 </ul>
 </li>
 </ul>
@@ -104,79 +90,67 @@
   <section id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline"></a></h1>
 <section id="id1">
-<h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/0.8.4...1.0.0">1.0.0</a> (2024-07-11)<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/1.0.0...v1.1.0">1.1.0</a> (2024-08-03)<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<section id="features">
+<h3>Features<a class="headerlink" href="#features" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>add docker run commands for dev
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/074d51e6196ca342d71c103e55a9c9e72cd3462b">074d51e</a>)</p></li>
+<li><p>add test cases for pytest
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/99fc4613034e8aac1a24a760bfe395467a554092">99fc461</a>)</p></li>
+<li><p>support paho v2
+(<a class="reference external" href="https://github.com/gavinying/modpoll/issues/52">#52</a>)
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/3e6681a56497672c664a200e95728d7202a1964f">3e6681a</a>)</p></li>
+</ul>
+</section>
+<section id="bug-fixes">
+<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>allow user defined docker registry
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/38acfcc16f8143fe91e716ff734d4e96e8cc9035">38acfcc</a>)</p></li>
+<li><p>device list is not properly used
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/1824bede7a4085cf31243a261a7e074ad506c453">1824bed</a>)</p></li>
+<li><p>duplications in ci actions
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/db5c667138afa4d0226b77655a4abe179bce866a">db5c667</a>)</p></li>
+<li><p>paho v2 changes in callbacks
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/09316f8e8c247148d22f1b56a60fd35d6072ab6f">09316f8</a>)</p></li>
+<li><p>poetry warning
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/44ec61fd159e89b630ded9674c0a535cd1ba1a60">44ec61f</a>)</p></li>
+<li><p>Unexpected input for release-please
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/24703fe098379016447ab50ab89276e0f0f734ef">24703fe</a>)</p></li>
+</ul>
+</section>
+<section id="reverts">
+<h3>Reverts<a class="headerlink" href="#reverts" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>move poetry plugin installation back to install phase
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/b2dc9f40f59d6ac759da23dff7e08cf8f9eea970">b2dc9f4</a>)</p></li>
+</ul>
+</section>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>update CHANGELOG.md
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/73fcc010cb0ddbf4a1aa149ac28a354cd1bc5c39">73fcc01</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="section-1">
+<span id="id2"></span><h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/0.8.4...1.0.0">1.0.0</a> (2024-07-11)<a class="headerlink" href="#section-1" title="Permalink to this headline"></a></h2>
 <section id="breaking-changes">
 <h3>⚠ BREAKING CHANGES<a class="headerlink" href="#breaking-changes" title="Permalink to this headline"></a></h3>
 <ul class="simple">
 <li><p>Release v1.0.0</p></li>
 </ul>
 </section>
-<section id="features">
-<h3>Features<a class="headerlink" href="#features" title="Permalink to this headline"></a></h3>
+<section id="features-1">
+<span id="id3"></span><h3>Features<a class="headerlink" href="#features-1" title="Permalink to this headline"></a></h3>
 <ul class="simple">
-<li><p>Major refactor to enhance CI/CD automation
-(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/8ffa0154b540c00b6fa2027ef38690e29911aafa">8ffa015</a>)</p></li>
-</ul>
-</section>
-</section>
-<section id="section-1">
-<span id="id2"></span><h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/v0.8.3...0.8.4">0.8.4</a> (2024-07-11)<a class="headerlink" href="#section-1" title="Permalink to this headline"></a></h2>
-<section id="bug-fixes">
-<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p>disable poetry virtualenv creation in docker
-(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/10db8d11b9eefc42e9e498ac95119906880e4274">10db8d1</a>)</p></li>
-</ul>
-</section>
-</section>
-<section id="section-2">
-<span id="id3"></span><h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/v0.8.2...v0.8.3">0.8.3</a> (2024-07-11)<a class="headerlink" href="#section-2" title="Permalink to this headline"></a></h2>
-<section id="bug-fixes-1">
-<span id="id4"></span><h3>Bug Fixes<a class="headerlink" href="#bug-fixes-1" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p>missing shell in docker
-(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/56d5bb4dc7fb2aee8cbcbace34d978cea9f63c3e">56d5bb4</a>)</p></li>
-</ul>
-</section>
-</section>
-<section id="section-3">
-<span id="id5"></span><h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/v0.8.1...v0.8.2">0.8.2</a> (2024-07-11)<a class="headerlink" href="#section-3" title="Permalink to this headline"></a></h2>
-<section id="bug-fixes-2">
-<span id="id6"></span><h3>Bug Fixes<a class="headerlink" href="#bug-fixes-2" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p>docker run error
-(<a class="reference external" href="https://github.com/gavinying/modpoll/issues/47">#47</a>)
-(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/e8966640debd822fb1a52f3692a47bb37f11246b">e896664</a>)</p></li>
-<li><p>type issue with ‘–mqtt-qos’
-(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/e22d2c7daa6b99b5cfe1ed85a7be86b40462c02c">e22d2c7</a>)</p></li>
-</ul>
-</section>
-<section id="documentation">
-<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p>add changelog.rst
-(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/b66396b7ff4b02a78809941761daba3d9465a8c3">b66396b</a>)</p></li>
-</ul>
-</section>
-</section>
-<section id="section-4">
-<span id="id7"></span><h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/v0.8.0...v0.8.1">0.8.1</a> (2024-07-10)<a class="headerlink" href="#section-4" title="Permalink to this headline"></a></h2>
-<section id="bug-fixes-3">
-<span id="id8"></span><h3>Bug Fixes<a class="headerlink" href="#bug-fixes-3" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p>ci issue (<a class="reference external" href="https://github.com/gavinying/modpoll/issues/44">#44</a>)
-(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/af9fdebbba5ee4b9b03d51462a1efc84fd491d9b">af9fdeb</a>)</p></li>
-</ul>
-</section>
-</section>
-<section id="section-5">
-<span id="id9"></span><h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/v0.7.2...v0.8.0">0.8.0</a> (2024-07-10)<a class="headerlink" href="#section-5" title="Permalink to this headline"></a></h2>
-<section id="code-refactoring">
-<h3>Code Refactoring<a class="headerlink" href="#code-refactoring" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p>major refactor
-(<a class="reference external" href="https://github.com/gavinying/modpoll/issues/40">#40</a>)
-(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/e54fe8f5e89af982211c4c2a9b5b018a6203a849">e54fe8f</a>)</p></li>
+<li><p>Support Modbus RTU/TCP/UDP devices</p></li>
+<li><p>Poll data from multiple Modbus devices</p></li>
+<li><p>Publish data to MQTT broker for remote debugging</p></li>
+<li><p>Log data for further investigation</p></li>
+<li><p>Provide docker solution for continuous data polling in production</p></li>
 </ul>
 </section>
 </section>

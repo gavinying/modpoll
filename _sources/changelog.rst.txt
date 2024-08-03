@@ -1,6 +1,50 @@
 Changelog
 =========
 
+`1.1.0 <https://github.com/gavinying/modpoll/compare/1.0.0...v1.1.0>`__ (2024-08-03)
+------------------------------------------------------------------------------------
+
+Features
+~~~~~~~~
+
+-  add docker run commands for dev
+   (`074d51e <https://github.com/gavinying/modpoll/commit/074d51e6196ca342d71c103e55a9c9e72cd3462b>`__)
+-  add test cases for pytest
+   (`99fc461 <https://github.com/gavinying/modpoll/commit/99fc4613034e8aac1a24a760bfe395467a554092>`__)
+-  support paho v2
+   (`#52 <https://github.com/gavinying/modpoll/issues/52>`__)
+   (`3e6681a <https://github.com/gavinying/modpoll/commit/3e6681a56497672c664a200e95728d7202a1964f>`__)
+
+Bug Fixes
+~~~~~~~~~
+
+-  allow user defined docker registry
+   (`38acfcc <https://github.com/gavinying/modpoll/commit/38acfcc16f8143fe91e716ff734d4e96e8cc9035>`__)
+-  device list is not properly used
+   (`1824bed <https://github.com/gavinying/modpoll/commit/1824bede7a4085cf31243a261a7e074ad506c453>`__)
+-  duplications in ci actions
+   (`db5c667 <https://github.com/gavinying/modpoll/commit/db5c667138afa4d0226b77655a4abe179bce866a>`__)
+-  paho v2 changes in callbacks
+   (`09316f8 <https://github.com/gavinying/modpoll/commit/09316f8e8c247148d22f1b56a60fd35d6072ab6f>`__)
+-  poetry warning
+   (`44ec61f <https://github.com/gavinying/modpoll/commit/44ec61fd159e89b630ded9674c0a535cd1ba1a60>`__)
+-  Unexpected input for release-please
+   (`24703fe <https://github.com/gavinying/modpoll/commit/24703fe098379016447ab50ab89276e0f0f734ef>`__)
+
+Reverts
+~~~~~~~
+
+-  move poetry plugin installation back to install phase
+   (`b2dc9f4 <https://github.com/gavinying/modpoll/commit/b2dc9f40f59d6ac759da23dff7e08cf8f9eea970>`__)
+
+Documentation
+~~~~~~~~~~~~~
+
+-  update CHANGELOG.md
+   (`73fcc01 <https://github.com/gavinying/modpoll/commit/73fcc010cb0ddbf4a1aa149ac28a354cd1bc5c39>`__)
+
+.. _section-1:
+
 `1.0.0 <https://github.com/gavinying/modpoll/compare/0.8.4...1.0.0>`__ (2024-07-11)
 -----------------------------------------------------------------------------------
 
@@ -9,79 +53,17 @@ Changelog
 
 -  Release v1.0.0
 
+.. _features-1:
+
 Features
 ~~~~~~~~
 
--  Major refactor to enhance CI/CD automation
-   (`8ffa015 <https://github.com/gavinying/modpoll/commit/8ffa0154b540c00b6fa2027ef38690e29911aafa>`__)
+-  Support Modbus RTU/TCP/UDP devices
 
-.. _section-1:
+-  Poll data from multiple Modbus devices
 
-`0.8.4 <https://github.com/gavinying/modpoll/compare/v0.8.3...0.8.4>`__ (2024-07-11)
-------------------------------------------------------------------------------------
+-  Publish data to MQTT broker for remote debugging
 
-Bug Fixes
-~~~~~~~~~
+-  Log data for further investigation
 
--  disable poetry virtualenv creation in docker
-   (`10db8d1 <https://github.com/gavinying/modpoll/commit/10db8d11b9eefc42e9e498ac95119906880e4274>`__)
-
-.. _section-2:
-
-`0.8.3 <https://github.com/gavinying/modpoll/compare/v0.8.2...v0.8.3>`__ (2024-07-11)
--------------------------------------------------------------------------------------
-
-.. _bug-fixes-1:
-
-Bug Fixes
-~~~~~~~~~
-
--  missing shell in docker
-   (`56d5bb4 <https://github.com/gavinying/modpoll/commit/56d5bb4dc7fb2aee8cbcbace34d978cea9f63c3e>`__)
-
-.. _section-3:
-
-`0.8.2 <https://github.com/gavinying/modpoll/compare/v0.8.1...v0.8.2>`__ (2024-07-11)
--------------------------------------------------------------------------------------
-
-.. _bug-fixes-2:
-
-Bug Fixes
-~~~~~~~~~
-
--  docker run error
-   (`#47 <https://github.com/gavinying/modpoll/issues/47>`__)
-   (`e896664 <https://github.com/gavinying/modpoll/commit/e8966640debd822fb1a52f3692a47bb37f11246b>`__)
--  type issue with ‘–mqtt-qos’
-   (`e22d2c7 <https://github.com/gavinying/modpoll/commit/e22d2c7daa6b99b5cfe1ed85a7be86b40462c02c>`__)
-
-Documentation
-~~~~~~~~~~~~~
-
--  add changelog.rst
-   (`b66396b <https://github.com/gavinying/modpoll/commit/b66396b7ff4b02a78809941761daba3d9465a8c3>`__)
-
-.. _section-4:
-
-`0.8.1 <https://github.com/gavinying/modpoll/compare/v0.8.0...v0.8.1>`__ (2024-07-10)
--------------------------------------------------------------------------------------
-
-.. _bug-fixes-3:
-
-Bug Fixes
-~~~~~~~~~
-
--  ci issue (`#44 <https://github.com/gavinying/modpoll/issues/44>`__)
-   (`af9fdeb <https://github.com/gavinying/modpoll/commit/af9fdebbba5ee4b9b03d51462a1efc84fd491d9b>`__)
-
-.. _section-5:
-
-`0.8.0 <https://github.com/gavinying/modpoll/compare/v0.7.2...v0.8.0>`__ (2024-07-10)
--------------------------------------------------------------------------------------
-
-Code Refactoring
-~~~~~~~~~~~~~~~~
-
--  major refactor
-   (`#40 <https://github.com/gavinying/modpoll/issues/40>`__)
-   (`e54fe8f <https://github.com/gavinying/modpoll/commit/e54fe8f5e89af982211c4c2a9b5b018a6203a849>`__)
+-  Provide docker solution for continuous data polling in production
