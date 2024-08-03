@@ -19,6 +19,7 @@ runs:
       uses: snok/install-poetry@v1
       with:
         virtualenvs-in-project: true
+        plugins: oetry-plugin-export
 
     - name: Load cached venv
       id: cached-poetry-dependencies
@@ -30,18 +31,4 @@ runs:
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction
-      shell: bash
-
-    - name: Load cached Pandoc
-      id: cached-pandoc
-      uses: actions/cache@v4
-      with:
-        path: /usr/local/bin/pandoc
-        key: pandoc-${{ runner.os }}-${{ hashFiles('.tool-versions') }}
-
-    - name: Install Pandoc
-      if: steps.cached-pandoc.outputs.cache-hit != 'true'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y pandoc
       shell: bash
