@@ -392,6 +392,7 @@ def parse_config(csv_reader) -> list:
 
 
 def load_config(file) -> bool:
+    global deviceList
     try:
         with requests.Session() as s:
             response = s.get(file)
