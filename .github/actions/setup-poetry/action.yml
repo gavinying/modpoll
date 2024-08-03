@@ -19,7 +19,7 @@ runs:
       uses: snok/install-poetry@v1
       with:
         virtualenvs-in-project: true
-        plugins: oetry-plugin-export
+        plugins: poetry-plugin-export
 
     - name: Load cached venv
       id: cached-poetry-dependencies
