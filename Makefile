@@ -3,7 +3,6 @@ PROJECT_NAME ?= modpoll
 .PHONY: install
 install: ## Install the poetry environment and install the pre-commit hooks
 	@echo "🚀 Creating virtual environment using pyenv and poetry"
-	@poetry self add poetry-plugin-export
 	@poetry install
 	@poetry run pre-commit install --allow-missing-config
 	@poetry shell
@@ -13,6 +12,7 @@ check: ## Run code quality tools.
 	@echo "🚀 Checking Poetry lock file consistency with 'pyproject.toml': Running poetry check --lock"
 	@poetry check --lock
 	@echo "🚀 Exporting 'requirements.txt' file: Running poetry export"
+	@poetry self add poetry-plugin-export
 	@poetry export -f requirements.txt -o requirements.txt --without-hashes
 	@echo "🚀 Linting code: Running pre-commit"
 	@poetry run pre-commit run -a
