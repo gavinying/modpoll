@@ -13,7 +13,7 @@ from paho.mqtt.client import (
 from paho.mqtt import MQTTException
 
 args = None
-log = None
+logger = None
 mqttc = None
 mqtt_initial_connection_made = False
 rx_queue = Queue(maxsize=1000)
@@ -39,63 +39,63 @@ def _on_connect(client, userdata, flags, reason_code, properties):
         rc = reason_code
 
     if rc == 0:
-        log.info("Connection successful")
+        logger.info("Connection successful")
         if session_present:
-            log.info("Session present, reusing existing session")
+            logger.info("Session present, reusing existing session")
         else:
-            log.info("New session created")
+            logger.info("New session created")
             # Subscribing in on_connect() means that if we lose the connection and
             # reconnect then subscriptions will be renewed.
             if "subscribe_topic" in userdata:
                 topic = userdata.get("subscribe_topic")
                 qos = userdata.get("subscribe_qos", 0)  # Default to QoS 0
-                log.info(f"Subscribe to topic: {topic} with QoS: {qos}")
+                logger.info(f"Subscribe to topic: {topic} with QoS: {qos}")
                 client.subscribe(topic, qos)
     else:
-        log.warning(f"Connection failed with reason code: {reason_code}")
+        logger.warning(f"Connection failed with reason code: {reason_code}")
 
 
 def _on_subscribe(client, userdata, mid, reason_codes, properties):
     for sub_result in reason_codes:
         if sub_result == 1:
-            log.info("Subscribed.")
+            logger.info("Subscribed.")
         # Any reason code >= 128 is a failure.
         if sub_result >= 128:
-            log.warning("Failed to subscribe.")
+            logger.warning("Failed to subscribe.")
 
 
 def _on_publish(client, userdata, mid, reason_codes, properties):
-    log.debug("Sent.")
+    logger.debug("Sent.")
 
 
 def _on_message(client, userdata, message):
     if message.retain == 0:
-        log.info(f"Receive message ({message.topic}): {message.payload}")
+        logger.info(f"Receive message ({message.topic}): {message.payload}")
     else:
-        log.info(f"Receive retained message ({message.topic}): {message.payload}")
+        logger.info(f"Receive retained message ({message.topic}): {message.payload}")
     obj = message.topic, message.payload
     try:
         rx_queue.put(obj, block=False)
     except queue.Full:
-        log.warning("MQTT receiving queue is full, ignoring new message.")
+        logger.warning("MQTT receiving queue is full, ignoring new message.")
 
 
 def _on_disconnect(client, userdata, flags, reason_code, properties):
     if reason_code == 0:
-        log.info("Disconnected.")
+        logger.info("Disconnected.")
     if reason_code > 0:
-        log.warning(f"Disconnected with error, reason_code={reason_code}.")
+        logger.warning(f"Disconnected with error, reason_code={reason_code}.")
 
 
 def _on_log(client, userdata, level, buf):
-    log.debug(f"{level} | {buf}")
+    logger.debug(f"{level} | {buf}")
 
 
-def mqttc_setup(config):
+def mqttc_setup(config) -> bool:
     global args
     args = config
-    global log
-    log = logging.getLogger(__name__)
+    global logger
+    logger = logging.getLogger(__name__)
     try:
         if args.mqtt_clientid is None:
             if args.mqtt_qos == 0:
@@ -182,7 +182,7 @@ def mqttc_setup(config):
         return True
 
     except Exception as ex:
-        log.error(f"mqtt connection error: {ex}")
+        logger.error(f"mqtt connection error: {ex}")
         return False
 
 
@@ -193,13 +193,13 @@ def mqttc_publish(topic, msg, qos=0, retain=False):
         if not mqttc.is_connected() and qos == 0:
             return
         pubinfo = mqttc.publish(topic, msg, qos, retain)
-        log.debug(
+        logger.debug(
             f"Publishing MQTT topic: {topic}, msg: {msg}, qos: {qos}, RC: {pubinfo.rc}"
         )
-        log.info(f"Publish message to topic: {topic}")
+        logger.info(f"Publish message to topic: {topic}")
         return pubinfo
     except MQTTException as ex:
-        log.error(f"Failed to publish MQTT topic: {topic}, msg: {msg}, qos: {qos}")
+        logger.error(f"Failed to publish MQTT topic: {topic}, msg: {msg}, qos: {qos}")
         raise ex
 
 

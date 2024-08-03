@@ -14,10 +14,10 @@ from pymodbus.payload import BinaryPayloadDecoder
 from modpoll.mqtt_task import mqttc_publish
 
 args = None
-log = None
+logger = None
 master = None
-deviceList = []
 event_exit = None
+deviceList: list = []
 
 
 class Device:
@@ -29,7 +29,7 @@ class Device:
         self.errorCount = 0
         self.pollCount = 0
         self.pollSuccess = False
-        log.info(f"Adding new device {self.name}")
+        logger.info(f"Adding new device {self.name}")
 
     def add_reference_mapping(self, ref):
         self.references[ref.name] = ref
@@ -84,11 +84,11 @@ class Poller:
                     data = result.registers
             if not data:
                 self.update_statistics(False)
-                log.error(
+                logger.error(
                     f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
                     f"Start_address:{self.start_address}, Size:{self.size}... ERROR"
                 )
-                log.debug(result)
+                logger.debug(result)
                 return
             if "BE_BE" == self.endian.upper():
                 if self.fc == 1 or self.fc == 2:
@@ -179,18 +179,18 @@ class Poller:
                     cur_ref += 1
             self.device.update_reference(ref)
             self.update_statistics(True)
-            log.info(
+            logger.info(
                 f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
                 f"Start_address:{self.start_address}, Size:{self.size}... SUCCESS"
             )
             return True
         except ModbusException as ex:
             self.update_statistics(False)
-            log.warning(
+            logger.warning(
                 f"Reading device:{self.device.name}, FuncCode:{self.fc}, "
                 f"Start_address:{self.start_address}, Size:{self.size}... FAILED"
             )
-            log.debug(ex)
+            logger.debug(ex)
             return False
 
     def add_readable_reference(self, ref):
@@ -208,7 +208,7 @@ class Poller:
             self.device.pollSuccess = False
             if args.autoremove and self.failcounter >= 3:
                 self.disabled = True
-                log.info(
+                logger.info(
                     f"Poller {self.name} disabled (functioncode: {self.fc}, "
                     f"start_address: {self.start_address}, size: {self.size})."
                 )
@@ -250,13 +250,13 @@ class Reference:
             except ValueError:
                 self.ref_width = 2
             if self.ref_width > 100:
-                log.warning("Data type string: length must be less than 100")
+                logger.warning("Data type string: length must be less than 100")
                 self.ref_width = 100
             if math.fmod(self.ref_width, 2) != 0:
                 self.ref_width = self.ref_width - 1
-                log.warning("Data type string: length must be divisible by 2")
+                logger.warning("Data type string: length must be divisible by 2")
         else:
-            log.error(f"Unknown data type: {dtype}")
+            logger.error(f"Unknown data type: {dtype}")
         self.rw = rw.lower()
         self.unit = unit
         self.scale = scale
@@ -286,7 +286,8 @@ class Reference:
         return False
 
 
-def parse_config(csv_reader):
+def parse_config(csv_reader) -> list:
+    device_list = []
     current_device = None
     current_poller = None
     try:
@@ -297,7 +298,7 @@ def parse_config(csv_reader):
                 device_name = row[1]
                 device_id = int(row[2])
                 current_device = Device(device_name, device_id)
-                deviceList.append(current_device)
+                device_list.append(current_device)
             elif "poll" in row[0].lower():
                 fc = row[1].lower()
                 start_address = int(row[2])
@@ -305,19 +306,19 @@ def parse_config(csv_reader):
                 endian = row[4]
                 current_poller = None
                 if not current_device:
-                    log.error("No device to add poller.")
+                    logger.error("No device to add poller.")
                     continue
                 if "coil" == fc:
                     function_code = 1
                     if (
                         size > 2000
                     ):  # some implementations don't seem to support 2008 coils/inputs
-                        log.error("Too many coils (max. 2000). Ignoring poller.")
+                        logger.error("Too many coils (max. 2000). Ignoring poller.")
                         continue
                 elif "discrete_input" == fc:
                     function_code = 2
                     if size > 2000:
-                        log.error(
+                        logger.error(
                             "Too many discrete inputs (max. 2000). Ignoring poller."
                         )
                         continue
@@ -326,25 +327,25 @@ def parse_config(csv_reader):
                     if (
                         size > 123
                     ):  # applies to TCP, RTU should support 125 registers. But let's be safe.
-                        log.error(
+                        logger.error(
                             "Too many holding registers (max. 123). Ignoring poller."
                         )
                         continue
                 elif "input_register" == fc:
                     function_code = 4
                     if size > 123:
-                        log.error(
+                        logger.error(
                             f"Too many input registers (max. 123): {size}. Ignoring poller."
                         )
                         continue
                 else:
-                    log.warning(f"Unknown function code ({fc}) ignoring poller.")
+                    logger.warning(f"Unknown function code ({fc}) ignoring poller.")
                     continue
                 current_poller = Poller(
                     current_device, function_code, start_address, size, endian
                 )
                 current_device.pollerList.append(current_poller)
-                log.info(
+                logger.info(
                     f"Add poller (start_address={current_poller.start_address}, size={current_poller.size}) "
                     f"to device {current_device.name}"
                 )
@@ -362,60 +363,67 @@ def parse_config(csv_reader):
                 except Exception:
                     scale = None
                 if not current_device or not current_poller:
-                    log.debug(f"No device/poller for reference {ref_name}.")
+                    logger.debug(f"No device/poller for reference {ref_name}.")
                     continue
                 ref = Reference(
                     current_poller.device, ref_name, address, dtype, rw, unit, scale
                 )
                 if ref in current_poller.readableReferences:
-                    log.warning(f"Reference {ref.name} is already added, ignoring it.")
+                    logger.warning(
+                        f"Reference {ref.name} is already added, ignoring it."
+                    )
                     continue
                 if not ref.check_sanity(
                     current_poller.start_address, current_poller.size
                 ):
-                    log.warning(
+                    logger.warning(
                         f"Reference {ref.name} failed to pass sanity check, ignoring it."
                     )
                     continue
                 if "r" in rw.lower():
                     current_poller.add_readable_reference(ref)
                 current_device.add_reference_mapping(ref)
-                log.debug(f"Add reference {ref.name} to device {current_device.name}")
+                logger.debug(
+                    f"Add reference {ref.name} to device {current_device.name}"
+                )
+        return device_list
     except Exception:
-        log.error("Failed to parse the config file. Exiting.")
-        exit(1)
+        return []
 
 
-def load_config(file):
+def load_config(file) -> bool:
     try:
         with requests.Session() as s:
             response = s.get(file)
             decoded_content = response.content.decode("utf-8")
             csv_reader = csv.reader(decoded_content.splitlines(), delimiter=",")
-            parse_config(csv_reader)
+            deviceList = parse_config(csv_reader)
     except requests.RequestException:
         with open(file, "r") as f:
             f.seek(0)
             csv_reader = csv.reader(f)
-            parse_config(csv_reader)
+            deviceList = parse_config(csv_reader)
+    if deviceList and len(deviceList) > 0:
+        return True
+    else:
+        return False
 
 
-def modbus_setup(config, event):
+def modbus_setup(config, event) -> bool:
     global args
     args = config
-    global log
-    log = logging.getLogger(__name__)
+    global logger
+    logger = logging.getLogger(__name__)
     global event_exit
     event_exit = event
     global master
 
-    log.info(f"Loading config from: {args.config}")
-    load_config(args.config)
-    if len(deviceList) > 0:
-        log.info(f"Polling {len(deviceList)} device(s)...")
+    logger.info(f"Loading config from: {args.config}")
+    if load_config(args.config):
+        logger.info(f"Polling {len(deviceList)} device(s)...")
     else:
-        log.error("No device found in the config file. Exiting.")
-        exit(1)
+        logger.error("No device found in the config file. Exiting.")
+        return False
     if args.rtu:
         if args.rtu_parity == "odd":
             parity = "O"
@@ -457,7 +465,7 @@ def modbus_setup(config, event):
                 args.udp, port=args.udp_port, framer=args.framer, timeout=args.timeout
             )
     else:
-        log.error(
+        logger.error(
             "You must specify a modbus access method, either --rtu, --tcp or --udp"
         )
         return False
@@ -469,9 +477,9 @@ def modbus_poll():
         return
     master.connect()
     time.sleep(args.delay)
-    log.debug(f"Master connected. Delay of {args.delay} seconds.")
+    logger.debug(f"Master connected. Delay of {args.delay} seconds.")
     for dev in deviceList:
-        log.debug(f"Polling device {dev.name} ...")
+        logger.debug(f"Polling device {dev.name} ...")
         for p in dev.pollerList:
             if not p.disabled:
                 p.poll()
@@ -490,10 +498,10 @@ def modbus_write_coil(device_name, address: int, value):
         return False
     master.connect()
     time.sleep(args.delay)
-    log.debug(f"Master connected. Delay of {args.delay} seconds.")
+    logger.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
-            log.info(
+            logger.info(
                 f"Writing coil(s): device={device_name}, address={address}, value={value}"
             )
             if isinstance(value, int):
@@ -510,10 +518,10 @@ def modbus_write_register(device_name, address: int, value):
         return False
     master.connect()
     time.sleep(args.delay)
-    log.debug(f"Master connected. Delay of {args.delay} seconds.")
+    logger.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
-            log.info(
+            logger.info(
                 f"Writing register(s): device={device_name}, address={address}, value={value}"
             )
             if isinstance(value, int):
@@ -546,9 +554,9 @@ def modbus_print():
 def modbus_publish(timestamp=None, on_change=False):
     for dev in deviceList:
         if not dev.pollSuccess:
-            log.debug(f"Skip publishing for disconnected device: {dev.name}")
+            logger.debug(f"Skip publishing for disconnected device: {dev.name}")
             continue
-        log.debug(f"Publishing data for device: {dev.name} ...")
+        logger.debug(f"Publishing data for device: {dev.name} ...")
         payload = {}
         for ref in dev.references.values():
             if on_change and ref.val == ref.last_val:
@@ -575,7 +583,7 @@ def modbus_publish(timestamp=None, on_change=False):
 
 def modbus_publish_diagnostics():
     for dev in deviceList:
-        log.debug(f"Publishing diagnostics for device {dev.name} ...")
+        logger.debug(f"Publishing diagnostics for device {dev.name} ...")
         payload = {"pollCount": dev.pollCount, "errorCount": dev.errorCount}
         topic = f"{args.mqtt_topic_prefix}/diagnostics/{dev.name}"
         mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
@@ -593,13 +601,13 @@ def modbus_export(file, timestamp=None):
     with open(file, "w") as f:
         writer = csv.writer(f)
         for dev in deviceList:
-            log.info(f"Exporting data for device {dev.name} ...")
+            logger.info(f"Exporting data for device {dev.name} ...")
             header = ["name", "unit", "address", "value"]
             writer.writerow(header)
             for ref in dev.references.values():
                 row = [ref.name, ref.unit, ref.address, ref.val]
                 writer.writerow(row)
-    log.info(f"Saved references/registers to {file}")
+    logger.info(f"Saved references/registers to {file}")
 
 
 def modbus_close():

@@ -23,12 +23,16 @@ from modpoll.mqtt_task import mqttc_close, mqttc_receive, mqttc_setup
 from . import __version__
 
 LOG_SIMPLE = "%(asctime)s | %(levelname).1s | %(name)s | %(message)s"
-log = None
+logger = None
 event_exit = threading.Event()
 
 
+def setup_logging(level, format):
+    logging.basicConfig(level=level, format=format)
+
+
 def _signal_handler(signal, frame):
-    log.info(f"Exiting {sys.argv[0]}")
+    logger.info(f"Exiting {sys.argv[0]}")
     event_exit.set()
 
 
@@ -53,23 +57,23 @@ def app(name="modpoll"):
         args.mqtt_topic_prefix = args.mqtt_topic_prefix[:-1]
 
     # get logger
-    logging.basicConfig(level=args.loglevel, format=LOG_SIMPLE)
-    global log
-    log = logging.getLogger(__name__)
+    setup_logging(args.loglevel, LOG_SIMPLE)
+    global logger
+    logger = logging.getLogger(__name__)
 
     # setup mqtt
     if args.mqtt_host:
-        log.info(f"Setup MQTT connection to {args.mqtt_host}")
+        logger.info(f"Setup MQTT connection to {args.mqtt_host}")
         if not mqttc_setup(args):
-            log.error("Failed to setup MQTT client")
+            logger.error("Failed to setup MQTT client")
             mqttc_close()
             exit(1)
     else:
-        log.info("No MQTT host specified, skip MQTT setup.")
+        logger.info("No MQTT host specified, skip MQTT setup.")
 
     # setup modbus
     if not modbus_setup(args, event_exit):
-        log.error("Failed to setup modbus client(master)")
+        logger.error("Failed to setup modbus client(master)")
         modbus_close()
         mqttc_close()
         exit(1)
@@ -86,7 +90,7 @@ def app(name="modpoll"):
             else:
                 elapsed = round(now - last_check, 6)
             last_check = now
-            log.info(
+            logger.info(
                 f" ====== modpoll polling at rate:{args.rate}s, actual:{elapsed}s ======"
             )
             modbus_poll()
@@ -118,11 +122,11 @@ def app(name="modpoll"):
                     reg = json.loads(payload)
                     if "coil" == reg["object_type"]:
                         if modbus_write_coil(device_name, reg["address"], reg["value"]):
-                            log.info("")
+                            logger.info("")
                     elif "holding_register" == reg["object_type"]:
                         modbus_write_register(device_name, reg["address"], reg["value"])
                 except json.decoder.JSONDecodeError:
-                    log.warning(f"Failed to parse json message: {payload}")
+                    logger.warning(f"Failed to parse json message: {payload}")
         if args.once:
             event_exit.set()
             break
