@@ -27,7 +27,7 @@ def _on_connect(client, userdata, flags, reason_code, properties):
     if isinstance(flags, dict):  # MQTTv5
         session_present = flags.get("session present", False)
     else:  # MQTTv3
-        session_present = bool(flags & 0x01)
+        session_present = flags.session_present
 
     if isinstance(reason_code, ReasonCode):
         rc = reason_code.value
