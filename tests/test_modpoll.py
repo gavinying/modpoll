@@ -25,4 +25,4 @@ def test_mqtt_task_mqttc_setup():
             "mqtt.eclipseprojects.io",
         ]
     )
-    assert mqttc_setup(args) == True
+    assert mqttc_setup(args, []) == True
