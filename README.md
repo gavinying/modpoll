@@ -5,8 +5,6 @@
 [![License](https://img.shields.io/github/license/gavinying/modpoll)](https://img.shields.io/github/license/gavinying/modpoll)
 [![Downloads](https://static.pepy.tech/badge/modpoll/week)](https://pepy.tech/project/modpoll)
 
-Show your love for this project by starring our repo 🌟, so we are encouraged to continue improving.
-
 > Learn more about *modpoll* usage at [documentation](https://gavinying.github.io/modpoll) site.
 
 ## Motivation
@@ -202,11 +200,7 @@ modpoll \
 
 With successful data polling and publishing, you can subscribe the topic `modpoll/modsim` on the same MQTT broker `mqtt.eclipseprojects.io` to view the collected data.
 
-The MQTT topic uses `<mqtt_topic_prefix>/<device_name>` pattern, <mqtt_topic_prefix> is provided by `--mqtt-topic-prefix` argument, the default value is `modpoll`  and <device_name> is provided by the Modbus configure file.
-
-> ⚠️ **Note:** The `--mqtt-topic-prefix` argument is deprecated and will be removed in the future release. Use `--mqtt-publish-topic-pattern` and `--mqtt-subscribe-topic-pattern` instead. If both are used, `--mqtt-topic-prefix` argument will take precedence in order to keep backward compatibility.
-
-We encourage user to switch to MQTT topic pattern arguments, so that user can customize the MQTT topics with more flexibility. MQTT subscription can also be disabled by setting 'mqtt-subscribe-topic-pattern' to empty. See [document](https://gavinying.github.io/modpoll/usage.html#Named%20Arguments) for details.
+> The MQTT topic uses `<mqtt_topic_prefix>/<deviceid>` pattern, <mqtt_topic_prefix> is provided by `--mqtt-topic-prefix` argument, the default value is `modpoll/`  and <deviceid> is provided by the Modbus configure file.
 
 
 <p align="center">
@@ -216,7 +210,7 @@ We encourage user to switch to MQTT topic pattern arguments, so that user can cu
 
 ### Write registers via MQTT publish
 
-The *modpoll* tool will subscribe to the topic `modpoll/<device_name>/set` by default once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish,
+The *modpoll* tool will subscribe to the topic `<mqtt_topic_prefix>/<deviceid>/set` once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish,
 
 - To write a single holding register (address at `40001`)
 
