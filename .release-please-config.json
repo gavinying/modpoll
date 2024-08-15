@@ -1,0 +1,10 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "last-release-sha": "f61d696ca71d5ae747a7b2e7ed953228fecdff8e",
+      "draft": false,
+      "prerelease": false
+    }
+  }
+}
