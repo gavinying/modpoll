@@ -1,7 +1,0 @@
-{
-  "packages": {
-    ".": {
-      "include-v-in-tag": false
-    }
-  }
-}
