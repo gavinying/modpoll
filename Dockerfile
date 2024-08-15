@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.10-slim-buster
+# FROM python:3.12-alpine
+FROM python:3.12-slim-bookworm
 
 ENV POETRY_VERSION=1.8.3
 

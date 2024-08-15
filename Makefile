@@ -53,13 +53,9 @@ docker-build-dev: ## Build docker for local dev
 	@docker build -t ${PROJECT_NAME}:dev .
 
 .PHONY: docker-run-dev
-docker-run-dev: docker-build-dev ## Run docker for local dev
-	@echo "🚀 Docker run: ${PROJECT_NAME}:dev"
-	@docker run --rm ${PROJECT_NAME}:dev \
-		modpoll -d --tcp modsim.topmaker.net \
-		--mqtt-host mqtt.eclipseprojects.io \
-		--mqtt-topic-prefix modpoll/dev/ \
-		-f https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+docker-run-dev: docker-build-dev ## Run docker compose for local dev
+	@echo "🚀 Docker compose run: ${PROJECT_NAME}:dev"
+	@docker-compose up --build
 
 .PHONY: docs
 docs: ## Build docs into html files

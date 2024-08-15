@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  modpoll:
+    build: .
+    container_name: modpoll
+    command: >
+      modpoll -d --tcp modsim.topmaker.net
+        --mqtt-host mqtt.eclipseprojects.io
+        --mqtt-publish-topic-pattern modpoll/<device_name>
+        --mqtt-qos 1
+        --rate 10
+        --timestamp
+        --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
