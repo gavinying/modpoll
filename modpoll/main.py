@@ -10,6 +10,7 @@ from datetime import timezone
 from modpoll.arg_parser import get_parser
 from modpoll.modbus_task import (
     modbus_setup,
+    modbus_device_list,
     modbus_poll,
     modbus_publish,
     modbus_publish_diagnostics,
@@ -57,28 +58,11 @@ def app(name="modpoll"):
 
     # parse args
     args = get_parser().parse_args()
-    # sanity check
-    if args.mqtt_topic_prefix.endswith("/"):
-        args.mqtt_topic_prefix = args.mqtt_topic_prefix[:-1]
 
     # get logger
     setup_logging(args.loglevel, LOG_SIMPLE)
     global logger
     logger = logging.getLogger(__name__)
-
-    # setup mqtt
-    if args.mqtt_host:
-        logger.info(f"Setup MQTT connection to {args.mqtt_host}")
-        if not mqttc_setup(args):
-            logger.error("Failed to setup MQTT client")
-            mqttc_close()
-            exit(1)
-        if not mqttc_connect():
-            logger.error("Failed to connect to MQTT host")
-            mqttc_close()
-            exit(1)
-    else:
-        logger.info("No MQTT host specified, skip MQTT setup.")
 
     # setup modbus
     if not modbus_setup(args, event_exit):
@@ -86,6 +70,46 @@ def app(name="modpoll"):
         modbus_close()
         mqttc_close()
         exit(1)
+
+    # Overwrite topic pattern if topic prefix is specified for backward compatibility
+    if args.mqtt_topic_prefix:
+        logger.warning(
+            "(DEPRECATED): The `--mqtt-topic-prefix` argument is deprecated and will be removed in the future release. Use `--mqtt-publish-topic-pattern` and `--mqtt-subscribe-topic-pattern` instead. If both are used, `--mqtt-topic-prefix` argument will take precedence in order to keep backward compatibility."
+        )
+        if args.mqtt_topic_prefix.endswith("/"):
+            args.mqtt_topic_prefix = args.mqtt_topic_prefix[:-1]
+        args.mqtt_publish_topic_pattern = f"{args.mqtt_topic_prefix}/<device_name>"
+        args.mqtt_subscribe_topic_pattern = (
+            f"{args.mqtt_topic_prefix}/<device_name>/set"
+        )
+
+    # create mqtt subscribe topics
+    subscribe_topics = []
+    if args.mqtt_subscribe_topic_pattern:
+        if "<device_name>" in args.mqtt_subscribe_topic_pattern:
+            for device in modbus_device_list():
+                topic = args.mqtt_subscribe_topic_pattern.replace(
+                    "<device_name>", device.name
+                )
+                subscribe_topics.append(topic)
+        else:
+            subscribe_topics.append(args.mqtt_subscribe_topic_pattern)
+
+    # setup mqtt
+    if args.mqtt_host:
+        logger.info(f"Setup MQTT connection to {args.mqtt_host}")
+        if not mqttc_setup(args, subscribe_topics):
+            logger.error("Failed to setup MQTT client")
+            modbus_close()
+            mqttc_close()
+            exit(1)
+        if not mqttc_connect():
+            logger.error("Failed to connect to MQTT host")
+            modbus_close()
+            mqttc_close()
+            exit(1)
+    else:
+        logger.info("No MQTT host specified, skip MQTT setup.")
 
     # main loop
     last_check = 0
@@ -123,19 +147,39 @@ def app(name="modpoll"):
         # Check if receive mqtt request
         topic, payload = mqttc_receive()
         if topic and payload:
-            device_name = re.search(
-                f"^{args.mqtt_topic_prefix}([^/\n]*)/set", topic
-            ).group(1)
+            topic_regex = args.mqtt_subscribe_topic_pattern.replace(
+                "<device_name>", "([^/\n]*)"
+            )
+            device_name = re.search(topic_regex, topic).group(1)
             if device_name:
+                logger.info(f"Received request to write data for device {device_name}")
                 try:
                     reg = json.loads(payload)
-                    if "coil" == reg["object_type"]:
-                        if modbus_write_coil(device_name, reg["address"], reg["value"]):
-                            logger.info("")
-                    elif "holding_register" == reg["object_type"]:
-                        modbus_write_register(device_name, reg["address"], reg["value"])
+                    object_type = reg["object_type"]
+                    address = reg["address"]
+                    value = reg["value"]
+                    if "coil" == object_type:
+                        if modbus_write_coil(device_name, address, value):
+                            logger.info(
+                                f"Successfully write coil(s): device={device_name}, address={address}, value={value}"
+                            )
+                        else:
+                            logger.warning(
+                                f"Failed to write coil(s): device={device_name}, address={address}, value={value}"
+                            )
+                    elif "holding_register" == object_type:
+                        if modbus_write_register(device_name, address, value):
+                            logger.info(
+                                f"Successfully write register(s): device={device_name}, address={address}, value={value}"
+                            )
+                        else:
+                            logger.warning(
+                                f"Failed to write register(s): device={device_name}, address={address}, value={value}"
+                            )
+                except KeyError:
+                    logger.error(f"No required key found: {payload}")
                 except json.decoder.JSONDecodeError:
-                    logger.warning(f"Failed to parse json message: {payload}")
+                    logger.error(f"Failed to parse json message: {payload}")
         if args.once:
             event_exit.set()
             break

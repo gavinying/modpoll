@@ -410,6 +410,11 @@ def load_config(file) -> bool:
         return False
 
 
+def modbus_device_list() -> []:
+    global deviceList
+    return deviceList
+
+
 def modbus_setup(config, event) -> bool:
     global args
     args = config
@@ -494,7 +499,7 @@ def modbus_poll():
         modbus_print()
 
 
-def modbus_write_coil(device_name, address: int, value):
+def modbus_write_coil(device_name: str, address: int, value) -> bool:
     if not master:
         return False
     master.connect()
@@ -502,7 +507,7 @@ def modbus_write_coil(device_name, address: int, value):
     logger.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
-            logger.info(
+            logger.debug(
                 f"Writing coil(s): device={device_name}, address={address}, value={value}"
             )
             if isinstance(value, int):
@@ -514,7 +519,7 @@ def modbus_write_coil(device_name, address: int, value):
     return False
 
 
-def modbus_write_register(device_name, address: int, value):
+def modbus_write_register(device_name, address: int, value) -> bool:
     if not master:
         return False
     master.connect()
@@ -522,7 +527,7 @@ def modbus_write_register(device_name, address: int, value):
     logger.debug(f"Master connected. Delay of {args.delay} seconds.")
     for d in deviceList:
         if d.name == device_name:
-            logger.info(
+            logger.debug(
                 f"Writing register(s): device={device_name}, address={address}, value={value}"
             )
             if isinstance(value, int):
@@ -567,27 +572,30 @@ def modbus_publish(timestamp=None, on_change=False):
             else:
                 payload[f"{ref.name}"] = ref.val
             if args.mqtt_single:
-                topic = f"{args.mqtt_topic_prefix}/{dev.name}/{ref.name}"
+                topic = f"{args.mqtt_publish_topic_pattern.replace('<device_name>', dev.name)}/{ref.name}"
                 if isinstance(ref.val, list):
                     for i, ref_val_entry in enumerate(ref.val):
                         mqttc_publish(
-                            topic + "/" + str(i), ref_val_entry, qos=args.mqtt_qos
+                            f"{topic}/{str(i)}", ref_val_entry, qos=args.mqtt_qos
                         )
                 else:
                     mqttc_publish(topic, ref.val, qos=args.mqtt_qos)
         if timestamp:
             payload["timestamp_ms"] = int(timestamp * 1000)
         if not args.mqtt_single:
-            topic = f"{args.mqtt_topic_prefix}/{dev.name}"
+            topic = args.mqtt_publish_topic_pattern.replace("<device_name>", dev.name)
             mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
 
 
 def modbus_publish_diagnostics():
-    for dev in deviceList:
-        logger.debug(f"Publishing diagnostics for device {dev.name} ...")
-        payload = {"pollCount": dev.pollCount, "errorCount": dev.errorCount}
-        topic = f"{args.mqtt_topic_prefix}/diagnostics/{dev.name}"
-        mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
+    if args.mqtt_diagnostics_topic_pattern:
+        for dev in deviceList:
+            logger.debug(f"Publishing diagnostics for device {dev.name} ...")
+            payload = {"pollCount": dev.pollCount, "errorCount": dev.errorCount}
+            topic = args.mqtt_diagnostics_topic_pattern.replace(
+                "<device_name>", dev.name
+            )
+            mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
 
 
 def modbus_export(file, timestamp=None):
