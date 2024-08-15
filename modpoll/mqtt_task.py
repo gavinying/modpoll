@@ -42,9 +42,9 @@ def _on_connect(client, userdata, flags, reason_code, properties):
             logger.info("New session created")
             # Subscribing in on_connect() means that if we lose the connection and
             # reconnect then subscriptions will be renewed.
-            if "subscribe_topic" in userdata:
-                topic = userdata.get("subscribe_topic")
-                qos = userdata.get("subscribe_qos", 0)  # Default to QoS 0
+            topics = userdata.get("subscribe_topics", [])
+            qos = userdata.get("subscribe_qos", 0)  # Default to QoS 0
+            for topic in topics:
                 logger.info(f"Subscribe to topic: {topic} with QoS: {qos}")
                 client.subscribe(topic, qos)
     else:
@@ -87,7 +87,7 @@ def _on_log(client, userdata, level, buf):
     logger.debug(f"{level} | {buf}")
 
 
-def mqttc_setup(config: Any) -> bool:
+def mqttc_setup(config: Any, subscribe_topics: []) -> bool:
     global args, logger, mqttc, clean_start_or_session
     args = config
     logger = logging.getLogger(__name__)
@@ -99,11 +99,16 @@ def mqttc_setup(config: Any) -> bool:
 
         clean_start_or_session = args.mqtt_qos == 0
 
+        sub_topic = args.mqtt_subscribe_topic_pattern
+
         if args.mqtt_version == "5.0":
             mqttc = MQTTClient(
                 CallbackAPIVersion.VERSION2,
                 client_id=clientid,
-                userdata={"qos": args.mqtt_qos},
+                userdata={
+                    "subscribe_topics": subscribe_topics,
+                    "subscribe_qos": args.mqtt_qos,
+                },
                 protocol=MQTTProtocolVersion.MQTTv5,
             )
         else:
@@ -111,7 +116,10 @@ def mqttc_setup(config: Any) -> bool:
                 CallbackAPIVersion.VERSION2,
                 client_id=clientid,
                 clean_session=clean_start_or_session,
-                userdata={"qos": args.mqtt_qos},
+                userdata={
+                    "subscribe_topics": subscribe_topics,
+                    "subscribe_qos": args.mqtt_qos,
+                },
                 protocol=MQTTProtocolVersion.MQTTv311,
             )
 
