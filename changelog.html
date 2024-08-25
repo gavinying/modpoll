@@ -47,16 +47,20 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Basic Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configure.html">Configuration</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">1.1.0 (2024-08-03)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">1.2.0 (2024-08-25)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bug-fixes">Bug Fixes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#reverts">Reverts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#section-1">1.1.0 (2024-08-03)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#features-1">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bug-fixes-1">Bug Fixes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#section-1">1.0.0 (2024-07-11)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#section-2">1.0.0 (2024-07-11)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#breaking-changes">⚠ BREAKING CHANGES</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#features-1">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#features-2">Features</a></li>
 </ul>
 </li>
 </ul>
@@ -90,9 +94,31 @@
   <section id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline"></a></h1>
 <section id="id1">
-<h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/1.0.0...v1.1.0">1.1.0</a> (2024-08-03)<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/v1.1.0...v1.2.0">1.2.0</a> (2024-08-25)<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
 <section id="features">
 <h3>Features<a class="headerlink" href="#features" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>Introduce MQTT topic pattern to replace the existing MQTT topic
+prefix.
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/58d3f6719b7c78b0c17cfb60ca7013e5f8d1bccb">58d3f67</a>)</p></li>
+<li><p>Add docker compose for better developer experience.
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/01f15e8d140eadf3413471463fbb26cd7d8fc175">01f15e8</a>)</p></li>
+</ul>
+</section>
+<section id="bug-fixes">
+<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>Validate action issue
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/f8ef12e018009ec1c8b4d554829156e93c9a5b98">f8ef12e</a>)</p></li>
+<li><p>Typos
+(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/9349864c5712fad3da9218d8f8b72529da5e03fa">9349864</a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="section-1">
+<span id="id2"></span><h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/1.0.0...v1.1.0">1.1.0</a> (2024-08-03)<a class="headerlink" href="#section-1" title="Permalink to this headline"></a></h2>
+<section id="features-1">
+<span id="id3"></span><h3>Features<a class="headerlink" href="#features-1" title="Permalink to this headline"></a></h3>
 <ul class="simple">
 <li><p>add docker run commands for dev
 (<a class="reference external" href="https://github.com/gavinying/modpoll/commit/074d51e6196ca342d71c103e55a9c9e72cd3462b">074d51e</a>)</p></li>
@@ -103,8 +129,8 @@
 (<a class="reference external" href="https://github.com/gavinying/modpoll/commit/3e6681a56497672c664a200e95728d7202a1964f">3e6681a</a>)</p></li>
 </ul>
 </section>
-<section id="bug-fixes">
-<h3>Bug Fixes<a class="headerlink" href="#bug-fixes" title="Permalink to this headline"></a></h3>
+<section id="bug-fixes-1">
+<span id="id4"></span><h3>Bug Fixes<a class="headerlink" href="#bug-fixes-1" title="Permalink to this headline"></a></h3>
 <ul class="simple">
 <li><p>allow user defined docker registry
 (<a class="reference external" href="https://github.com/gavinying/modpoll/commit/38acfcc16f8143fe91e716ff734d4e96e8cc9035">38acfcc</a>)</p></li>
@@ -120,13 +146,6 @@
 (<a class="reference external" href="https://github.com/gavinying/modpoll/commit/24703fe098379016447ab50ab89276e0f0f734ef">24703fe</a>)</p></li>
 </ul>
 </section>
-<section id="reverts">
-<h3>Reverts<a class="headerlink" href="#reverts" title="Permalink to this headline"></a></h3>
-<ul class="simple">
-<li><p>move poetry plugin installation back to install phase
-(<a class="reference external" href="https://github.com/gavinying/modpoll/commit/b2dc9f40f59d6ac759da23dff7e08cf8f9eea970">b2dc9f4</a>)</p></li>
-</ul>
-</section>
 <section id="documentation">
 <h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h3>
 <ul class="simple">
@@ -135,16 +154,16 @@
 </ul>
 </section>
 </section>
-<section id="section-1">
-<span id="id2"></span><h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/0.8.4...1.0.0">1.0.0</a> (2024-07-11)<a class="headerlink" href="#section-1" title="Permalink to this headline"></a></h2>
+<section id="section-2">
+<span id="id5"></span><h2><a class="reference external" href="https://github.com/gavinying/modpoll/compare/0.8.4...1.0.0">1.0.0</a> (2024-07-11)<a class="headerlink" href="#section-2" title="Permalink to this headline"></a></h2>
 <section id="breaking-changes">
 <h3>⚠ BREAKING CHANGES<a class="headerlink" href="#breaking-changes" title="Permalink to this headline"></a></h3>
 <ul class="simple">
 <li><p>Release v1.0.0</p></li>
 </ul>
 </section>
-<section id="features-1">
-<span id="id3"></span><h3>Features<a class="headerlink" href="#features-1" title="Permalink to this headline"></a></h3>
+<section id="features-2">
+<span id="id6"></span><h3>Features<a class="headerlink" href="#features-2" title="Permalink to this headline"></a></h3>
 <ul class="simple">
 <li><p>Support Modbus RTU/TCP/UDP devices</p></li>
 <li><p>Poll data from multiple Modbus devices</p></li>

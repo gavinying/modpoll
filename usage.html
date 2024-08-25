@@ -80,7 +80,7 @@
              
   <section id="basic-usage">
 <h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline"></a></h1>
-<p><p>modpoll v1.0.0 - A New Command-line Tool for Modbus and MQTT</p>
+<p><p>modpoll v1.1.0 - A New Command-line Tool for Modbus and MQTT</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">modpoll</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="n">CONFIG</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">RATE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">interval</span> <span class="n">INTERVAL</span><span class="p">]</span>
                <span class="p">[</span><span class="o">--</span><span class="n">tcp</span> <span class="n">TCP</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">tcp</span><span class="o">-</span><span class="n">port</span> <span class="n">TCP_PORT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">udp</span> <span class="n">UDP</span><span class="p">]</span>
@@ -88,9 +88,12 @@
                <span class="p">[</span><span class="o">--</span><span class="n">rtu</span><span class="o">-</span><span class="n">parity</span> <span class="p">{</span><span class="n">none</span><span class="p">,</span><span class="n">odd</span><span class="p">,</span><span class="n">even</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">timeout</span> <span class="n">TIMEOUT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">EXPORT</span><span class="p">]</span>
                <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">version</span> <span class="p">{</span><span class="mf">3.1.1</span><span class="p">,</span><span class="mf">5.0</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">host</span> <span class="n">MQTT_HOST</span><span class="p">]</span>
                <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">port</span> <span class="n">MQTT_PORT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">clientid</span> <span class="n">MQTT_CLIENTID</span><span class="p">]</span>
-               <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">topic</span><span class="o">-</span><span class="n">prefix</span> <span class="n">MQTT_TOPIC_PREFIX</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">qos</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">}]</span>
-               <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">user</span> <span class="n">MQTT_USER</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="k">pass</span> <span class="n">MQTT_PASS</span><span class="p">]</span>
-               <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">use</span><span class="o">-</span><span class="n">tls</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">insecure</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">topic</span><span class="o">-</span><span class="n">prefix</span> <span class="n">MQTT_TOPIC_PREFIX</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">publish</span><span class="o">-</span><span class="n">topic</span><span class="o">-</span><span class="n">pattern</span> <span class="n">MQTT_PUBLISH_TOPIC_PATTERN</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">subscribe</span><span class="o">-</span><span class="n">topic</span><span class="o">-</span><span class="n">pattern</span> <span class="n">MQTT_SUBSCRIBE_TOPIC_PATTERN</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">diagnostics</span><span class="o">-</span><span class="n">topic</span><span class="o">-</span><span class="n">pattern</span> <span class="n">MQTT_DIAGNOSTICS_TOPIC_PATTERN</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">qos</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">user</span> <span class="n">MQTT_USER</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="k">pass</span> <span class="n">MQTT_PASS</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">use</span><span class="o">-</span><span class="n">tls</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">insecure</span><span class="p">]</span>
                <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">cacerts</span> <span class="n">MQTT_CACERTS</span><span class="p">]</span>
                <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">tls</span><span class="o">-</span><span class="n">version</span> <span class="p">{</span><span class="n">tlsv1</span><span class="mf">.2</span><span class="p">,</span><span class="n">tlsv1</span><span class="mf">.1</span><span class="p">,</span><span class="n">tlsv1</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">single</span><span class="p">]</span>
                <span class="p">[</span><span class="o">--</span><span class="n">diagnostics</span><span class="o">-</span><span class="n">rate</span> <span class="n">DIAGNOSTICS_RATE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">autoremove</span><span class="p">]</span>
@@ -172,8 +175,18 @@
 <dd><p>MQTT client name, If qos &gt; 0, set unique name for multiple clients</p>
 </dd>
 <dt><kbd>--mqtt-topic-prefix</kbd></dt>
-<dd><p>Topic prefix for MQTT subscribing/publishing. Defaults to “modpoll/”</p>
-<p>Default: “modpoll/”</p>
+<dd><p>(DEPRECATED) Topic prefix for MQTT subscribing/publishing. Defaults to None</p>
+</dd>
+<dt><kbd>--mqtt-publish-topic-pattern</kbd></dt>
+<dd><p>Topic pattern for MQTT publish. Use &lt;device_name&gt; as placeholder for the device names in Modbus config. Defaults to “modpoll/&lt;device_name&gt;”</p>
+<p>Default: “modpoll/&lt;device_name&gt;”</p>
+</dd>
+<dt><kbd>--mqtt-subscribe-topic-pattern</kbd></dt>
+<dd><p>Topic pattern for MQTT subscribe. Use &lt;device_name&gt; as placeholder for the device names in Modbus config. Defaults to “modpoll/&lt;device_name&gt;/set”</p>
+<p>Default: “modpoll/&lt;device_name&gt;/set”</p>
+</dd>
+<dt><kbd>--mqtt-diagnostics-topic-pattern</kbd></dt>
+<dd><p>Topic pattern for MQTT diagnostics. Use &lt;device_name&gt; as placeholder for the device names in Modbus config. Defaults to None</p>
 </dd>
 <dt><kbd>--mqtt-qos</kbd></dt>
 <dd><p>Possible choices: 0, 1, 2</p>
