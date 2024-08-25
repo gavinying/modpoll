@@ -2,7 +2,7 @@
   "packages": {
     ".": {
       "release-type": "python",
-      "last-release-sha": "f61d696ca71d5ae747a7b2e7ed953228fecdff8e",
+      "last-release-sha": "58d3f6719b7c78b0c17cfb60ca7013e5f8d1bccb",
       "draft": false,
       "prerelease": false
     }
