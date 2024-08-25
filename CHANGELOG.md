@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.0](https://github.com/gavinying/modpoll/compare/v1.1.0...v1.2.0) (2024-08-25)
+
+
+### Features
+
+* add docker compose for better developer experience. ([01f15e8](https://github.com/gavinying/modpoll/commit/01f15e8d140eadf3413471463fbb26cd7d8fc175))
+* introduce MQTT topic pattern to replace the existing MQTT topic prefix. ([58d3f67](https://github.com/gavinying/modpoll/commit/58d3f6719b7c78b0c17cfb60ca7013e5f8d1bccb))
+
+
+### Bug Fixes
+
+* typos ([9349864](https://github.com/gavinying/modpoll/commit/9349864c5712fad3da9218d8f8b72529da5e03fa))
+* validate action issue ([f8ef12e](https://github.com/gavinying/modpoll/commit/f8ef12e018009ec1c8b4d554829156e93c9a5b98))
+
+
+### Reverts
+
+* "mqtt topic pattern ([#55](https://github.com/gavinying/modpoll/issues/55))" ([f61d696](https://github.com/gavinying/modpoll/commit/f61d696ca71d5ae747a7b2e7ed953228fecdff8e))
+
 ## [1.1.0](https://github.com/gavinying/modpoll/compare/1.0.0...v1.1.0) (2024-08-03)
 
 
