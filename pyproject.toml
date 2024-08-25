@@ -12,11 +12,11 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.8.2,<4.0"
-importlib-metadata = "^8.0.0"
-pymodbus = "~3.5.4"
+importlib-metadata = "^8.3.0"
+pymodbus = "~3.6.9"
 paho-mqtt = "^2.1.0"
-prettytable = "^3.6.0"
-requests = "^2.28.1"
+prettytable = "^3.9.0"
+requests = "^2.32.0"
 pyserial = { version = "^3.5", optional = true }
 
 [tool.poetry.extras]
