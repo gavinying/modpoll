@@ -5,19 +5,15 @@
 
 ### Features
 
-* add docker compose for better developer experience. ([01f15e8](https://github.com/gavinying/modpoll/commit/01f15e8d140eadf3413471463fbb26cd7d8fc175))
-* introduce MQTT topic pattern to replace the existing MQTT topic prefix. ([58d3f67](https://github.com/gavinying/modpoll/commit/58d3f6719b7c78b0c17cfb60ca7013e5f8d1bccb))
+* Introduce MQTT topic pattern to replace the existing MQTT topic prefix. ([58d3f67](https://github.com/gavinying/modpoll/commit/58d3f6719b7c78b0c17cfb60ca7013e5f8d1bccb))
+* Add docker compose for better developer experience. ([01f15e8](https://github.com/gavinying/modpoll/commit/01f15e8d140eadf3413471463fbb26cd7d8fc175))
 
 
 ### Bug Fixes
 
-* typos ([9349864](https://github.com/gavinying/modpoll/commit/9349864c5712fad3da9218d8f8b72529da5e03fa))
-* validate action issue ([f8ef12e](https://github.com/gavinying/modpoll/commit/f8ef12e018009ec1c8b4d554829156e93c9a5b98))
+* Validate action issue ([f8ef12e](https://github.com/gavinying/modpoll/commit/f8ef12e018009ec1c8b4d554829156e93c9a5b98))
+* Typos ([9349864](https://github.com/gavinying/modpoll/commit/9349864c5712fad3da9218d8f8b72529da5e03fa))
 
-
-### Reverts
-
-* "mqtt topic pattern ([#55](https://github.com/gavinying/modpoll/issues/55))" ([f61d696](https://github.com/gavinying/modpoll/commit/f61d696ca71d5ae747a7b2e7ed953228fecdff8e))
 
 ## [1.1.0](https://github.com/gavinying/modpoll/compare/1.0.0...v1.1.0) (2024-08-03)
 
@@ -39,14 +35,10 @@
 * Unexpected input for release-please ([24703fe](https://github.com/gavinying/modpoll/commit/24703fe098379016447ab50ab89276e0f0f734ef))
 
 
-### Reverts
-
-* move poetry plugin installation back to install phase ([b2dc9f4](https://github.com/gavinying/modpoll/commit/b2dc9f40f59d6ac759da23dff7e08cf8f9eea970))
-
-
 ### Documentation
 
 * update CHANGELOG.md ([73fcc01](https://github.com/gavinying/modpoll/commit/73fcc010cb0ddbf4a1aa149ac28a354cd1bc5c39))
+
 
 ## [1.0.0](https://github.com/gavinying/modpoll/compare/0.8.4...1.0.0) (2024-07-11)
 
