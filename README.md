@@ -11,23 +11,21 @@ Show your love for this project by starring our repo 🌟, so we are encouraged 
 
 ## Motivation
 
-The initial idea of creating this tool is to help myself debugging new devices during site survey. A site survey usually has limited time and space, working on-site also piles up some pressures. At that time, a portable swiss-knife toolkit is our best friend.
+The idea for creating this tool originated from my need to efficiently check new devices during site surveys. These surveys are often time-constrained and space-limited, with on-site work adding to the pressure. In such situations, a portable Swiss Army knife toolkit becomes an valuable companion.
 
-This program can be easily deployed to Raspberry Pi or similar embedded devices, polling data from modbus devices, users can choose to log data locally or publish to a MQTT broker for further debugging.
+This tool can be easily deployed on a Raspberry Pi or similar embedded devices, polling data from a Modbus network or connected devices. Users can choose to log the data locally or publish it to an MQTT broker for further troubleshooting.
 
-The MQTT broker can be setup on the same Raspberry Pi or on the cloud. Once data successfully published, users can subscribe to a specific MQTT topic to view the data via a smartphone at your fingertip.
+The MQTT broker can be set up either on the same Raspberry Pi or in the cloud. Once data is successfully published, users can subscribe to the relevant MQTT topics and conveniently view the data on their smartphone.
 
 <p align="center">
   <img src="docs/assets/modpoll-usage.png">
 </p>
 
-Moreover, you can also run this program continuously on a server as a Modbus-MQTT gateway, i.e. polling from local Modbus devices and forwarding data to a centralized cloud service.
+Moreover, you can also run this tool continuously on a server as a Modbus-MQTT gateway, i.e. polling from local Modbus devices and forwarding data to a centralized cloud service.
 
 In fact, *modpoll* helps to bridge between the traditional field-bus world and the new IoT world.
 
-> This program is designed to be a standalone tool, it works out-of-the-box on Linux/macOS/Windows.
-
-> If you are looing for a modbus python library, please consider the following great open source projects, [pymodbus](https://github.com/riptideio/pymodbus) or [minimalmodbus](https://github.com/pyhys/minimalmodbus)
+> 💡 **Tips:** This tool is designed to be a standalone executable application, which works out-of-the-box on Linux/macOS/Windows. If you are looing for a modbus python library, please consider the following great open source projects, [pymodbus](https://github.com/riptideio/pymodbus) or [minimalmodbus](https://github.com/pyhys/minimalmodbus)
 
 
 ## Feature
@@ -41,7 +39,7 @@ In fact, *modpoll* helps to bridge between the traditional field-bus world and t
 
 ## Installation
 
-This program tested on Python 3.8+, the package is available in the [Python Package Index](https://pypi.org/), users can easily install it using `pip` or `pipx`.
+This tool tested on Python 3.8+, the package is available in the [Python Package Index](https://pypi.org/), users can easily install it using `pip` or `pipx`.
 
 ### Using PIP
 
@@ -204,9 +202,7 @@ With successful data polling and publishing, you can subscribe the topic `modpol
 
 The MQTT topic uses `<mqtt_topic_prefix>/<device_name>` pattern, <mqtt_topic_prefix> is provided by `--mqtt-topic-prefix` argument, the default value is `modpoll`  and <device_name> is provided by the Modbus configure file.
 
-> ⚠️ **Note:** The `--mqtt-topic-prefix` argument is deprecated and will be removed in the future release. Use `--mqtt-publish-topic-pattern` and `--mqtt-subscribe-topic-pattern` instead. If both are used, `--mqtt-topic-prefix` argument will take precedence in order to keep backward compatibility.
-
-We encourage user to switch to MQTT topic pattern arguments, so that user can customize the MQTT topics with more flexibility. MQTT subscription can also be disabled by setting 'mqtt-subscribe-topic-pattern' to empty. See [document](https://gavinying.github.io/modpoll/usage.html#Named%20Arguments) for details.
+> ⚠️ **Note:** The `--mqtt-topic-prefix` argument is deprecated and will be removed in the future release. Use `--mqtt-publish-topic-pattern` and `--mqtt-subscribe-topic-pattern` instead. If both are used, `--mqtt-topic-prefix` argument will take precedence in order to keep backward compatibility. See [document](https://gavinying.github.io/modpoll/usage.html#Named%20Arguments) for details.
 
 
 <p align="center">
@@ -241,13 +237,13 @@ The *modpoll* tool will subscribe to the topic `modpoll/<device_name>/set` by de
 
 ## Run with docker
 
-A docker image has been provided for user to directly run the program without local installation,
+A docker image has been provided for user to directly run the tool without local installation,
 
   ```bash
   docker run --rm helloysd/modpoll
   ```
 
-It shows the version of the program by default.
+It shows the version of the tool by default.
 
 Similar to the above *modsim* test, we can poll data with `docker run`, in order to avoid printing out received data, the argument `--daemon` or `-d` is recommended to use with docker.
 
