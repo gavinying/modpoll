@@ -86,7 +86,7 @@ pipx upgrade modpoll
 Let's start exploring *modpoll* with *modsim* device, run the following command to get a first glimpse,
 
 ```bash
-modpoll \
+modpoll --once \
   --tcp modsim.topmaker.net \
   --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
