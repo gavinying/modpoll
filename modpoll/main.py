@@ -5,6 +5,7 @@ import re
 import signal
 import sys
 import threading
+import time
 from datetime import timezone
 
 from modpoll.arg_parser import get_parser
@@ -183,6 +184,9 @@ def app(name="modpoll"):
         if args.once:
             event_exit.set()
             break
+
+        time.sleep(1)
+
     modbus_close()
     mqttc_close()
 
