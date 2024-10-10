@@ -6,9 +6,7 @@ authors = ["Ying Shaodong <helloysd@gmail.com>"]
 repository = "https://github.com/gavinying/modpoll"
 documentation = "https://gavinying.github.io/modpoll"
 readme = "README.md"
-packages = [
-  {include = "modpoll"}
-]
+packages = [{ include = "modpoll" }]
 
 [tool.poetry.dependencies]
 python = ">=3.8.2,<4.0"
@@ -47,6 +45,7 @@ DEP002 = ["pyserial"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["integration: marks tests as integration tests"]
 
 [tool.poetry.scripts]
 modpoll = "modpoll.main:app"
