@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/gavinying/modpoll/compare/v1.2.0...v1.2.1) (2024-10-10)
+
+
+### Bug Fixes
+
+* Adjust delay to every loop iteration ([e368922](https://github.com/gavinying/modpoll/commit/e368922b925bcdf602d42716d2a72631f1134639))
+* Allow github action to read the PR title and add labels ([22cb7c8](https://github.com/gavinying/modpoll/commit/22cb7c8dce284675193865c8fe399320bb0f2636))
+
 ## [1.2.0](https://github.com/gavinying/modpoll/compare/v1.1.0...v1.2.0) (2024-08-25)
 
 
