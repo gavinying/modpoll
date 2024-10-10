@@ -185,7 +185,7 @@ def app(name="modpoll"):
             event_exit.set()
             break
 
-        time.sleep(1)
+        time.sleep(0.01)
 
     modbus_close()
     mqttc_close()
