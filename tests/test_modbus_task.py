@@ -8,5 +8,5 @@ def test_modbus_task_modbus_setup():
     args = parser.parse_args(["--config", "examples/modsim.csv"])
     event_exit = threading.Event()
     for config_file in args.config:
-        modbus_handler = ModbusHandler(args, event_exit)
+        modbus_handler = ModbusHandler(args, event_exit, config_file)
         assert modbus_handler.load_config(config_file)
