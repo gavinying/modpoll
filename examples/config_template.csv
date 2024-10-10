@@ -40,7 +40,7 @@
 # Configuration Example
 # !!! Please remove all comments for your config file !!!
 # -----------------------------
-device,modsim001,1,,
+device,modsim01,1,,
 poll,coil,0,12,BE_BE
 ref,coil01-08,0,bool8,rw
 ref,coil09-12,1,bool8,rw

@@ -100,7 +100,7 @@ modpoll --once \
 The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) for *modsim* device as following,
 
 ```CSV
-device,modsim001,1,,
+device,modsim01,1,,
 poll,coil,0,16,BE_BE
 ref,coil01-08,0,bool8,rw
 ref,coil09-16,1,bool8,rw
@@ -265,7 +265,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```
 
 
-## Basic Usage
+## Example Use Cases
 
 - Connect to Modbus TCP device
 
@@ -289,7 +289,6 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```bash
   modpoll \
     --tcp modsim.topmaker.net \
-    --tcp-port 5020 \
     --mqtt-host mqtt.eclipseprojects.io \
     --config examples/modsim.csv
   ```
@@ -299,9 +298,16 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```bash
   modpoll \
     --tcp modsim.topmaker.net \
-    --tcp-port 5020 \
     --export data.csv \
     --config examples/modsim.csv
+  ```
+
+- Connect to Modbus TCP devices using multiple config files
+
+  ```bash
+  modpoll \
+    --tcp modsim.topmaker.net \
+    --config examples/modsim.csv examples/modsim2.csv
   ```
 
 
