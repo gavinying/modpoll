@@ -77,7 +77,7 @@ def app(name="modpoll"):
                 args.mqtt_pass,
                 args.mqtt_clientid,
                 args.mqtt_qos,
-                subscribe_topics=args.mqtt_subscribe_topic_pattern,
+                subscribe_topics=[args.mqtt_subscribe_topic_pattern],
             )
             if mqtt_handler.mqttc_setup() and mqtt_handler.mqttc_connect():
                 logger.info("Setup MQTT client.")
@@ -127,9 +127,9 @@ def app(name="modpoll"):
                     break
                 if args.mqtt_host:
                     if args.timestamp:
-                        modbus_master.publish(timestamp=now)
+                        modbus_master.publish_data(timestamp=now)
                     else:
-                        modbus_master.publish()
+                        modbus_master.publish_data()
                 if args.export:
                     if args.timestamp:
                         modbus_master.export(args.export, timestamp=now)
@@ -147,10 +147,11 @@ def app(name="modpoll"):
             if topic and payload:
                 # extract device_name
                 topic_regex = args.mqtt_subscribe_topic_pattern.replace(
-                    "#", "([^/\n]*)"
+                    "+", "([^/\n]*)"
                 )
-                device_name = re.search(topic_regex, topic).group(1)
-                if device_name:
+                match = re.search(topic_regex, topic)
+                if match:
+                    device_name = match.group(1)
                     logger.info(
                         f"Received request to write data for device {device_name}"
                     )
@@ -159,37 +160,42 @@ def app(name="modpoll"):
                         object_type = reg["object_type"]
                         address = reg["address"]
                         value = reg["value"]
+
+                        device_found = False
                         for modbus_master in modbus_masters:
                             if device_name in [
                                 dev.name for dev in modbus_master.get_device_list()
                             ]:
-                                if "coil" == object_type:
-                                    if modbus_master.write_coil(
+                                device_found = True
+                                write_success = False
+                                if object_type == "coil":
+                                    write_success = modbus_master.write_coil(
                                         device_name, address, value
-                                    ):
-                                        logger.info(
-                                            f"Successfully write coil(s): device={device_name}, address={address}, value={value}"
-                                        )
-                                    else:
-                                        logger.warning(
-                                            f"Failed to write coil(s): device={device_name}, address={address}, value={value}"
-                                        )
-                                elif "holding_register" == object_type:
-                                    if modbus_master.write_register(
+                                    )
+                                elif object_type == "holding_register":
+                                    write_success = modbus_master.write_register(
                                         device_name, address, value
-                                    ):
-                                        logger.info(
-                                            f"Successfully write register(s): device={device_name}, address={address}, value={value}"
-                                        )
-                                    else:
-                                        logger.warning(
-                                            f"Failed to write register(s): device={device_name}, address={address}, value={value}"
-                                        )
+                                    )
+
+                                if write_success:
+                                    logger.info(
+                                        f"Successfully wrote {object_type}: device={device_name}, address={address}, value={value}"
+                                    )
+                                else:
+                                    logger.warning(
+                                        f"Failed to write {object_type}: device={device_name}, address={address}, value={value}"
+                                    )
                                 break
-                    except KeyError:
-                        logger.error(f"No required key found: {payload}")
-                    except json.decoder.JSONDecodeError:
-                        logger.error(f"Failed to parse json message: {payload}")
+
+                        if not device_found:
+                            logger.error(f"No device found with name: {device_name}")
+
+                    except KeyError as e:
+                        logger.error(f"Missing required key in payload: {e}")
+                    except json.JSONDecodeError:
+                        logger.error(f"Failed to parse JSON message: {payload}")
+                else:
+                    logger.error(f"Failed to extract device name from topic: {topic}")
         if args.once:
             event_exit.set()
             break

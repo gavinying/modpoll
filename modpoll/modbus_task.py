@@ -522,8 +522,10 @@ class ModbusMaster:
             print(f"\nDevice: {dev.name}")
             print(table)
 
-    def publish(self, timestamp=None, on_change=False):
+    def publish_data(self, timestamp=None, on_change=False):
         if not self.mqtt_handler:
+            return
+        if not self.args.mqtt_publish_topic_pattern:
             return
         for dev in self.deviceList:
             payload = {}
@@ -546,13 +548,17 @@ class ModbusMaster:
     def publish_diagnostics(self):
         if not self.mqtt_handler:
             return
+        if not self.args.mqtt_diagnostics_topic_pattern:
+            return
         for dev in self.deviceList:
             payload = {
                 "poll_count": dev.pollCount,
                 "error_count": dev.errorCount,
                 "last_poll_success": dev.pollSuccess,
             }
-            topic = f"{self.args.mqtt_publish_topic_pattern.replace('<device_name>', dev.name)}/diagnostics"
+            topic = self.args.mqtt_diagnostics_topic_pattern.replace(
+                "<device_name>", dev.name
+            )
             self.mqtt_handler.mqttc_publish(topic, json.dumps(payload))
 
     def export(self, file, timestamp=None):

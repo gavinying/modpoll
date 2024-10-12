@@ -198,11 +198,17 @@ modpoll \
   --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
 
-With successful data polling and publishing, you can subscribe the topic `modpoll/modsim` on the same MQTT broker `mqtt.eclipseprojects.io` to view the collected data.
+With successful data polling and publishing, you can subscribe the default data topic `modpoll/modsim01/data` on the same MQTT broker `mqtt.eclipseprojects.io` to view the collected data.
 
-The MQTT topic uses `<mqtt_topic_prefix>/<device_name>` pattern, <mqtt_topic_prefix> is provided by `--mqtt-topic-prefix` argument, the default value is `modpoll`  and <device_name> is provided by the Modbus configure file.
+The MQTT topics can be customized by providing the following arguments,
 
-> ⚠️ **Note:** The `--mqtt-topic-prefix` argument is deprecated and will be removed in the future release. Use `--mqtt-publish-topic-pattern` and `--mqtt-subscribe-topic-pattern` instead. If both are used, `--mqtt-topic-prefix` argument will take precedence in order to keep backward compatibility. See [document](https://gavinying.github.io/modpoll/usage.html#Named%20Arguments) for details.
+  - `mqtt-publish-topic-pattern`
+  - `mqtt-subscribe-topic-pattern`
+  - `mqtt-diagnostics-topic-pattern`
+
+See [document](https://gavinying.github.io/modpoll/usage.html#Named%20Arguments) for details.
+
+> ⚠️ **Note:** The old `--mqtt-topic-prefix` argument is now deprecated and will be removed in the future release. Suggest to use `--mqtt-xxx-topic-pattern` in new project. If both are used, `--mqtt-topic-prefix` argument will take precedence in order to keep backward compatibility until it is removed.
 
 
 <p align="center">

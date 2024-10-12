@@ -108,18 +108,18 @@ def get_parser():
     )
     parser.add_argument(
         "--mqtt-publish-topic-pattern",
-        default="modpoll/<device_name>",
+        default="modpoll/<device_name>/data",
         help='Topic pattern for MQTT publish. Use <device_name> as placeholder for the device names in Modbus config. Defaults to "modpoll/<device_name>"',
     )
     parser.add_argument(
         "--mqtt-subscribe-topic-pattern",
-        default="modpoll/#/set",
-        help='Topic pattern for MQTT subscribe. Defaults to "modpoll/#/set"',
+        default="modpoll/+/set",
+        help='Topic pattern for MQTT subscribe. Defaults to "modpoll/+/set"',
     )
     parser.add_argument(
         "--mqtt-diagnostics-topic-pattern",
-        default=None,
-        help="Topic pattern for MQTT diagnostics. Use <device_name> as placeholder for the device names in Modbus config. Defaults to None",
+        default="modpoll/<device_name>/diagnostics",
+        help="Topic pattern for MQTT diagnostics. Use <device_name> as placeholder for the device names in Modbus config. Defaults to modpoll/<device_name>/diagnostics",
     )
     parser.add_argument(
         "--mqtt-qos",
