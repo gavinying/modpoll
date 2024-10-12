@@ -8,9 +8,9 @@ import threading
 import time
 from datetime import timezone
 
-from modpoll.arg_parser import get_parser
-from modpoll.modbus_task import ModbusHandler
+from .arg_parser import get_parser
 from .mqtt_task import MqttHandler
+from .modbus_task import ModbusMaster
 
 from . import __version__
 
@@ -36,7 +36,7 @@ def get_utc_time():
 
 def app(name="modpoll"):
     mqtt_handler = None
-    modbus_handlers = []
+    modbus_masters = []
 
     print(
         f"\nModpoll v{__version__} - A New Command-line Tool for Modbus and MQTT\n",
@@ -79,12 +79,10 @@ def app(name="modpoll"):
                 args.mqtt_qos,
                 subscribe_topics=args.mqtt_subscribe_topic_pattern,
             )
-            if not mqtt_handler.mqttc_setup():
+            if mqtt_handler.mqttc_setup() and mqtt_handler.mqttc_connect():
+                logger.info("Setup MQTT client.")
+            else:
                 logger.error("Failed to setup MQTT client, exiting...")
-                mqtt_handler.mqttc_close()
-                exit(1)
-            if not mqtt_handler.mqttc_connect():
-                logger.error("Failed to connect, exiting...")
                 mqtt_handler.mqttc_close()
                 exit(1)
         except Exception as e:
@@ -94,14 +92,19 @@ def app(name="modpoll"):
 
     # setup modbus tasks
     for config_file in args.config:
-        modbus_handler = ModbusHandler(args, event_exit, config_file, mqtt_handler)
-        if not modbus_handler.setup():
-            logger.error(f"Failed to setup modbus client (master) for {config_file}")
-            modbus_handler.close()
-            if mqtt_handler:
-                mqtt_handler.mqttc_close()
-            exit(1)
-        modbus_handlers.append(modbus_handler)
+        modbus_master = ModbusMaster(args, event_exit, config_file, mqtt_handler)
+        if modbus_master.setup():
+            modbus_masters.append(modbus_master)
+        else:
+            modbus_master.close()
+    if modbus_masters:
+        logger.info(f"Start polling devices after {args.delay} second(s) delay.")
+        time.sleep(args.delay)
+    else:
+        logger.error("No Modbus master (client) defined. Exiting...")
+        if mqtt_handler:
+            mqtt_handler.mqttc_close()
+        exit(1)
 
     # main loop
     last_check = 0
@@ -116,26 +119,26 @@ def app(name="modpoll"):
                 elapsed = round(now - last_check, 6)
             last_check = now
             logger.info(
-                f" ====== modpoll polling at rate:{args.rate}s, actual:{elapsed}s ======"
+                f" ====== Modpoll is polling at rate:{args.rate}s, actual:{elapsed}s ======"
             )
-            for modbus_handler in modbus_handlers:
-                modbus_handler.poll()
+            for modbus_master in modbus_masters:
+                modbus_master.poll()
                 if event_exit.is_set():
                     break
                 if args.mqtt_host:
                     if args.timestamp:
-                        modbus_handler.publish(timestamp=now)
+                        modbus_master.publish(timestamp=now)
                     else:
-                        modbus_handler.publish()
+                        modbus_master.publish()
                 if args.export:
                     if args.timestamp:
-                        modbus_handler.export(args.export, timestamp=now)
+                        modbus_master.export(args.export, timestamp=now)
                     else:
-                        modbus_handler.export(args.export)
+                        modbus_master.export(args.export)
         if args.diagnostics_rate > 0 and now > last_diag + args.diagnostics_rate:
             last_diag = now
-            for modbus_handler in modbus_handlers:
-                modbus_handler.publish_diagnostics()
+            for modbus_master in modbus_masters:
+                modbus_master.publish_diagnostics()
         if event_exit.is_set():
             break
         # Check if receive mqtt request
@@ -156,12 +159,12 @@ def app(name="modpoll"):
                         object_type = reg["object_type"]
                         address = reg["address"]
                         value = reg["value"]
-                        for modbus_handler in modbus_handlers:
+                        for modbus_master in modbus_masters:
                             if device_name in [
-                                dev.name for dev in modbus_handler.get_device_list()
+                                dev.name for dev in modbus_master.get_device_list()
                             ]:
                                 if "coil" == object_type:
-                                    if modbus_handler.write_coil(
+                                    if modbus_master.write_coil(
                                         device_name, address, value
                                     ):
                                         logger.info(
@@ -172,7 +175,7 @@ def app(name="modpoll"):
                                             f"Failed to write coil(s): device={device_name}, address={address}, value={value}"
                                         )
                                 elif "holding_register" == object_type:
-                                    if modbus_handler.write_register(
+                                    if modbus_master.write_register(
                                         device_name, address, value
                                     ):
                                         logger.info(
@@ -193,8 +196,8 @@ def app(name="modpoll"):
 
         time.sleep(0.01)
 
-    for modbus_handler in modbus_handlers:
-        modbus_handler.close()
+    for modbus_master in modbus_masters:
+        modbus_master.close()
     if mqtt_handler:
         mqtt_handler.mqttc_close()
 

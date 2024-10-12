@@ -153,7 +153,7 @@ class MqttHandler:
                 "tlsv1.1": ssl.PROTOCOL_TLSv1_1,
                 "tlsv1": ssl.PROTOCOL_TLSv1,
             }
-            tlsVersion = tls_versions.get(self.tls_version, ssl.PROTOCOL_TLS)
+            tlsVersion = tls_versions.get(self.tls_version.lower(), ssl.PROTOCOL_TLS)
             cert_required = ssl.CERT_NONE if self.insecure else ssl.CERT_REQUIRED
             self.mqttc.tls_set(
                 ca_certs=self.cacerts,
@@ -230,7 +230,7 @@ class MqttHandler:
             return None, None
 
     def mqttc_connected(self) -> bool:
-        return self.mqttc.is_connected()
+        return self.mqttc is not None and self.mqttc.is_connected()
 
     def mqttc_close(self) -> None:
         if self.mqttc:

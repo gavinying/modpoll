@@ -2,7 +2,6 @@ import csv
 import json
 import logging
 import math
-import time
 from typing import List, Optional
 
 import requests
@@ -12,7 +11,7 @@ from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
 
-from modpoll.mqtt_task import MqttHandler
+from .mqtt_task import MqttHandler
 
 
 FLOAT_TYPE_PRECISION = 3
@@ -66,29 +65,24 @@ class Poller:
                 result = master.read_coils(
                     self.start_address, self.size, slave=self.device.devid
                 )
-                if not result.isError():
-                    data = result.bits
             elif self.fc == 2:
                 result = master.read_discrete_inputs(
                     self.start_address, self.size, slave=self.device.devid
                 )
-                if not result.isError():
-                    data = result.bits
             elif self.fc == 3:
                 result = master.read_holding_registers(
                     self.start_address, self.size, slave=self.device.devid
                 )
-                if not result.isError():
-                    data = result.registers
             elif self.fc == 4:
                 result = master.read_input_registers(
                     self.start_address, self.size, slave=self.device.devid
                 )
-                if not result.isError():
-                    data = result.registers
-            if not data:
+
+            if result is None or result.isError():
                 self.update_statistics(False)
                 return False
+
+            data = result.bits if self.fc in (1, 2) else result.registers
 
             decoder = self._get_decoder(data)
             cur_ref = self.start_address
@@ -170,9 +164,11 @@ class Poller:
         if ref.dtype in decode_methods:
             ref.update_value(decode_methods[ref.dtype]())
         elif ref.dtype.startswith("string"):
-            ref.update_value(decoder.decode_string(ref.ref_width * 2))
+            ref.update_value(
+                decoder.decode_string(ref.ref_width * 2).decode("utf-8").rstrip("\x00")
+            )
         else:
-            decoder.decode_16bit_uint()  # Skip unknown types
+            decoder.skip_bytes(2)  # Skip unknown types
 
     def add_readable_reference(self, ref: "Reference"):
         if ref not in self.readableReferences:
@@ -230,10 +226,10 @@ class Reference:
             return width_map[self.dtype]
         elif self.dtype.startswith("string"):
             try:
-                width = int(self.dtype[6:9])
+                width = int(self.dtype[6:])
+                return (width + 1) // 2
             except ValueError:
-                width = 2
-            return min(width - (width % 2), 100)
+                return 1
         else:
             return 1
 
@@ -246,7 +242,7 @@ class Reference:
         if self.scale:
             try:
                 v = v * float(self.scale)
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
         self.last_val = self.val
         self.val = v
@@ -257,7 +253,7 @@ class Reference:
         return False
 
 
-class ModbusHandler:
+class ModbusMaster:
     def __init__(
         self, args, event, config_file: str, mqtt_handler: Optional[MqttHandler] = None
     ):
@@ -267,19 +263,20 @@ class ModbusHandler:
         self.logger = logging.getLogger(__name__)
         self.event_exit = event
         self.master = None
-        self.deviceList: list = []
+        self.connected = False
+        self.deviceList: List[Device] = []
 
     def load_config(self, file) -> bool:
         try:
             with requests.Session() as s:
                 response = s.get(file)
+                response.raise_for_status()
                 decoded_content = response.content.decode("utf-8")
                 csv_reader = csv.reader(decoded_content.splitlines(), delimiter=",")
                 self.deviceList = self.parse_config(csv_reader)
         except requests.RequestException:
             try:
                 with open(file, "r") as f:
-                    f.seek(0)
                     csv_reader = csv.reader(f)
                     self.deviceList = self.parse_config(csv_reader)
             except IOError as e:
@@ -287,13 +284,13 @@ class ModbusHandler:
                 return False
         return bool(self.deviceList)
 
-    def parse_config(self, csv_reader) -> list:
+    def parse_config(self, csv_reader) -> List[Device]:
         device_list = []
         current_device = None
         current_poller = None
         try:
             for row in csv_reader:
-                if not row or len(row) == 0:
+                if not row:
                     continue
                 if "device" in row[0].lower():
                     device_name = row[1]
@@ -325,9 +322,16 @@ class ModbusHandler:
             return []
 
     def _create_poller(self, row, current_device):
+        if len(row) < 5:
+            self.logger.error("Invalid poller configuration")
+            return None
         fc = row[1].lower()
-        start_address = int(row[2])
-        size = int(row[3])
+        try:
+            start_address = int(row[2])
+            size = int(row[3])
+        except ValueError:
+            self.logger.error("Invalid start address or size for poller")
+            return None
         endian = row[4]
         function_code = self._get_function_code(fc)
         if function_code is None:
@@ -362,8 +366,15 @@ class ModbusHandler:
         return True
 
     def _create_reference(self, row, current_device):
+        if len(row) < 5:
+            self.logger.error("Invalid reference configuration")
+            return None
         ref_name = row[1].replace(" ", "_")
-        address = int(row[2])
+        try:
+            address = int(row[2])
+        except ValueError:
+            self.logger.error(f"Invalid address for reference {ref_name}")
+            return None
         dtype = row[3].lower()
         rw = row[4] or "r"
         unit = row[5] if len(row) > 5 else None
@@ -387,81 +398,84 @@ class ModbusHandler:
     def setup(self) -> bool:
         self.logger.info(f"Loading config from: {self.config_file}")
         if self.load_config(self.config_file):
-            self.logger.info(f"Polling {len(self.deviceList)} device(s)...")
+            self.logger.info(f"Added {len(self.deviceList)} device(s)...")
         else:
-            self.logger.error("No device found in the config file. Exiting.")
+            self.logger.error("No device found in the config file. Skipping.")
             return False
         if self.args.rtu:
-            if self.args.rtu_parity == "odd":
-                parity = "O"
-            elif self.args.rtu_parity == "even":
-                parity = "E"
-            else:
-                parity = "N"
-            if self.args.framer == "default":
-                self.master = ModbusSerialClient(
-                    self.args.rtu,
-                    baudrate=int(self.args.rtu_baud),
-                    bytesize=8,
-                    parity=parity,
-                    stopbits=1,
-                    timeout=self.args.timeout,
-                )
-            else:
-                self.master = ModbusSerialClient(
-                    self.args.rtu,
-                    baudrate=int(self.args.rtu_baud),
-                    bytesize=8,
-                    parity=parity,
-                    stopbits=1,
-                    framer=self.args.framer,
-                    timeout=self.args.timeout,
-                )
+            parity = self._get_parity()
+            self.master = self._create_rtu_client(parity)
         elif self.args.tcp:
-            if self.args.framer == "default":
-                self.master = ModbusTcpClient(
-                    self.args.tcp, port=self.args.tcp_port, timeout=self.args.timeout
-                )
-            else:
-                self.master = ModbusTcpClient(
-                    self.args.tcp,
-                    port=self.args.tcp_port,
-                    framer=self.args.framer,
-                    timeout=self.args.timeout,
-                )
+            self.master = self._create_tcp_client()
         elif self.args.udp:
-            if self.args.framer == "default":
-                self.master = ModbusUdpClient(
-                    self.args.udp, port=self.args.udp_port, timeout=self.args.timeout
-                )
-            else:
-                self.master = ModbusUdpClient(
-                    self.args.udp,
-                    port=self.args.udp_port,
-                    framer=self.args.framer,
-                    timeout=self.args.timeout,
-                )
+            self.master = self._create_udp_client()
         else:
             self.logger.error("No communication method specified.")
             return False
         return True
 
+    def _get_parity(self):
+        if self.args.rtu_parity == "odd":
+            return "O"
+        elif self.args.rtu_parity == "even":
+            return "E"
+        else:
+            return "N"
+
+    def _create_rtu_client(self, parity):
+        client_args = {
+            "port": self.args.rtu,
+            "baudrate": int(self.args.rtu_baud),
+            "bytesize": 8,
+            "parity": parity,
+            "stopbits": 1,
+            "timeout": self.args.timeout,
+        }
+        if self.args.framer != "default":
+            client_args["framer"] = self.args.framer
+        return ModbusSerialClient(**client_args)
+
+    def _create_tcp_client(self):
+        client_args = {
+            "host": self.args.tcp,
+            "port": self.args.tcp_port,
+            "timeout": self.args.timeout,
+        }
+        if self.args.framer != "default":
+            client_args["framer"] = self.args.framer
+        return ModbusTcpClient(**client_args)
+
+    def _create_udp_client(self):
+        client_args = {
+            "host": self.args.udp,
+            "port": self.args.udp_port,
+            "timeout": self.args.timeout,
+        }
+        if self.args.framer != "default":
+            client_args["framer"] = self.args.framer
+        return ModbusUdpClient(**client_args)
+
+    def connect(self) -> bool:
+        self.connected = self.master.connect()
+        return self.connected
+
+    def disconnect(self):
+        if self.master:
+            self.master.close()
+            self.connected = False
+
     def poll(self):
-        if not self.master:
-            return
-        self.master.connect()
-        time.sleep(self.args.delay)
-        self.logger.debug(f"Master connected. Delay of {self.args.delay} seconds.")
+        self.connect()
         for dev in self.deviceList:
             self.logger.debug(f"Polling device {dev.name} ...")
             for p in dev.pollerList:
                 if not p.disabled:
                     p.poll(self.master)
                     if self.event_exit.is_set():
-                        self.master.close()
+                        self.disconnect()
                         return
                     self.event_exit.wait(timeout=self.args.interval)
-        self.master.close()
+        self.disconnect()
         if not self.args.daemon:
             self.print_results()
 
@@ -469,9 +483,9 @@ class ModbusHandler:
         for dev in self.deviceList:
             if dev.name == device_name:
                 try:
-                    self.master.connect()
+                    self.connect()
                     result = self.master.write_coil(address, value, slave=dev.devid)
-                    self.master.close()
+                    self.disconnect()
                     return not result.isError()
                 except ModbusException as e:
                     self.logger.error(f"Error writing coil: {e}")
@@ -482,9 +496,9 @@ class ModbusHandler:
         for dev in self.deviceList:
             if dev.name == device_name:
                 try:
-                    self.master.connect()
+                    self.connect()
                     result = self.master.write_register(address, value, slave=dev.devid)
-                    self.master.close()
+                    self.disconnect()
                     return not result.isError()
                 except ModbusException as e:
                     self.logger.error(f"Error writing register: {e}")
@@ -556,6 +570,8 @@ class ModbusHandler:
     def close(self):
         if self.master:
             self.master.close()
+            self.connected = False
+            self.master = None
 
     def get_device_list(self) -> List[Device]:
         return self.deviceList
