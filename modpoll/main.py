@@ -70,7 +70,7 @@ def app(name="modpoll"):
         logger.info(f"Setup MQTT connection to {args.mqtt_host}:{args.mqtt_port}")
         try:
             mqtt_handler = MqttHandler(
-                "MQTT_TASK",
+                "MqttHandler",
                 args.mqtt_host,
                 args.mqtt_port,
                 args.mqtt_user,
@@ -78,6 +78,7 @@ def app(name="modpoll"):
                 args.mqtt_clientid,
                 args.mqtt_qos,
                 subscribe_topics=[args.mqtt_subscribe_topic_pattern],
+                log_level=args.loglevel,
             )
             if mqtt_handler.mqttc_setup() and mqtt_handler.mqttc_connect():
                 logger.info("Setup MQTT client.")

@@ -31,6 +31,7 @@ class MqttHandler:
         cacerts: Optional[str] = None,
         insecure: bool = False,
         mqtt_version: str = "5.0",
+        log_level: str = "INFO",
     ):
         self.name = name
         self.host = host
@@ -45,9 +46,9 @@ class MqttHandler:
         self.cacerts = cacerts
         self.insecure = insecure
         self.mqtt_version = mqtt_version
-        self.loglevel = "INFO"
+        self.loglevel = log_level
 
-        self.logger = logging.getLogger(name)
+        self.logger = logging.getLogger(__name__)
         self.mqttc: Optional[MQTTClient] = None
         self.clean_start_or_session = qos == 0
         self.rx_queue: Queue = Queue(maxsize=1000)
