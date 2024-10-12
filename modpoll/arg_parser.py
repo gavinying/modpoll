@@ -5,19 +5,20 @@ from . import __version__
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description=f"modpoll v{__version__} - A New Command-line Tool for Modbus and MQTT"
+        description=f"Modpoll v{__version__} - A New Command-line Tool for Modbus and MQTT"
     )
     parser.add_argument(
         "-v",
         "--version",
         action="version",
-        version=f"modpoll v{__version__}",
+        version=f"v{__version__}",
     )
     parser.add_argument(
         "-f",
         "--config",
         required=True,
         help="A local path or URL of Modbus configuration file. Required!",
+        nargs="+",
     )
     parser.add_argument(
         "-d",
@@ -107,18 +108,18 @@ def get_parser():
     )
     parser.add_argument(
         "--mqtt-publish-topic-pattern",
-        default="modpoll/<device_name>",
+        default="modpoll/<device_name>/data",
         help='Topic pattern for MQTT publish. Use <device_name> as placeholder for the device names in Modbus config. Defaults to "modpoll/<device_name>"',
     )
     parser.add_argument(
         "--mqtt-subscribe-topic-pattern",
-        default="modpoll/<device_name>/set",
-        help='Topic pattern for MQTT subscribe. Use <device_name> as placeholder for the device names in Modbus config. Defaults to "modpoll/<device_name>/set"',
+        default="modpoll/+/set",
+        help='Topic pattern for MQTT subscribe. Defaults to "modpoll/+/set"',
     )
     parser.add_argument(
         "--mqtt-diagnostics-topic-pattern",
-        default=None,
-        help="Topic pattern for MQTT diagnostics. Use <device_name> as placeholder for the device names in Modbus config. Defaults to None",
+        default="modpoll/<device_name>/diagnostics",
+        help="Topic pattern for MQTT diagnostics. Use <device_name> as placeholder for the device names in Modbus config. Defaults to modpoll/<device_name>/diagnostics",
     )
     parser.add_argument(
         "--mqtt-qos",

@@ -1,0 +1,16 @@
+device,modsim02,2,,
+poll,input_register,30000,20,BE_BE
+ref,input_reg01,30000,uint16,rw
+ref,input_reg02,30001,uint16,rw
+ref,input_reg03,30002,uint16,rw
+ref,input_reg04,30003,uint16,rw
+ref,input_reg05,30004,int16,rw
+ref,input_reg06,30005,int16,rw
+ref,input_reg07,30006,int16,rw
+ref,input_reg08,30007,int16,rw
+ref,input_reg09,30008,uint32,rw
+ref,input_reg10,30010,uint32,rw
+ref,input_reg11,30012,int32,rw
+ref,input_reg12,30014,int32,rw
+ref,input_reg13,30016,float32,rw
+ref,input_reg14,30018,float32,rw

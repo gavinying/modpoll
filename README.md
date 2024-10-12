@@ -100,7 +100,7 @@ modpoll --once \
 The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) for *modsim* device as following,
 
 ```CSV
-device,modsim001,1,,
+device,modsim01,1,,
 poll,coil,0,16,BE_BE
 ref,coil01-08,0,bool8,rw
 ref,coil09-16,1,bool8,rw
@@ -198,11 +198,17 @@ modpoll \
   --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
 
-With successful data polling and publishing, you can subscribe the topic `modpoll/modsim` on the same MQTT broker `mqtt.eclipseprojects.io` to view the collected data.
+With successful data polling and publishing, you can subscribe the default data topic `modpoll/modsim01/data` on the same MQTT broker `mqtt.eclipseprojects.io` to view the collected data.
 
-The MQTT topic uses `<mqtt_topic_prefix>/<device_name>` pattern, <mqtt_topic_prefix> is provided by `--mqtt-topic-prefix` argument, the default value is `modpoll`  and <device_name> is provided by the Modbus configure file.
+The MQTT topics can be customized by providing the following arguments,
 
-> ⚠️ **Note:** The `--mqtt-topic-prefix` argument is deprecated and will be removed in the future release. Use `--mqtt-publish-topic-pattern` and `--mqtt-subscribe-topic-pattern` instead. If both are used, `--mqtt-topic-prefix` argument will take precedence in order to keep backward compatibility. See [document](https://gavinying.github.io/modpoll/usage.html#Named%20Arguments) for details.
+  - `mqtt-publish-topic-pattern`
+  - `mqtt-subscribe-topic-pattern`
+  - `mqtt-diagnostics-topic-pattern`
+
+See [document](https://gavinying.github.io/modpoll/usage.html#Named%20Arguments) for details.
+
+> ⚠️ **Note:** The old `--mqtt-topic-prefix` argument is now deprecated and will be removed in the future release. Suggest to use `--mqtt-xxx-topic-pattern` in new project. If both are used, `--mqtt-topic-prefix` argument will take precedence in order to keep backward compatibility until it is removed.
 
 
 <p align="center">
@@ -265,7 +271,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```
 
 
-## Basic Usage
+## Example Use Cases
 
 - Connect to Modbus TCP device
 
@@ -289,7 +295,6 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```bash
   modpoll \
     --tcp modsim.topmaker.net \
-    --tcp-port 5020 \
     --mqtt-host mqtt.eclipseprojects.io \
     --config examples/modsim.csv
   ```
@@ -299,9 +304,16 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```bash
   modpoll \
     --tcp modsim.topmaker.net \
-    --tcp-port 5020 \
     --export data.csv \
     --config examples/modsim.csv
+  ```
+
+- Connect to Modbus TCP devices using multiple config files
+
+  ```bash
+  modpoll \
+    --tcp modsim.topmaker.net \
+    --config examples/modsim.csv examples/modsim2.csv
   ```
 
 
