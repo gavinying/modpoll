@@ -1,11 +1,9 @@
 import pytest
-import threading
 from modpoll.arg_parser import get_parser
-from modpoll.modbus_task import ModbusMaster
+from modpoll.modbus_task import setup_modbus_handlers
 
 
 def test_modbus_task_modbus_setup():
-    modbus_masters = []
     parser = get_parser()
     args = parser.parse_args(
         [
@@ -16,14 +14,8 @@ def test_modbus_task_modbus_setup():
             "modsim.topmaker.net",
         ]
     )
-    event_exit = threading.Event()
-    for config_file in args.config:
-        modbus_master = ModbusMaster(args, event_exit, config_file)
-        if modbus_master.setup():
-            modbus_masters.append(modbus_master)
-        else:
-            modbus_master.close()
-    assert len(modbus_masters) == 2
+    modbus_handlers = setup_modbus_handlers(args)
+    assert len(modbus_handlers) == 2
 
 
 @pytest.mark.integration
@@ -37,22 +29,21 @@ def test_modbus_task_poll_modsim():
             "modsim.topmaker.net",
         ]
     )
-    event_exit = threading.Event()
-    modbus_master = ModbusMaster(args, event_exit, args.config[0])
+    modbus_handlers = setup_modbus_handlers(args)
+    modbus_handler = modbus_handlers[0]
 
-    assert modbus_master.setup()
-    assert modbus_master.connect()
+    assert modbus_handler.connect()
 
-    modbus_master.poll()
+    modbus_handler.poll()
 
     # Check if any data was collected
-    assert len(modbus_master.deviceList) > 0
-    assert len(modbus_master.deviceList[0].references) > 0
+    assert len(modbus_handler.deviceList) > 0
+    assert len(modbus_handler.deviceList[0].references) > 0
 
     # Check if at least one reference has a non-None value
     assert any(
-        ref.val is not None for ref in modbus_master.deviceList[0].references.values()
+        ref.val is not None for ref in modbus_handler.deviceList[0].references.values()
     )
 
-    modbus_master.disconnect()
-    modbus_master.close()
+    modbus_handler.disconnect()
+    modbus_handler.close()

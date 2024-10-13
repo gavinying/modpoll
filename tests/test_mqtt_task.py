@@ -4,7 +4,7 @@ from modpoll.mqtt_task import MqttHandler
 
 
 def test_mqtt_task_setup():
-    mqtt_task = MqttHandler(
+    mqtt_handler = MqttHandler(
         name="test_mqtt",
         host="mqtt.eclipseprojects.io",
         port=1883,
@@ -15,20 +15,20 @@ def test_mqtt_task_setup():
         subscribe_topics=["test/topic"],
     )
 
-    assert mqtt_task.mqttc_setup()
+    assert mqtt_handler.setup()
 
     # Test MQTT client properties
-    assert mqtt_task.mqttc is not None
-    assert mqtt_task.host == "mqtt.eclipseprojects.io"
-    assert mqtt_task.port == 1883
+    assert mqtt_handler.mqtt_client is not None
+    assert mqtt_handler.host == "mqtt.eclipseprojects.io"
+    assert mqtt_handler.port == 1883
 
     # Clean up
-    mqtt_task.mqttc_close()
+    mqtt_handler.close()
 
 
 @pytest.mark.integration
 def test_mqtt_task_connect():
-    mqtt_task = MqttHandler(
+    mqtt_handler = MqttHandler(
         name="test_mqtt",
         host="mqtt.eclipseprojects.io",
         port=1883,
@@ -38,14 +38,14 @@ def test_mqtt_task_connect():
         qos=0,
     )
 
-    assert mqtt_task.mqttc_setup()
-    assert mqtt_task.mqttc_connect()
+    assert mqtt_handler.setup()
+    assert mqtt_handler.connect()
 
     # Add a short delay to allow the connection to establish
     time.sleep(1)
 
     # Test connection
-    assert mqtt_task.mqttc_connected()
+    assert mqtt_handler.is_connected()
 
     # Clean up
-    mqtt_task.mqttc_close()
+    mqtt_handler.close()
