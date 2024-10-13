@@ -11,10 +11,14 @@ from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
 
+from .utils import on_threading_event, delay_thread
 from .mqtt_task import MqttHandler
 
 
 FLOAT_TYPE_PRECISION = 3
+CONFIG_DEVICE_COL_MIN = 3
+CONFIG_POLL_COL_MIN = 5
+CONFIG_REF_COL_MIN = 5
 
 
 class Device:
@@ -207,6 +211,11 @@ class Reference:
         self.val = None
         self.last_val = None
 
+    def __eq__(self, other):
+        if isinstance(other, Reference):
+            return self.address == other.address
+        return False
+
     def _get_ref_width(self) -> int:
         width_map = {
             "int16": 1,
@@ -247,54 +256,73 @@ class Reference:
         self.last_val = self.val
         self.val = v
 
-    def __eq__(self, other):
-        if isinstance(other, Reference):
-            return self.address == other.address
-        return False
 
-
-class ModbusMaster:
+class ModbusHandler:
     def __init__(
-        self, args, event, config_file: str, mqtt_handler: Optional[MqttHandler] = None
+        self,
+        modbus_client,
+        config_file: str,
+        mqtt_handler: Optional[MqttHandler] = None,
+        timeout: float = 3.0,
+        interval: float = 1.0,
+        daemon: bool = False,
+        mqtt_publish_topic_pattern: Optional[str] = None,
+        mqtt_diagnostics_topic_pattern: Optional[str] = None,
     ):
-        self.args = args
+        self.modbus_client = modbus_client
         self.config_file = config_file
         self.mqtt_handler = mqtt_handler
-        self.logger = logging.getLogger(__name__)
-        self.event_exit = event
-        self.master = None
+        self.timeout = timeout
+        self.interval = interval
+        self.daemon = daemon
+        self.mqtt_publish_topic_pattern = mqtt_publish_topic_pattern
+        self.mqtt_diagnostics_topic_pattern = mqtt_diagnostics_topic_pattern
         self.connected = False
         self.deviceList: List[Device] = []
+        self.logger = logging.getLogger(__name__)
 
-    def load_config(self, file) -> bool:
+    def load_config(self) -> bool:
+        self.logger.info(f"Loading config from: {self.config_file}")
         try:
             with requests.Session() as s:
-                response = s.get(file)
+                response = s.get(self.config_file, timeout=self.timeout)
                 response.raise_for_status()
                 decoded_content = response.content.decode("utf-8")
                 csv_reader = csv.reader(decoded_content.splitlines(), delimiter=",")
-                self.deviceList = self.parse_config(csv_reader)
+                self.deviceList = self._parse_config(csv_reader)
         except requests.RequestException:
             try:
-                with open(file, "r") as f:
+                with open(self.config_file, "r") as f:
                     csv_reader = csv.reader(f)
-                    self.deviceList = self.parse_config(csv_reader)
+                    self.deviceList = self._parse_config(csv_reader)
             except IOError as e:
                 self.logger.error(f"Error opening file: {e}")
                 return False
-        return bool(self.deviceList)
+        if self.deviceList:
+            self.logger.info(f"Added {len(self.deviceList)} device(s)...")
+            return True
+        else:
+            self.logger.error("No device found in the config file. Skipping.")
+            return False
 
-    def parse_config(self, csv_reader) -> List[Device]:
+    def _parse_config(self, csv_reader) -> List[Device]:
         device_list = []
         current_device = None
         current_poller = None
         try:
             for row in csv_reader:
-                if not row:
+                if not row or all(cell.strip() == "" for cell in row):
                     continue
                 if "device" in row[0].lower():
-                    device_name = row[1]
-                    device_id = int(row[2])
+                    if len(row) < CONFIG_DEVICE_COL_MIN:
+                        self.logger.error("Invalid device configuration")
+                        continue
+                    device_name = row[1].strip()
+                    try:
+                        device_id = int(row[2])
+                    except ValueError:
+                        self.logger.error(f"Invalid device ID for {device_name}")
+                        continue
                     current_device = Device(device_name, device_id)
                     device_list.append(current_device)
                 elif "poll" in row[0].lower():
@@ -306,7 +334,9 @@ class ModbusMaster:
                         current_device.pollerList.append(current_poller)
                 elif "ref" in row[0].lower():
                     if not current_device or not current_poller:
-                        self.logger.debug(f"No device/poller for reference {row[1]}.")
+                        self.logger.debug(
+                            f"No device/poller for reference {row[1] if len(row) > 1 else 'unknown'}."
+                        )
                         continue
                     ref = self._create_reference(row, current_device)
                     if ref and self._validate_reference(ref, current_poller):
@@ -322,7 +352,7 @@ class ModbusMaster:
             return []
 
     def _create_poller(self, row, current_device):
-        if len(row) < 5:
+        if len(row) < CONFIG_POLL_COL_MIN:
             self.logger.error("Invalid poller configuration")
             return None
         fc = row[1].lower()
@@ -366,7 +396,7 @@ class ModbusMaster:
         return True
 
     def _create_reference(self, row, current_device):
-        if len(row) < 5:
+        if len(row) < CONFIG_REF_COL_MIN:
             self.logger.error("Invalid reference configuration")
             return None
         ref_name = row[1].replace(" ", "_")
@@ -395,114 +425,68 @@ class ModbusMaster:
             return False
         return True
 
-    def setup(self) -> bool:
-        self.logger.info(f"Loading config from: {self.config_file}")
-        if self.load_config(self.config_file):
-            self.logger.info(f"Added {len(self.deviceList)} device(s)...")
-        else:
-            self.logger.error("No device found in the config file. Skipping.")
-            return False
-        if self.args.rtu:
-            parity = self._get_parity()
-            self.master = self._create_rtu_client(parity)
-        elif self.args.tcp:
-            self.master = self._create_tcp_client()
-        elif self.args.udp:
-            self.master = self._create_udp_client()
-        else:
-            self.logger.error("No communication method specified.")
-            return False
-        return True
-
-    def _get_parity(self):
-        if self.args.rtu_parity == "odd":
-            return "O"
-        elif self.args.rtu_parity == "even":
-            return "E"
-        else:
-            return "N"
-
-    def _create_rtu_client(self, parity):
-        client_args = {
-            "port": self.args.rtu,
-            "baudrate": int(self.args.rtu_baud),
-            "bytesize": 8,
-            "parity": parity,
-            "stopbits": 1,
-            "timeout": self.args.timeout,
-        }
-        if self.args.framer != "default":
-            client_args["framer"] = self.args.framer
-        return ModbusSerialClient(**client_args)
-
-    def _create_tcp_client(self):
-        client_args = {
-            "host": self.args.tcp,
-            "port": self.args.tcp_port,
-            "timeout": self.args.timeout,
-        }
-        if self.args.framer != "default":
-            client_args["framer"] = self.args.framer
-        return ModbusTcpClient(**client_args)
-
-    def _create_udp_client(self):
-        client_args = {
-            "host": self.args.udp,
-            "port": self.args.udp_port,
-            "timeout": self.args.timeout,
-        }
-        if self.args.framer != "default":
-            client_args["framer"] = self.args.framer
-        return ModbusUdpClient(**client_args)
-
     def connect(self) -> bool:
-        self.connected = self.master.connect()
+        if not self.connected:
+            self.connected = self.modbus_client.connect()
         return self.connected
 
     def disconnect(self):
-        if self.master:
-            self.master.close()
+        if self.modbus_client and self.connected:
+            self.modbus_client.close()
             self.connected = False
 
     def poll(self):
-        self.connect()
-        for dev in self.deviceList:
-            self.logger.debug(f"Polling device {dev.name} ...")
-            for p in dev.pollerList:
-                if not p.disabled:
-                    p.poll(self.master)
-                    if self.event_exit.is_set():
-                        self.disconnect()
-                        return
-                    self.event_exit.wait(timeout=self.args.interval)
-        self.disconnect()
-        if not self.args.daemon:
-            self.print_results()
+        if not self.connect():
+            self.logger.error("Failed to connect to Modbus client")
+            return
+        try:
+            for dev in self.deviceList:
+                self.logger.debug(f"Polling device {dev.name} ...")
+                for p in dev.pollerList:
+                    if not p.disabled:
+                        p.poll(self.modbus_client)
+                        if on_threading_event():
+                            return
+                        delay_thread(timeout=self.interval)
+        finally:
+            self.disconnect()
+            if not self.daemon:
+                self.print_results()
 
     def write_coil(self, device_name: str, address: int, value) -> bool:
         for dev in self.deviceList:
             if dev.name == device_name:
                 try:
-                    self.connect()
-                    result = self.master.write_coil(address, value, slave=dev.devid)
-                    self.disconnect()
+                    if not self.connect():
+                        return False
+                    result = self.modbus_client.write_coil(
+                        address, value, slave=dev.devid
+                    )
                     return not result.isError()
                 except ModbusException as e:
                     self.logger.error(f"Error writing coil: {e}")
                     return False
+                finally:
+                    self.disconnect()
+        self.logger.error(f"Device {device_name} not found")
         return False
 
     def write_register(self, device_name, address: int, value) -> bool:
         for dev in self.deviceList:
             if dev.name == device_name:
                 try:
-                    self.connect()
-                    result = self.master.write_register(address, value, slave=dev.devid)
-                    self.disconnect()
+                    if not self.connect():
+                        return False
+                    result = self.modbus_client.write_register(
+                        address, value, slave=dev.devid
+                    )
                     return not result.isError()
                 except ModbusException as e:
                     self.logger.error(f"Error writing register: {e}")
                     return False
+                finally:
+                    self.disconnect()
+        self.logger.error(f"Device {device_name} not found")
         return False
 
     def print_results(self):
@@ -525,7 +509,7 @@ class ModbusMaster:
     def publish_data(self, timestamp=None, on_change=False):
         if not self.mqtt_handler:
             return
-        if not self.args.mqtt_publish_topic_pattern:
+        if not self.mqtt_publish_topic_pattern:
             return
         for dev in self.deviceList:
             payload = {}
@@ -540,15 +524,15 @@ class ModbusMaster:
             if payload:
                 if timestamp:
                     payload["timestamp"] = timestamp
-                topic = self.args.mqtt_publish_topic_pattern.replace(
+                topic = self.mqtt_publish_topic_pattern.replace(
                     "<device_name>", dev.name
                 )
-                self.mqtt_handler.mqttc_publish(topic, json.dumps(payload))
+                self.mqtt_handler.publish(topic, json.dumps(payload))
 
     def publish_diagnostics(self):
         if not self.mqtt_handler:
             return
-        if not self.args.mqtt_diagnostics_topic_pattern:
+        if not self.mqtt_diagnostics_topic_pattern:
             return
         for dev in self.deviceList:
             payload = {
@@ -556,10 +540,10 @@ class ModbusMaster:
                 "error_count": dev.errorCount,
                 "last_poll_success": dev.pollSuccess,
             }
-            topic = self.args.mqtt_diagnostics_topic_pattern.replace(
+            topic = self.mqtt_diagnostics_topic_pattern.replace(
                 "<device_name>", dev.name
             )
-            self.mqtt_handler.mqttc_publish(topic, json.dumps(payload))
+            self.mqtt_handler.publish(topic, json.dumps(payload))
 
     def export(self, file, timestamp=None):
         data = {}
@@ -570,14 +554,93 @@ class ModbusMaster:
             if timestamp:
                 dev_data["timestamp"] = timestamp
             data[dev.name] = dev_data
-        with open(file, "w") as f:
-            json.dump(data, f, indent=2)
+        try:
+            with open(file, "w") as f:
+                json.dump(data, f, indent=2)
+        except IOError as e:
+            self.logger.error(f"Error exporting data: {e}")
 
     def close(self):
-        if self.master:
-            self.master.close()
-            self.connected = False
-            self.master = None
+        self.disconnect()
+        self.modbus_client = None
 
     def get_device_list(self) -> List[Device]:
         return self.deviceList
+
+
+def setup_modbus_handlers(args, mqtt_handler: Optional[MqttHandler] = None):
+    modbus_handlers = []
+    modbus_client = _create_modbus_client(args)
+    for config_file in args.config:
+        modbus_handler = ModbusHandler(
+            modbus_client,
+            config_file,
+            mqtt_handler,
+            timeout=args.timeout,
+            interval=args.interval,
+            daemon=args.daemon,
+            mqtt_publish_topic_pattern=args.mqtt_publish_topic_pattern,
+            mqtt_diagnostics_topic_pattern=args.mqtt_diagnostics_topic_pattern,
+        )
+        if modbus_handler.load_config():
+            modbus_handlers.append(modbus_handler)
+        else:
+            modbus_handler.close()
+    return modbus_handlers
+
+
+def _create_modbus_client(args):
+    if args.rtu:
+        return _create_rtu_client(args)
+    elif args.tcp:
+        return _create_tcp_client(args)
+    elif args.udp:
+        return _create_udp_client(args)
+    else:
+        raise ValueError("No communication method specified.")
+
+
+def _create_rtu_client(args):
+    parity = _get_parity(args.rtu_parity)
+    client_args = {
+        "port": args.rtu,
+        "baudrate": int(args.rtu_baud),
+        "bytesize": 8,
+        "parity": parity,
+        "stopbits": 1,
+        "timeout": args.timeout,
+    }
+    if args.framer != "default":
+        client_args["framer"] = args.framer
+    return ModbusSerialClient(**client_args)
+
+
+def _create_tcp_client(args):
+    client_args = {
+        "host": args.tcp,
+        "port": args.tcp_port,
+        "timeout": args.timeout,
+    }
+    if args.framer != "default":
+        client_args["framer"] = args.framer
+    return ModbusTcpClient(**client_args)
+
+
+def _create_udp_client(args):
+    client_args = {
+        "host": args.udp,
+        "port": args.udp_port,
+        "timeout": args.timeout,
+    }
+    if args.framer != "default":
+        client_args["framer"] = args.framer
+    return ModbusUdpClient(**client_args)
+
+
+def _get_parity(rtu_parity):
+    if rtu_parity == "odd":
+        return "O"
+    elif rtu_parity == "even":
+        return "E"
+    else:
+        return "N"

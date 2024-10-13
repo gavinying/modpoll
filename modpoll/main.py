@@ -1,42 +1,33 @@
-import datetime
 import json
 import logging
 import re
 import signal
 import sys
-import threading
-import time
-from datetime import timezone
 
 from .arg_parser import get_parser
 from .mqtt_task import MqttHandler
-from .modbus_task import ModbusMaster
+from .modbus_task import setup_modbus_handlers
 
 from . import __version__
+from .utils import set_threading_event, delay_thread, on_threading_event, get_utc_time
+
 
 LOG_SIMPLE = "%(asctime)s | %(levelname).1s | %(name)s | %(message)s"
 logger = None
-event_exit = threading.Event()
+
+
+def _signal_handler(signal, frame):
+    logger.info(f"Exiting {sys.argv[0]}")
+    set_threading_event()
 
 
 def setup_logging(level, format):
     logging.basicConfig(level=level, format=format)
 
 
-def _signal_handler(signal, frame):
-    logger.info(f"Exiting {sys.argv[0]}")
-    event_exit.set()
-
-
-def get_utc_time():
-    dt = datetime.datetime.now(timezone.utc)
-    utc_time = dt.replace(tzinfo=timezone.utc)
-    return utc_time.timestamp()
-
-
 def app(name="modpoll"):
     mqtt_handler = None
-    modbus_masters = []
+    modbus_handlers = []
 
     print(
         f"\nModpoll v{__version__} - A New Command-line Tool for Modbus and MQTT\n",
@@ -80,37 +71,32 @@ def app(name="modpoll"):
                 subscribe_topics=[args.mqtt_subscribe_topic_pattern],
                 log_level=args.loglevel,
             )
-            if mqtt_handler.mqttc_setup() and mqtt_handler.mqttc_connect():
-                logger.info("Setup MQTT client.")
+            if mqtt_handler.setup() and mqtt_handler.connect():
+                logger.info("Connected to MQTT broker.")
             else:
-                logger.error("Failed to setup MQTT client, exiting...")
-                mqtt_handler.mqttc_close()
+                logger.error("Failed to connect with MQTT broker, exiting...")
+                mqtt_handler.close()
                 exit(1)
         except Exception as e:
             logger.error(f"Error setting up MQTT input: {e}, exiting...")
-            mqtt_handler.mqttc_close()
+            mqtt_handler.close()
             exit(1)
 
     # setup modbus tasks
-    for config_file in args.config:
-        modbus_master = ModbusMaster(args, event_exit, config_file, mqtt_handler)
-        if modbus_master.setup():
-            modbus_masters.append(modbus_master)
-        else:
-            modbus_master.close()
-    if modbus_masters:
-        logger.info(f"Start polling devices after {args.delay} second(s) delay.")
-        time.sleep(args.delay)
+    modbus_handlers = setup_modbus_handlers(args, mqtt_handler)
+    if modbus_handlers:
+        logger.info(f"Loaded {len(modbus_handlers)} Modbus config(s).")
+        delay_thread(args.delay)
     else:
-        logger.error("No Modbus master (client) defined. Exiting...")
+        logger.error("No Modbus config(s) defined. Exiting...")
         if mqtt_handler:
-            mqtt_handler.mqttc_close()
+            mqtt_handler.close()
         exit(1)
 
     # main loop
     last_check = 0
     last_diag = 0
-    while not event_exit.is_set():
+    while not on_threading_event():
         now = get_utc_time()
         # routine check
         if now > last_check + args.rate:
@@ -120,31 +106,31 @@ def app(name="modpoll"):
                 elapsed = round(now - last_check, 6)
             last_check = now
             logger.info(
-                f" ====== Modpoll is polling at rate:{args.rate}s, actual:{elapsed}s ======"
+                f" === Modpoll is polling at rate:{args.rate}s, actual:{elapsed}s ==="
             )
-            for modbus_master in modbus_masters:
-                modbus_master.poll()
-                if event_exit.is_set():
+            for modbus_handler in modbus_handlers:
+                modbus_handler.poll()
+                if on_threading_event():
                     break
                 if args.mqtt_host:
                     if args.timestamp:
-                        modbus_master.publish_data(timestamp=now)
+                        modbus_handler.publish_data(timestamp=now)
                     else:
-                        modbus_master.publish_data()
+                        modbus_handler.publish_data()
                 if args.export:
                     if args.timestamp:
-                        modbus_master.export(args.export, timestamp=now)
+                        modbus_handler.export(args.export, timestamp=now)
                     else:
-                        modbus_master.export(args.export)
+                        modbus_handler.export(args.export)
         if args.diagnostics_rate > 0 and now > last_diag + args.diagnostics_rate:
             last_diag = now
-            for modbus_master in modbus_masters:
-                modbus_master.publish_diagnostics()
-        if event_exit.is_set():
+            for modbus_handler in modbus_handlers:
+                modbus_handler.publish_diagnostics()
+        if on_threading_event():
             break
         # Check if receive mqtt request
         if mqtt_handler:
-            topic, payload = mqtt_handler.mqttc_receive()
+            topic, payload = mqtt_handler.receive()
             if topic and payload:
                 # extract device_name
                 topic_regex = args.mqtt_subscribe_topic_pattern.replace(
@@ -163,18 +149,18 @@ def app(name="modpoll"):
                         value = reg["value"]
 
                         device_found = False
-                        for modbus_master in modbus_masters:
+                        for modbus_handler in modbus_handlers:
                             if device_name in [
-                                dev.name for dev in modbus_master.get_device_list()
+                                dev.name for dev in modbus_handler.get_device_list()
                             ]:
                                 device_found = True
                                 write_success = False
                                 if object_type == "coil":
-                                    write_success = modbus_master.write_coil(
+                                    write_success = modbus_handler.write_coil(
                                         device_name, address, value
                                     )
                                 elif object_type == "holding_register":
-                                    write_success = modbus_master.write_register(
+                                    write_success = modbus_handler.write_register(
                                         device_name, address, value
                                     )
 
@@ -198,15 +184,15 @@ def app(name="modpoll"):
                 else:
                     logger.error(f"Failed to extract device name from topic: {topic}")
         if args.once:
-            event_exit.set()
+            set_threading_event()
             break
 
-        time.sleep(0.01)
+        delay_thread(0.01)
 
-    for modbus_master in modbus_masters:
-        modbus_master.close()
+    for modbus_handler in modbus_handlers:
+        modbus_handler.close()
     if mqtt_handler:
-        mqtt_handler.mqttc_close()
+        mqtt_handler.close()
 
 
 if __name__ == "__main__":
