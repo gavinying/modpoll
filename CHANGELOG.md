@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.3.0](https://github.com/gavinying/modpoll/compare/v1.2.0...v1.3.0) (2024-10-13)
+
+
+### Features
+
+* Optimize code to make it more object oriented ([7195e29](https://github.com/gavinying/modpoll/commit/7195e297b5e658b05bb1c7c75c2d02f2ab886331))
+* Remove importlib-metadata dependency since we drop support for pre-python3.8 environments. ([36a6fd4](https://github.com/gavinying/modpoll/commit/36a6fd43e81512af819cd7e00cdef4385e56e7ca))
+* Support running multiple master instances ([#64](https://github.com/gavinying/modpoll/issues/64)) ([c44b597](https://github.com/gavinying/modpoll/commit/c44b597f45a1c9fd8b3b49562d74f959d21cd1f0))
+
+
+### Bug Fixes
+
+* Adjust delay to every loop iteration ([e368922](https://github.com/gavinying/modpoll/commit/e368922b925bcdf602d42716d2a72631f1134639))
+* Allow github action to read the PR title and add labels ([22cb7c8](https://github.com/gavinying/modpoll/commit/22cb7c8dce284675193865c8fe399320bb0f2636))
+
 ## [1.2.0](https://github.com/gavinying/modpoll/compare/v1.1.0...v1.2.0) (2024-08-25)
 
 
