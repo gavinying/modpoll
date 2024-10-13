@@ -2,7 +2,7 @@ version: '3'
 
 services:
   modpoll:
-    image: helloysd/modpoll
+    image: topmaker/modpoll
     container_name: modpoll
     restart: unless-stopped
     command: >

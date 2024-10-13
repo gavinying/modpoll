@@ -6,7 +6,7 @@ volumes:
 
 services:
   modpoll:
-    image: helloysd/modpoll
+    image: topmaker/modpoll
     container_name: modpoll
     restart: unless-stopped
     depends_on:
@@ -23,7 +23,7 @@ services:
         --config config/my-device.csv
 
   mosquitto:
-    image: helloysd/mosquitto:2.0.14
+    image: topmaker/mosquitto:2.0.15
     container_name: mosquitto
     restart: unless-stopped
     environment:

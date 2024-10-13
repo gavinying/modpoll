@@ -26,14 +26,14 @@ Test with modsim
 
   .. code-block:: shell
 
-    docker run helloysd/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+    docker run topmaker/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 
 
   Meanwhile, if you prefer a local test or simply failed to connect to online *modsim* service, you can always launch your own device simulator via the following command,
 
   .. code-block:: shell
 
-    docker run -p 5020:5020 helloysd/modsim
+    docker run -p 5020:5020 topmaker/modsim
 
   It will simulate a Modbus TCP device running at `<localhost:5020>`_, and you shall be able to connect it via the following command,
 

@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/github/license/gavinying/modpoll)](https://img.shields.io/github/license/gavinying/modpoll)
 [![Downloads](https://static.pepy.tech/badge/modpoll/week)](https://pepy.tech/project/modpoll)
 
-Show your love for this project by starring our repo 🌟, so we are encouraged to continue improving.
+> 📢 **Announcement:** Since the release of v1.3.0, our official dockerhub namespace has been changed to `topmaker`, you can pull the latest images from [topmaker/modpoll](https://hub.docker.com/repository/docker/topmaker/modpoll) at dockerhub.
 
 > Learn more about *modpoll* usage at [documentation](https://gavinying.github.io/modpoll) site.
 
@@ -159,7 +159,7 @@ The configuration can be either a local file or a remote public URL resource.
 If you are blocked by company firewall for online device or prefer a local test, you can launch your own device simulator by running *modsim* locally,
 
 ```bash
-docker run --rm -p 5020:5020 helloysd/modsim
+docker run --rm -p 5020:5020 topmaker/modsim
 ```
 
 It will create a virtual Modbus TCP device running at `localhost:5020`, and you can open a new terminal, poll the virtual device using *modpoll* tool,
@@ -174,7 +174,7 @@ modpoll \
 > Use `sudo` before the docker command if you want to use the standard port `502`.
 
 ```bash
-sudo docker run --rm -p 502:5020 helloysd/modsim
+sudo docker run --rm -p 502:5020 topmaker/modsim
 ```
 
 In a new terminal,
@@ -246,7 +246,7 @@ The *modpoll* tool will subscribe to the topic `modpoll/<device_name>/set` by de
 A docker image has been provided for user to directly run the tool without local installation,
 
   ```bash
-  docker run --rm helloysd/modpoll
+  docker run --rm topmaker/modpoll
   ```
 
 It shows the version of the tool by default.
@@ -254,7 +254,7 @@ It shows the version of the tool by default.
 Similar to the above *modsim* test, we can poll data with `docker run`, in order to avoid printing out received data, the argument `--daemon` or `-d` is recommended to use with docker.
 
   ```bash
-  docker run --rm helloysd/modpoll \
+  docker run --rm topmaker/modpoll \
     modpoll -d \
       --tcp modsim.topmaker.net \
       --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
@@ -264,7 +264,7 @@ If you want to load a local configure file, you need to mount a local folder ont
 for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command,
 
   ```bash
-  docker run --rm -v $(pwd)/examples:/app/examples helloysd/modpoll \
+  docker run --rm -v $(pwd)/examples:/app/examples topmaker/modpoll \
     modpoll -d \
       --tcp modsim.topmaker.net \
       --config /app/examples/modsim.csv
@@ -317,8 +317,9 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```
 
 
-> *Refer to the [documentation](https://gavinying.github.io/modpoll) site for more details about the configuration and examples.*
+> Refer to the [documentation](https://gavinying.github.io/modpoll) site for more details about the configuration and examples.
 
+> *If you find this tool useful, please support us by starring 🌟 our repository to encourage further improvements.*
 
 ## Credits
 
