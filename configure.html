@@ -86,75 +86,12 @@
 <p>In order to communicate with modbus devices, a proper modbus configure file is required.
 It is mainly to describe the device address and register mappings.</p>
 <p>Here is the basic structure of modbus configure file.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Modbus Configuration File</span>
-<span class="linenos"> 2</span><span class="c1"># --------------------------</span>
-<span class="linenos"> 3</span><span class="c1"># This configuration file is to describe the Modbus registers of target device(s) and defines poller(s) to help polling data.</span>
-<span class="linenos"> 4</span><span class="c1"># The file format uses &quot;csv&quot; instead of json or yaml because many vendor&#39;s modbus registers are described in a table so it is easier to edit the information in excel and export to csv format.</span>
-<span class="linenos"> 5</span><span class="c1">#</span>
-<span class="linenos"> 6</span><span class="c1"># Configuration Types</span>
-<span class="linenos"> 7</span><span class="c1"># --------------------------</span>
-<span class="hll"><span class="linenos"> 8</span><span class="c1"># device,&lt;device_name&gt;,&lt;device_id&gt;</span>
-</span><span class="hll"><span class="linenos"> 9</span><span class="c1"># poll,&lt;object_type&gt;,&lt;start_address&gt;,&lt;size&gt;,&lt;endian&gt;</span>
-</span><span class="hll"><span class="linenos">10</span><span class="c1"># ref,&lt;ref_name&gt;,&lt;address&gt;,&lt;dtype&gt;,&lt;rw&gt;,&lt;unit&gt;,&lt;scale&gt;</span>
-</span><span class="linenos">11</span><span class="c1">#</span>
-<span class="linenos">12</span><span class="c1"># Configuration Objects</span>
-<span class="linenos">13</span><span class="c1"># --------------------------</span>
-<span class="linenos">14</span><span class="c1"># &lt;device_name&gt;: any string without spaces to describe the device</span>
-<span class="linenos">15</span><span class="c1"># &lt;device_id&gt;: integer 1 to 254 to describe device ID</span>
-<span class="linenos">16</span><span class="c1"># &lt;object_type&gt;: coil/discrete_input/holding_register/input_register</span>
-<span class="linenos">17</span><span class="c1"># &lt;start_address&gt;: integer 0 to 65535 (The start address of Modbus registers to poll)</span>
-<span class="linenos">18</span><span class="c1"># &lt;size&gt;: integer 0 to 65535 (No. of registers to poll and value must not exceed the limits of Modbus)</span>
-<span class="linenos">19</span><span class="c1"># &lt;endian&gt;: byte_order and word_order e.g. BE_BE/BE_LE/LE_LE/LE_BE</span>
-<span class="linenos">20</span><span class="c1"># &lt;ref_name&gt;: any string without spaces to describe the reference</span>
-<span class="linenos">21</span><span class="c1"># &lt;address&gt;: integer 0 to 65535 (the modbus address and should match the poller range)</span>
-<span class="linenos">22</span><span class="c1"># &lt;dtype&gt;: uint16/int16/uint32/int32/float16/float32/bool8/bool16/stringXXX (defaults to uint16)</span>
-<span class="linenos">23</span><span class="c1"># &lt;rw&gt;: read/write setting e.g. r/w/rw</span>
-<span class="linenos">24</span><span class="c1"># &lt;unit&gt; (optional): the measurement unit of reference</span>
-<span class="linenos">25</span><span class="c1"># &lt;scale&gt; (Optional): a float value to be multiplied with actual register reading</span>
-<span class="linenos">26</span><span class="c1">#</span>
-<span class="linenos">27</span><span class="c1"># Typical Structure</span>
-<span class="linenos">28</span><span class="c1"># -----------------------------</span>
-<span class="linenos">29</span><span class="c1"># device,dev001,1   &lt;- the first device (dev001)</span>
-<span class="linenos">30</span><span class="c1"># poll,...          &lt;- the first poller of dev001</span>
-<span class="linenos">31</span><span class="c1"># ref,...           &lt;- the references in poller</span>
-<span class="linenos">32</span><span class="c1"># ref,...</span>
-<span class="linenos">33</span><span class="c1"># poll,...          &lt;- the second poller of dev001</span>
-<span class="linenos">34</span><span class="c1"># ref,...</span>
-<span class="linenos">35</span><span class="c1"># ref,...</span>
-<span class="linenos">36</span><span class="c1"># device,dev002,2   &lt;- the second device (dev002)</span>
-<span class="linenos">37</span><span class="c1"># poll,...          &lt;- the first poller of dev002</span>
-<span class="linenos">38</span><span class="c1"># ref,...</span>
-<span class="linenos">39</span><span class="c1">#</span>
-<span class="linenos">40</span><span class="c1"># Configuration Example</span>
-<span class="linenos">41</span><span class="c1"># !!! Please remove all comments for your config file !!!</span>
-<span class="linenos">42</span><span class="c1"># -----------------------------</span>
-<span class="linenos">43</span><span class="n">device</span><span class="p">,</span><span class="n">modsim001</span><span class="p">,</span><span class="mi">1</span><span class="p">,,</span>
-<span class="linenos">44</span><span class="n">poll</span><span class="p">,</span><span class="n">coil</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="n">BE_BE</span>
-<span class="linenos">45</span><span class="n">ref</span><span class="p">,</span><span class="n">coil01</span><span class="o">-</span><span class="mi">08</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">46</span><span class="n">ref</span><span class="p">,</span><span class="n">coil09</span><span class="o">-</span><span class="mi">12</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">47</span><span class="n">poll</span><span class="p">,</span><span class="n">holding_register</span><span class="p">,</span><span class="mi">40000</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="n">BE_BE</span>
-<span class="linenos">48</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg01</span><span class="p">,</span><span class="mi">40000</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">49</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg02</span><span class="p">,</span><span class="mi">40001</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">50</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg03</span><span class="p">,</span><span class="mi">40002</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">51</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg04</span><span class="p">,</span><span class="mi">40003</span><span class="p">,</span><span class="n">uint16</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">52</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg05</span><span class="p">,</span><span class="mi">40004</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">53</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg06</span><span class="p">,</span><span class="mi">40005</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">54</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg07</span><span class="p">,</span><span class="mi">40006</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">55</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg08</span><span class="p">,</span><span class="mi">40007</span><span class="p">,</span><span class="n">int16</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">56</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg09</span><span class="p">,</span><span class="mi">40008</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">57</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg10</span><span class="p">,</span><span class="mi">40010</span><span class="p">,</span><span class="n">uint32</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">58</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg11</span><span class="p">,</span><span class="mi">40012</span><span class="p">,</span><span class="n">int32</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">59</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg12</span><span class="p">,</span><span class="mi">40014</span><span class="p">,</span><span class="n">int32</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">60</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg13</span><span class="p">,</span><span class="mi">40016</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
-<span class="linenos">61</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg14</span><span class="p">,</span><span class="mi">40018</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
-</pre></div>
-</div>
 </section>
 <section id="example-1-modsim-device-modbus-tcp-device">
 <h2>Example 1: Modsim device (Modbus TCP device)<a class="headerlink" href="#example-1-modsim-device-modbus-tcp-device" title="Permalink to this headline"></a></h2>
 <p>This online Modbus TCP device simulator is designed for user to quickly test the modpoll functions.</p>
 <p>Here is an example of modbus configure file for reading modsim device.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">device</span><span class="p">,</span><span class="n">modsim001</span><span class="p">,</span><span class="mi">1</span><span class="p">,,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">device</span><span class="p">,</span><span class="n">modsim01</span><span class="p">,</span><span class="mi">1</span><span class="p">,,</span>
 <span class="linenos"> 2</span><span class="n">poll</span><span class="p">,</span><span class="n">coil</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="n">BE_BE</span>
 <span class="linenos"> 3</span><span class="n">ref</span><span class="p">,</span><span class="n">coil01</span><span class="o">-</span><span class="mi">08</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
 <span class="linenos"> 4</span><span class="n">ref</span><span class="p">,</span><span class="n">coil09</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">bool8</span><span class="p">,</span><span class="n">rw</span>
