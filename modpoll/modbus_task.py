@@ -525,7 +525,7 @@ class ModbusHandler:
                 if timestamp:
                     payload["timestamp"] = timestamp
                 topic = self.mqtt_publish_topic_pattern.replace(
-                    "<device_name>", dev.name
+                    "{{device_name}}", dev.name
                 )
                 self.mqtt_handler.publish(topic, json.dumps(payload))
 
@@ -541,7 +541,7 @@ class ModbusHandler:
                 "last_poll_success": dev.pollSuccess,
             }
             topic = self.mqtt_diagnostics_topic_pattern.replace(
-                "<device_name>", dev.name
+                "{{device_name}}", dev.name
             )
             self.mqtt_handler.publish(topic, json.dumps(payload))
 

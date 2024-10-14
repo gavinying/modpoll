@@ -16,7 +16,7 @@ services:
     command: >
       modpoll -d --tcp 192.168.133.85
         --mqtt-host mosquitto
-        --mqtt-publish-topic-pattern mytest/<device_name>/data
+        --mqtt-publish-topic-pattern mytest/{{device_name}}/data
         --mqtt-qos 1
         --rate 30
         --timestamp

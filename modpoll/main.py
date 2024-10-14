@@ -51,7 +51,7 @@ def app(name="modpoll"):
         )
         if args.mqtt_topic_prefix.endswith("/"):
             args.mqtt_topic_prefix = args.mqtt_topic_prefix[:-1]
-        args.mqtt_publish_topic_pattern = f"{args.mqtt_topic_prefix}/<device_name>"
+        args.mqtt_publish_topic_pattern = f"{args.mqtt_topic_prefix}/{{device_name}}"
         args.mqtt_subscribe_topic_pattern = f"{args.mqtt_topic_prefix}/#/set"
 
     # setup mqtt

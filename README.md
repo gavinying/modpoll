@@ -218,7 +218,7 @@ See [document](https://gavinying.github.io/modpoll/usage.html#Named%20Arguments)
 
 ### Write registers via MQTT publish
 
-The *modpoll* tool will subscribe to the topic `modpoll/<device_name>/set` by default once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish,
+The *modpoll* tool will subscribe to the topic `modpoll/{{device_name}}/set` by default once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish,
 
 - To write a single holding register (address at `40001`)
 
