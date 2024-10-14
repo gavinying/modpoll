@@ -197,11 +197,14 @@ class MqttHandler:
             return False
 
     def publish(
-        self, topic: str, msg: str, qos: int = 0, retain: bool = False
+        self, topic: str, msg: str, qos: Optional[int] = None, retain: bool = False
     ) -> Optional[MQTTMessageInfo]:
         if not self.mqtt_client:
             self.logger.error("MQTT client not initialized. Call setup() first.")
             return None
+
+        qos = self.qos if qos is None else qos
+
         if not self.mqtt_client.is_connected():
             if qos == 0:
                 self.logger.warning(
