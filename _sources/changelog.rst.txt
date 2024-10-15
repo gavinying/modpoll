@@ -1,6 +1,46 @@
 Changelog
 =========
 
+`1.3.3 <https://github.com/gavinying/modpoll/compare/v1.3.2...v1.3.3>`__ (2024-10-15)
+-------------------------------------------------------------------------------------
+
+Bug Fixes
+~~~~~~~~~
+
+-  CI docs pipeline issue
+   (`ada4089 <https://github.com/gavinying/modpoll/commit/ada4089df1bb3063641820274a2c476d4a421321>`__)
+
+.. _section-1:
+
+`1.3.2 <https://github.com/gavinying/modpoll/compare/v1.3.1...v1.3.2>`__ (2024-10-15)
+-------------------------------------------------------------------------------------
+
+.. _bug-fixes-1:
+
+Bug Fixes
+~~~~~~~~~
+
+-  CI pipeline issue
+   (`9386455 <https://github.com/gavinying/modpoll/commit/9386455652025ea300dfdef5034738fa8936a66e>`__)
+
+.. _section-2:
+
+`1.3.1 <https://github.com/gavinying/modpoll/compare/v1.3.0...v1.3.1>`__ (2024-10-14)
+-------------------------------------------------------------------------------------
+
+.. _bug-fixes-2:
+
+Bug Fixes
+~~~~~~~~~
+
+-  Arguments mqtt-qos doesn’t work for publish
+   (`0a65d0a <https://github.com/gavinying/modpoll/commit/0a65d0ad1efe5067c080f7dd02afc1a8cb3c8478>`__)
+-  Zsh parse error due to the special character used in
+   mqtt-publish-topic-pattern.
+   (`98230e8 <https://github.com/gavinying/modpoll/commit/98230e8e78c77e7a0334d101ac990f53e599ce1d>`__)
+
+.. _section-3:
+
 `1.3.0 <https://github.com/gavinying/modpoll/compare/v1.2.0...v1.3.0>`__ (2024-10-13)
 -------------------------------------------------------------------------------------
 
@@ -16,6 +56,8 @@ Features
    (`#64 <https://github.com/gavinying/modpoll/issues/64>`__)
    (`c44b597 <https://github.com/gavinying/modpoll/commit/c44b597f45a1c9fd8b3b49562d74f959d21cd1f0>`__)
 
+.. _bug-fixes-3:
+
 Bug Fixes
 ~~~~~~~~~
 
@@ -24,7 +66,7 @@ Bug Fixes
 -  Allow github action to read the PR title and add labels
    (`22cb7c8 <https://github.com/gavinying/modpoll/commit/22cb7c8dce284675193865c8fe399320bb0f2636>`__)
 
-.. _section-1:
+.. _section-4:
 
 `1.2.0 <https://github.com/gavinying/modpoll/compare/v1.1.0...v1.2.0>`__ (2024-08-25)
 -------------------------------------------------------------------------------------
@@ -40,7 +82,7 @@ Features
 -  Add docker compose for better developer experience.
    (`01f15e8 <https://github.com/gavinying/modpoll/commit/01f15e8d140eadf3413471463fbb26cd7d8fc175>`__)
 
-.. _bug-fixes-1:
+.. _bug-fixes-4:
 
 Bug Fixes
 ~~~~~~~~~
@@ -50,7 +92,7 @@ Bug Fixes
 -  Typos
    (`9349864 <https://github.com/gavinying/modpoll/commit/9349864c5712fad3da9218d8f8b72529da5e03fa>`__)
 
-.. _section-2:
+.. _section-5:
 
 `1.1.0 <https://github.com/gavinying/modpoll/compare/1.0.0...v1.1.0>`__ (2024-08-03)
 ------------------------------------------------------------------------------------
@@ -68,7 +110,7 @@ Features
    (`#52 <https://github.com/gavinying/modpoll/issues/52>`__)
    (`3e6681a <https://github.com/gavinying/modpoll/commit/3e6681a56497672c664a200e95728d7202a1964f>`__)
 
-.. _bug-fixes-2:
+.. _bug-fixes-5:
 
 Bug Fixes
 ~~~~~~~~~
@@ -92,7 +134,7 @@ Documentation
 -  update CHANGELOG.md
    (`73fcc01 <https://github.com/gavinying/modpoll/commit/73fcc010cb0ddbf4a1aa149ac28a354cd1bc5c39>`__)
 
-.. _section-3:
+.. _section-6:
 
 `1.0.0 <https://github.com/gavinying/modpoll/compare/0.8.4...1.0.0>`__ (2024-07-11)
 -----------------------------------------------------------------------------------

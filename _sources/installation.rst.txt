@@ -63,6 +63,6 @@ without the local installation,
 
 .. code-block:: shell
 
-    docker run --rm helloysd/modpoll
+    docker run --rm topmaker/modpoll
 
 It shows the version of the tool by default.
