@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.3](https://github.com/gavinying/modpoll/compare/v1.3.2...v1.3.3) (2024-10-15)
+
+
+### Bug Fixes
+
+* CI docs pipeline issue ([ada4089](https://github.com/gavinying/modpoll/commit/ada4089df1bb3063641820274a2c476d4a421321))
+
 ## [1.3.2](https://github.com/gavinying/modpoll/compare/v1.3.1...v1.3.2) (2024-10-15)
 
 
