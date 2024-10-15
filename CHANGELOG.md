@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/gavinying/modpoll/compare/v1.3.1...v1.3.2) (2024-10-15)
+
+
+### Bug Fixes
+
+* CI pipeline issue ([9386455](https://github.com/gavinying/modpoll/commit/9386455652025ea300dfdef5034738fa8936a66e))
+
 ## [1.3.1](https://github.com/gavinying/modpoll/compare/v1.3.0...v1.3.1) (2024-10-14)
 
 
