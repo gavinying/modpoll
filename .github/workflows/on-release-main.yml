@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  publish-pypi:
+  build-and-publish-pypi:
     runs-on: ubuntu-latest
     steps:
       - name: Check out
