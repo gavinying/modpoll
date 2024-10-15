@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.1](https://github.com/gavinying/modpoll/compare/v1.3.0...v1.3.1) (2024-10-14)
+
+
+### Bug Fixes
+
+* Arguments mqtt-qos doesn't work for publish ([0a65d0a](https://github.com/gavinying/modpoll/commit/0a65d0ad1efe5067c080f7dd02afc1a8cb3c8478))
+* Zsh parse error due to the special character used in mqtt-publish-topic-pattern. ([98230e8](https://github.com/gavinying/modpoll/commit/98230e8e78c77e7a0334d101ac990f53e599ce1d))
+
 ## [1.3.0](https://github.com/gavinying/modpoll/compare/v1.2.0...v1.3.0) (2024-10-13)
 
 
