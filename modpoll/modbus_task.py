@@ -268,6 +268,7 @@ class ModbusHandler:
         daemon: bool = False,
         mqtt_publish_topic_pattern: Optional[str] = None,
         mqtt_diagnostics_topic_pattern: Optional[str] = None,
+        mqtt_single_publish: bool = False,
     ):
         self.modbus_client = modbus_client
         self.config_file = config_file
@@ -277,6 +278,7 @@ class ModbusHandler:
         self.daemon = daemon
         self.mqtt_publish_topic_pattern = mqtt_publish_topic_pattern
         self.mqtt_diagnostics_topic_pattern = mqtt_diagnostics_topic_pattern
+        self.mqtt_single_publish = mqtt_single_publish
         self.connected = False
         self.deviceList: List[Device] = []
         self.logger = logging.getLogger(__name__)
@@ -507,22 +509,37 @@ class ModbusHandler:
             print(table)
 
     def publish_data(self, timestamp=None, on_change=False):
-        if not self.mqtt_handler:
+        if not self.mqtt_handler or not self.mqtt_publish_topic_pattern:
             return
-        if not self.mqtt_publish_topic_pattern:
-            return
+
         for dev in self.deviceList:
+            if not dev.pollSuccess:
+                self.logger.debug(
+                    f"Skip publishing for disconnected device: {dev.name}"
+                )
+                continue
+
             payload = {}
             for ref in dev.references.values():
                 if not on_change or ref.val != ref.last_val:
-                    value = (
+                    ref_val = (
                         round(ref.val, FLOAT_TYPE_PRECISION)
                         if isinstance(ref.val, float)
                         else ref.val
                     )
-                    payload[ref.name] = value
-            if payload:
-                if timestamp:
+                    key = f"{ref.name}|{ref.unit}" if ref.unit else ref.name
+                    payload[key] = ref_val
+
+                    if self.mqtt_single_publish:
+                        topic = f"{self.mqtt_publish_topic_pattern.replace('{{device_name}}', dev.name)}/{ref.name}"
+                        if isinstance(ref_val, list):
+                            for i, entry in enumerate(ref_val):
+                                self.mqtt_handler.publish(f"{topic}/{i}", entry)
+                        else:
+                            self.mqtt_handler.publish(topic, ref_val)
+
+            if payload and not self.mqtt_single_publish:
+                if timestamp is not None:
                     payload["timestamp"] = timestamp
                 topic = self.mqtt_publish_topic_pattern.replace(
                     "{{device_name}}", dev.name
@@ -581,6 +598,7 @@ def setup_modbus_handlers(args, mqtt_handler: Optional[MqttHandler] = None):
             daemon=args.daemon,
             mqtt_publish_topic_pattern=args.mqtt_publish_topic_pattern,
             mqtt_diagnostics_topic_pattern=args.mqtt_diagnostics_topic_pattern,
+            mqtt_single_publish=args.mqtt_single,
         )
         if modbus_handler.load_config():
             modbus_handlers.append(modbus_handler)
