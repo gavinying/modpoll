@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/gavinying/modpoll/compare/v1.3.3...v1.4.0) (2024-10-17)
+
+
+### Features
+
+* Publish MQTT message for each single reference. ([adb869f](https://github.com/gavinying/modpoll/commit/adb869faeb375ec92d1158bd87c0389de7eceb09))
+
 ## [1.3.3](https://github.com/gavinying/modpoll/compare/v1.3.2...v1.3.3) (2024-10-15)
 
 
