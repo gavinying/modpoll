@@ -321,7 +321,7 @@ class ModbusHandler:
                         continue
                     device_name = row[1].strip()
                     try:
-                        device_id = int(row[2])
+                        device_id = int(row[2], 0)
                     except ValueError:
                         self.logger.error(f"Invalid device ID for {device_name}")
                         continue
@@ -359,8 +359,8 @@ class ModbusHandler:
             return None
         fc = row[1].lower()
         try:
-            start_address = int(row[2])
-            size = int(row[3])
+            start_address = int(row[2], 0)
+            size = int(row[3], 0)
         except ValueError:
             self.logger.error("Invalid start address or size for poller")
             return None
@@ -403,7 +403,7 @@ class ModbusHandler:
             return None
         ref_name = row[1].replace(" ", "_")
         try:
-            address = int(row[2])
+            address = int(row[2], 0)
         except ValueError:
             self.logger.error(f"Invalid address for reference {ref_name}")
             return None
