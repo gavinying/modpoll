@@ -39,8 +39,8 @@ def get_parser():
     parser.add_argument(
         "--interval",
         type=float,
-        default=1.0,
-        help="The time interval in seconds between two polling, Defaults to 1.0",
+        default=0.5,
+        help="The time interval in seconds between two polling, Defaults to 0.5",
     )
     parser.add_argument(
         "--tcp", help="Act as a Modbus TCP master, connecting to host TCP"
