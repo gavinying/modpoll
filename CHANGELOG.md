@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.0](https://github.com/gavinying/modpoll/compare/v1.3.3...v1.4.0) (2024-11-15)
+
+
+### Features
+
+* Add example config for Eastron SDM120 ([#72](https://github.com/gavinying/modpoll/issues/72)) ([2dde6b9](https://github.com/gavinying/modpoll/commit/2dde6b9b413a1c7fba19ba88dc8f1e7df8287c25))
+* Allow HEX number in configuration file ([#70](https://github.com/gavinying/modpoll/issues/70)) ([6324269](https://github.com/gavinying/modpoll/commit/63242699b75b5169abc8064c1546faa92a8754de))
+* Publish MQTT message for each single reference. ([adb869f](https://github.com/gavinying/modpoll/commit/adb869faeb375ec92d1158bd87c0389de7eceb09))
+
+
+### Bug Fixes
+
+* Rename doc include config_template.csv ([#73](https://github.com/gavinying/modpoll/issues/73)) ([8003ff3](https://github.com/gavinying/modpoll/commit/8003ff33a42143766223f2b02307cd17409b4059))
+
 ## [1.3.3](https://github.com/gavinying/modpoll/compare/v1.3.2...v1.3.3) (2024-10-15)
 
 
