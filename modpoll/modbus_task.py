@@ -58,6 +58,7 @@ class Poller:
         self.readableReferences: List[Reference] = []
         self.disabled = False
         self.failcounter = 0
+        self.logger = logging.getLogger(__name__)
 
     def poll(self, master) -> bool:
         if self.disabled or not master:
@@ -104,9 +105,18 @@ class Poller:
                     cur_ref += 1
                 if cur_ref >= self.start_address + ref_count:
                     break
-                self._decode_and_update_reference(ref, decoder)
+                try:
+                    self._decode_and_update_reference(ref, decoder)
+                    self.device.update_reference(ref)
+                except UnicodeDecodeError:
+                    self.logger.error(
+                        f"Failed to decode unicode string for reference: {ref.name}, check the reference address or length of string in configuration file"
+                    )
+                except:
+                    self.logger.error(
+                        f"Failed to decode value for reference: {ref.name}"
+                    )
                 cur_ref += ref.ref_width
-                self.device.update_reference(ref)
             self.update_statistics(True)
             return True
         except ModbusException:
@@ -171,8 +181,6 @@ class Poller:
             ref.update_value(
                 decoder.decode_string(ref.ref_width * 2).decode("utf-8").rstrip("\x00")
             )
-        else:
-            decoder.skip_bytes(2)  # Skip unknown types
 
     def add_readable_reference(self, ref: "Reference"):
         if ref not in self.readableReferences:
