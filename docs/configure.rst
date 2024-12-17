@@ -9,7 +9,7 @@ It is mainly to describe the device address and register mappings.
 
 Here is the basic structure of modbus configure file.
 
-.. literalinclude:: ../examples/example.csv
+.. literalinclude:: ../examples/config_template.csv
    :language: default
    :emphasize-lines: 8-10
    :linenos:

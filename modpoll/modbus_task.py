@@ -264,7 +264,7 @@ class ModbusHandler:
         config_file: str,
         mqtt_handler: Optional[MqttHandler] = None,
         timeout: float = 3.0,
-        interval: float = 1.0,
+        interval: float = 0.5,
         daemon: bool = False,
         mqtt_publish_topic_pattern: Optional[str] = None,
         mqtt_diagnostics_topic_pattern: Optional[str] = None,
