@@ -122,7 +122,7 @@ ref,input_reg11,30012,int32,rw
 ref,input_reg12,30014,int32,rw
 ref,input_reg13,30016,float32,rw
 ref,input_reg14,30018,float32,rw
-poll,holding_register,40000,20,BE_BE
+poll,holding_register,40000,44,BE_BE
 ref,holding_reg01,40000,uint16,rw
 ref,holding_reg02,40001,uint16,rw
 ref,holding_reg03,40002,uint16,rw
@@ -137,6 +137,11 @@ ref,holding_reg11,40012,int32,rw
 ref,holding_reg12,40014,int32,rw
 ref,holding_reg13,40016,float32,rw
 ref,holding_reg14,40018,float32,rw
+ref,holding_reg15,40020,uint64,rw
+ref,holding_reg16,40024,int64,rw
+ref,holding_reg17,40028,float64,rw
+ref,holding_reg18,40032,float64,rw
+ref,holding_reg19,40036,string16,rw
 ```
 
 This configuration tells *modpoll* to do the following for each poll,
