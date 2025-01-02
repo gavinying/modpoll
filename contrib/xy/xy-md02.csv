@@ -1,0 +1,4 @@
+device,XY-MD02,1
+poll,input_register,1,2,BE_BE
+ref,Temperature,1,int16,r,°C,0.1
+ref,Humidity,2,int16,r,%,0.1
