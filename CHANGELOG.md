@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.1](https://github.com/gavinying/modpoll/compare/v1.4.0...v1.4.1) (2025-01-03)
+
+
+### Bug Fixes
+
+* Eastron meter config issue ([d58ed36](https://github.com/gavinying/modpoll/commit/d58ed36e1bc75be72e4d14ffbcf16f41f7958386))
+
+
+### Documentation
+
+* Add reference scale usage in examples ([8b4319c](https://github.com/gavinying/modpoll/commit/8b4319c014be71bb5ac121888cc7dd9b8f552765)), closes [#75](https://github.com/gavinying/modpoll/issues/75)
+
 ## [1.4.0](https://github.com/gavinying/modpoll/compare/v1.3.3...v1.4.0) (2024-11-15)
 
 
