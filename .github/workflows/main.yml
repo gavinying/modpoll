@@ -38,17 +38,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Load cached tox
-        id: cached-tox
-        uses: actions/cache@v4
-        with:
-          path: .tox
-          key: tox-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}-${{ hashFiles('tox.ini') }}
-          restore-keys: |
-            tox-${{ runner.os }}-${{ matrix.python-version }}-
-
       - name: Install tox
-        if: steps.cached-tox.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
           python -m pip install tox tox-gh-actions
