@@ -15,9 +15,12 @@ runs:
       uses: actions/cache@v4
       with:
         path: /usr/local/bin/pandoc
-        key: pandoc-${{ runner.os }}-${{ hashFiles('.tool-versions') }}
+        key: pandoc-${{ runner.os }}-${{ inputs.pandoc-version }}-${{ hashFiles('.tool-versions') }}
+        restore-keys: |
+          pandoc-${{ runner.os }}-${{ inputs.pandoc-version }}-
 
-    - name: Install
+    - name: Install Pandoc
+      if: steps.cached-pandoc.outputs.cache-hit != 'true'
       uses: pandoc/actions/setup@v1
       with:
         version: ${{ inputs.pandoc-version }}
