@@ -9,6 +9,8 @@ on:
 jobs:
   quality-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -21,6 +23,8 @@ jobs:
 
   tox:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
@@ -29,30 +33,36 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Set up python
-        uses: actions/setup-python@v5
+      - name: Set up poetry
+        uses: ./.github/actions/setup-poetry
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-
-      - name: Load cached venv
+      - name: Load cached tox
+        id: cached-tox
         uses: actions/cache@v4
         with:
           path: .tox
-          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          key: tox-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}-${{ hashFiles('tox.ini') }}
+          restore-keys: |
+            tox-${{ runner.os }}-${{ matrix.python-version }}-
 
       - name: Install tox
+        if: steps.cached-tox.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
           python -m pip install tox tox-gh-actions
 
       - name: Test with tox
         run: tox
+        env:
+          PYTHON_VERSION: ${{ matrix.python-version }}
 
   docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    if: github.event_name != 'pull_request'
     steps:
       - name: Check out
         uses: actions/checkout@v4
