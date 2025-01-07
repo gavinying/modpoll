@@ -149,7 +149,7 @@ This configuration tells *modpoll* to do the following for each poll,
 - Read `16` coils from the address starting from `0` and parse the response as two 8-bits boolean values;
 - Read `16` discrete inputs from the address starting from `10000` and parse the response as two 8-bits boolean values;
 - Read `20` input registers from the address starting from `30000` and parse data accordingly;
-- Read `20` holding registers from the address starting from `40000` and parse data accordingly;
+- Read `44` holding registers from the address starting from `40000` and parse data accordingly;
 
 In practical, you usually need to customize a Modbus configuration file for your own device before running *modpoll* tool, which defines the optimal polling patterns and register mappings according to device vendor's documents.
 
