@@ -3,7 +3,7 @@ PROJECT_NAME ?= modpoll
 .PHONY: install
 install: ## Install the poetry environment and install the pre-commit hooks
 	@echo "🚀 Creating virtual environment using pyenv and poetry"
-	@poetry self add poetry-plugin-export
+	@poetry self add poetry-plugin-export==1.8.0
 	@poetry install
 	@poetry run pre-commit install --allow-missing-config
 	@poetry shell
