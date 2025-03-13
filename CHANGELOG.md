@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.5.0](https://github.com/gavinying/modpoll/compare/v1.4.1...v1.5.0) (2025-03-13)
+
+
+### Features
+
+* Update docker compose to conform to new specification ([abc55aa](https://github.com/gavinying/modpoll/commit/abc55aa363d76dc35b6a9731e31ab4b551a7b435))
+
+
+### Bug Fixes
+
+* CI pipelines issue with wrong poetry version ([14d0563](https://github.com/gavinying/modpoll/commit/14d0563f0928b4dd0673290660bf56908090c836))
+* Install specific version of plugins ([98af91c](https://github.com/gavinying/modpoll/commit/98af91c5dcf241754e05182e4865595ea9d5a381))
+* Wrong poll size in docs ([b46f817](https://github.com/gavinying/modpoll/commit/b46f817075af8a4a50ea43b93bf7b9696e674dc2))
+* Wrong poll size in docs ([4ad6dbf](https://github.com/gavinying/modpoll/commit/4ad6dbfeabeaa8f5e9fdbe7dfeb240c6eb6ecab1))
+
+
+### Reverts
+
+* Install poetry before cache check ([2041db7](https://github.com/gavinying/modpoll/commit/2041db7c3e583e3acb75bc3b7836db46efa2589d))
+
+
+### Documentation
+
+* Add description for polling string reference example ([33b85f1](https://github.com/gavinying/modpoll/commit/33b85f12fe33b18b0d59e6fd723de59e6ee8f846))
+* Add description for polling string reference example ([3bb8ade](https://github.com/gavinying/modpoll/commit/3bb8adeb4ca09bed05bf87cb8271dc02bfc8a585))
+* Update screenshots ([67b91d5](https://github.com/gavinying/modpoll/commit/67b91d5ec34327405153857597f902d82ffe477c))
+* Update screenshots ([e44ac1a](https://github.com/gavinying/modpoll/commit/e44ac1a33cb3806a665103e1e304e909c1a2f73a))
+
 ## [1.4.1](https://github.com/gavinying/modpoll/compare/v1.4.0...v1.4.1) (2025-01-03)
 
 
