@@ -1,16 +1,16 @@
-version: '3'
+name: modpoll-example-2
 
 volumes:
-  vol-mosquitto-config:
-  vol-mosquitto-data:
+  mosquitto-config-vol:
+  mosquitto-data-vol:
 
 services:
   modpoll:
+    depends_on:
+      - mosquitto
     image: topmaker/modpoll
     container_name: modpoll
     restart: unless-stopped
-    depends_on:
-      - mosquitto
     volumes:
       - ./config/:/app/config/
     command: >
@@ -26,11 +26,11 @@ services:
     image: topmaker/mosquitto:2.0.15
     container_name: mosquitto
     restart: unless-stopped
+    volumes:
+      - mosquitto-config-vol:/mosquitto/config
+      - mosquitto-data-vol:/mosquitto/data
+    ports:
+      - 1883:1883
     environment:
       - MOSQUITTO_USERNAME=${MQTT_USERNAME}
       - MOSQUITTO_PASSWORD=${MQTT_PASSWORD}
-    volumes:
-      - vol-mosquitto-config:/mosquitto/config
-      - vol-mosquitto-data:/mosquitto/data
-    ports:
-      - 1883:1883

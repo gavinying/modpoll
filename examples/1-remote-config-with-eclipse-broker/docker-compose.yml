@@ -1,4 +1,4 @@
-version: '3'
+name: modpoll-example-1
 
 services:
   modpoll:
