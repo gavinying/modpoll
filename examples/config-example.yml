@@ -1,0 +1,76 @@
+# Modbus Configuration File
+
+# Schema:
+# project:            # project name
+# devices:            # Array of devices
+#   - name: <string>  # Device name (no spaces)
+#     id: <int>      # Device ID (1-254)
+#     pollers:       # Array of pollers
+#       - type: <string>  # coil/discrete_input/holding_register/input_register
+#         start_address: <int>        # Integer 0-65535
+#         size: <int>                 # Integer 0-65535
+#         byte_order: <endian_type>   # big_endian/little_endian
+#         word_order: <endian_type>   # big_endian/little_endian
+#         references:                 # Array of references
+#           - [name, address, dtype, access, unit?, scale?]
+#             # name: string without spaces to describe the reference
+#             # address: integer 0-65535 (must match poller range)
+#             # dtype: uint16/int16/uint32/int32/float16/float32/bitX/stringXXX
+#             # access: r/w/rw (read/write permissions)
+#             # unit: (optional) measurement unit of reference
+#             # scale: (optional) float value to multiply with register reading
+
+# Example:
+project: example
+devices:
+  - name: device01
+    id: 1
+    pollers:
+      - type: coil
+        start_address: 0
+        size: 16
+        byte_order: big_endian
+        word_order: big_endian
+        references:
+          - ["coil_01", 0, "bit0", "rw"]
+          - ["coil_02", 0, "bit1", "rw"]
+          - ["coil_03", 0, "bit2", "rw"]
+          - ["coil_04", 0, "bit3", "rw"]
+          - ["coil_05", 0, "bit4", "rw"]
+          - ["coil_06", 0, "bit5", "rw"]
+          - ["coil_07", 0, "bit6", "rw"]
+          - ["coil_08", 0, "bit7", "rw"]
+          - ["coil_09", 1, "bit0", "rw"]
+          - ["coil_10", 1, "bit1", "rw"]
+          - ["coil_11", 1, "bit2", "rw"]
+          - ["coil_12", 1, "bit3", "rw"]
+          - ["coil_13", 1, "bit4", "rw"]
+          - ["coil_14", 1, "bit5", "rw"]
+          - ["coil_15", 1, "bit6", "rw"]
+          - ["coil_16", 1, "bit7", "rw"]
+
+      - type: holding_register
+        start_address: 40000
+        size: 44
+        byte_order: big_endian
+        word_order: big_endian
+        references:
+          - ["holding_01", 40000, "uint16", "rw"]
+          - ["holding_02", 40001, "uint16", "rw"]
+          - ["holding_03", 40002, "uint16", "rw"]
+          - ["holding_04", 40003, "uint16", "rw"]
+          - ["holding_05", 40004, "int16", "rw"]
+          - ["holding_06", 40005, "int16", "rw"]
+          - ["holding_07", 40006, "int16", "rw"]
+          - ["holding_08", 40007, "int16", "rw"]
+          - ["holding_09", 40008, "uint32", "rw"]
+          - ["holding_10", 40010, "uint32", "rw"]
+          - ["holding_11", 40012, "int32", "rw"]
+          - ["holding_12", 40014, "int32", "rw"]
+          - ["holding_13", 40016, "float32", "rw"]
+          - ["holding_14", 40018, "float32", "rw"]
+          - ["holding_15", 40020, "uint64", "rw"]
+          - ["holding_16", 40024, "int64", "rw"]
+          - ["holding_17", 40028, "float64", "rw"]
+          - ["holding_18", 40032, "float64", "rw"]
+          - ["holding_19", 40036, "string16", "rw"]
