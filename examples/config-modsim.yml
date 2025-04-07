@@ -1,24 +1,33 @@
-# Modbus Configuration File
+# Modpoll Configuration File
 
 # Schema:
-# project:            # project name
-# devices:            # Array of devices
+# project:            # Project name
+# devices:            # Array of Modbus TCP/RTU slave devices
 #   - name: <string>  # Device name (no spaces)
-#     id: <int>      # Device ID (1-254)
-#     pollers:       # Array of pollers
-#       - type: <string>  # coil/discrete_input/holding_register/input_register
-#         start_address: <int>        # Integer 0-65535
-#         size: <int>                 # Integer 0-65535
-#         byte_order: <endian_type>   # big_endian/little_endian
-#         word_order: <endian_type>   # big_endian/little_endian
-#         references:                 # Array of references
+#     id: <int>      # Slave ID/Unit ID (1-247 for RTU, ignored for TCP)
+#     pollers:       # Array of data pollers for different Modbus function codes
+#       - type: <string>  # Function code type:
+#                        # coil (FC1/5/15) - single bit read/write
+#                        # discrete_input (FC2) - single bit read-only
+#                        # holding_register (FC3/6/16) - 16-bit read/write
+#                        # input_register (FC4) - 16-bit read-only
+#         start_address: <int>        # Starting address (0-65535)
+#         size: <int>                 # Number of registers/coils to poll
+#         byte_order: <endian_type>   # Byte order within 16-bit word
+#         word_order: <endian_type>   # Word order for 32-bit values
+#         references:                 # Array of register/coil references
 #           - [name, address, dtype, access, unit?, scale?]
-#             # name: string without spaces to describe the reference
-#             # address: integer 0-65535 (must match poller range)
-#             # dtype: uint16/int16/uint32/int32/float16/float32/bitX/stringXXX
-#             # access: r/w/rw (read/write permissions)
-#             # unit: (optional) measurement unit of reference
-#             # scale: (optional) float value to multiply with register reading
+#             # name: Reference identifier (no spaces)
+#             # address: Register/coil address (0-65535, within poller range)
+#             # dtype: Data type:
+#             #   - bit0-bit15: Individual bits in register
+#             #   - uint16/int16: 16-bit unsigned/signed integer
+#             #   - uint32/int32: 32-bit unsigned/signed integer (uses 2 registers)
+#             #   - float32: 32-bit IEEE 754 float (uses 2 registers)
+#             #   - stringXXX: String with XXX characters (uses ceil(XXX/2) registers)
+#             # access: Access mode (r=read-only, w=write-only, rw=read-write)
+#             # unit: Optional engineering unit for the value
+#             # scale: Optional multiplier for raw register value
 
 project: modsim
 devices:
