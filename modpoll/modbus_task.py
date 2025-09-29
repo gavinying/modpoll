@@ -34,12 +34,6 @@ class Device:
     def add_reference_mapping(self, ref):
         self.references[ref.name] = ref
 
-    def update_reference(self, ref):
-        if ref.name in self.references:
-            existing_ref = self.references[ref.name]
-            existing_ref.last_val = existing_ref.val
-            existing_ref.val = ref.val
-
 
 class Poller:
     def __init__(
@@ -61,8 +55,6 @@ class Poller:
         self.logger = logging.getLogger(__name__)
 
     def poll(self, master) -> bool:
-        if self.disabled or not master:
-            return False
         try:
             result = None
             data = None
@@ -83,45 +75,46 @@ class Poller:
                     self.start_address, self.size, slave=self.device.devid
                 )
 
-            if result is None or result.isError():
-                self.update_statistics(False)
-                return False
-
-            data = result.bits if self.fc in (1, 2) else result.registers
-
-            decoder = self._get_decoder(data)
-            cur_ref = self.start_address
-            for ref in self.readableReferences:
-                if self.fc in (1, 2):
-                    ref_count = math.ceil(self.size / 8)
-                else:
-                    ref_count = self.size
-                # skip all registers before current reference address
-                while cur_ref < ref.address:
+            if result and not result.isError():
+                data = result.bits if self.fc in (1, 2) else result.registers
+                decoder = self._get_decoder(data)
+                cur_ref = self.start_address
+                for ref in self.readableReferences:
                     if self.fc in (1, 2):
-                        decoder.skip_bytes(1)
+                        ref_count = math.ceil(self.size / 8)
                     else:
-                        decoder.skip_bytes(2)
-                    cur_ref += 1
-                if cur_ref >= self.start_address + ref_count:
-                    break
-                try:
-                    self._decode_and_update_reference(ref, decoder)
-                    self.device.update_reference(ref)
-                except UnicodeDecodeError:
-                    self.logger.error(
-                        f"Failed to decode unicode string for reference: {ref.name}, check the reference address or length of string in configuration file"
-                    )
-                except:
-                    self.logger.error(
-                        f"Failed to decode value for reference: {ref.name}"
-                    )
-                cur_ref += ref.ref_width
-            self.update_statistics(True)
-            return True
+                        ref_count = self.size
+                    # skip all registers before current reference address
+                    while cur_ref < ref.address:
+                        if self.fc in (1, 2):
+                            decoder.skip_bytes(1)
+                        else:
+                            decoder.skip_bytes(2)
+                        cur_ref += 1
+                    if cur_ref >= self.start_address + ref_count:
+                        break
+                    try:
+                        self._decode_and_update_reference(ref, decoder)
+                    except UnicodeDecodeError:
+                        self.logger.error(
+                            f"Failed to decode unicode string for reference: {ref.name}, check the reference address or length of string in configuration file"
+                        )
+                    except:
+                        self.logger.error(
+                            f"Failed to decode value for reference: {ref.name}"
+                        )
+                    cur_ref += ref.ref_width
+                self.update_statistics(True)
+                return True
         except ModbusException:
-            self.update_statistics(False)
-            return False
+            self.logger.error(
+                f"Modbus exception: {self.device.name} {self.fc} {self.start_address} {self.size}"
+            )
+
+        self.update_statistics(False)
+        for ref in self.readableReferences:
+            ref.update_value(None)
+        return False
 
     def _get_decoder(self, data):
         if "BE_BE" == self.endian.upper():
