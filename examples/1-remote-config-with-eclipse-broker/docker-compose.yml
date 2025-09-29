@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     command: >
       modpoll -d --tcp modsim.topmaker.net
-        --mqtt-host mqtt.eclipseprojects.io
+        --mqtt-host broker.emqx.io
         --mqtt-publish-topic-pattern mytest/{{device_name}}
         --mqtt-qos 1
         --rate 30

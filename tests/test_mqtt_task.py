@@ -6,11 +6,11 @@ from modpoll.mqtt_task import MqttHandler
 def test_mqtt_task_setup():
     mqtt_handler = MqttHandler(
         name="test_mqtt",
-        host="mqtt.eclipseprojects.io",
+        host="broker.emqx.io",
         port=1883,
         user=None,
         password=None,
-        clientid="test_client",
+        clientid="test_client_13579",
         qos=0,
         subscribe_topics=["test/topic"],
     )
@@ -19,7 +19,7 @@ def test_mqtt_task_setup():
 
     # Test MQTT client properties
     assert mqtt_handler.mqtt_client is not None
-    assert mqtt_handler.host == "mqtt.eclipseprojects.io"
+    assert mqtt_handler.host == "broker.emqx.io"
     assert mqtt_handler.port == 1883
 
     # Clean up
@@ -30,11 +30,11 @@ def test_mqtt_task_setup():
 def test_mqtt_task_connect():
     mqtt_handler = MqttHandler(
         name="test_mqtt",
-        host="mqtt.eclipseprojects.io",
+        host="broker.emqx.io",
         port=1883,
         user=None,
         password=None,
-        clientid="test_client",
+        clientid="test_client_13579",
         qos=0,
     )
 

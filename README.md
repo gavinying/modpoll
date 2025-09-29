@@ -196,16 +196,16 @@ modpoll \
 
 This is a useful function of this new *modpoll* tool, which provides a simple way to publish collected Modbus data to MQTT broker, so users can view data from a smart phone via a MQTT client.
 
-The following example uses a public MQTT broker `mqtt.eclipseprojects.io` for test purpose. You can also set up your own MQTT broker locally using [mosquitto](https://mosquitto.org/download/).
+The following example uses a public MQTT broker `broker.emqx.io` for test purpose. You can also set up your own MQTT broker locally using [mosquitto](https://mosquitto.org/download/).
 
 ```bash
 modpoll \
   --tcp modsim.topmaker.net \
-  --mqtt-host mqtt.eclipseprojects.io \
+  --mqtt-host broker.emqx.io \
   --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
 ```
 
-With successful data polling and publishing, you can subscribe the default data topic `modpoll/modsim01/data` on the same MQTT broker `mqtt.eclipseprojects.io` to view the collected data.
+With successful data polling and publishing, you can subscribe the default data topic `modpoll/modsim01/data` on the same MQTT broker `broker.emqx.io` to view the collected data.
 
 The MQTT topics can be customized by providing the following arguments,
 
@@ -302,7 +302,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```bash
   modpoll \
     --tcp modsim.topmaker.net \
-    --mqtt-host mqtt.eclipseprojects.io \
+    --mqtt-host broker.emqx.io \
     --config examples/modsim.csv
   ```
 
