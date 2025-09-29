@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.1](https://github.com/gavinying/modpoll/compare/v1.5.0...v1.5.1) (2025-09-29)
+
+
+### Bug Fixes
+
+* Clear reference value when disconnect ([#90](https://github.com/gavinying/modpoll/issues/90)) ([9543ce0](https://github.com/gavinying/modpoll/commit/9543ce0407686fd1398fd2db2eaecc42192d08e0)), closes [#87](https://github.com/gavinying/modpoll/issues/87)
+* Replace unreliable mqtt broker ([#88](https://github.com/gavinying/modpoll/issues/88)) ([bce269c](https://github.com/gavinying/modpoll/commit/bce269c3ce246ecf493b8a992c2f6e6293e7407e))
+
 ## [1.5.0](https://github.com/gavinying/modpoll/compare/v1.4.1...v1.5.0) (2025-03-13)
 
 
