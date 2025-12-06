@@ -80,11 +80,22 @@ def app(name="modpoll"):
                 logger.info("Connected to MQTT broker.")
             else:
                 logger.error("Failed to connect with MQTT broker, exiting...")
-                mqtt_handler.close()
+                try:
+                    mqtt_handler.close()
+                except Exception as close_err:
+                    logger.debug(
+                        f"Ignoring MQTT close error after failed connect: {close_err}"
+                    )
                 exit(1)
         except Exception as e:
             logger.error(f"Error setting up MQTT input: {e}, exiting...")
-            mqtt_handler.close()
+            if mqtt_handler:
+                try:
+                    mqtt_handler.close()
+                except Exception as close_err:
+                    logger.debug(
+                        f"Ignoring MQTT close error after setup exception: {close_err}"
+                    )
             exit(1)
 
     # setup modbus tasks
