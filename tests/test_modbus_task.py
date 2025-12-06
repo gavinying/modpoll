@@ -1,8 +1,9 @@
-import pytest
+import pytest  # type: ignore
 from modpoll.arg_parser import get_parser
 from modpoll.modbus_task import setup_modbus_handlers
 
 
+@pytest.mark.integration
 def test_modbus_task_modbus_setup():
     parser = get_parser()
     args = parser.parse_args(
