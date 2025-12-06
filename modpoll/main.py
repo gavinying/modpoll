@@ -69,6 +69,11 @@ def app(name="modpoll"):
                 args.mqtt_clientid,
                 args.mqtt_qos,
                 subscribe_topics=[args.mqtt_subscribe_topic_pattern],
+                use_tls=args.mqtt_use_tls,
+                tls_version=args.mqtt_tls_version,
+                cacerts=args.mqtt_cacerts,
+                insecure=args.mqtt_insecure,
+                mqtt_version=args.mqtt_version,
                 log_level=args.loglevel,
             )
             if mqtt_handler.setup() and mqtt_handler.connect():
