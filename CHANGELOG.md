@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.6.0](https://github.com/gavinying/modpoll/compare/v1.5.1...v1.6.0) (2025-12-06)
+
+
+### Features
+
+* add bit-level access for boolean registers ([cecf79d](https://github.com/gavinying/modpoll/commit/cecf79d24de79fdda7f524516fb163f35f392e3f))
+* add new argument 'serial' to support multiple framers, including rtu/ascii/binary. Keep the old 'rtu' argument as an alias to 'serial' argument for backward compatibility. ([d42ab78](https://github.com/gavinying/modpoll/commit/d42ab78801d16c96cde852686f77ec6694776cf9))
+* add support for ascii framer ([#97](https://github.com/gavinying/modpoll/issues/97)) ([c918e74](https://github.com/gavinying/modpoll/commit/c918e74ca9e9c69c8fbf47712cb46300bf0630a9))
+* upgrade to python 3.10 and pymodbus 3.9.0 ([189b3fd](https://github.com/gavinying/modpoll/commit/189b3fd71876e64e9ef6e81b5832508fb451a37c))
+
+
+### Bug Fixes
+
+* bit syntax is only used with bool dtype ([cf1e2b9](https://github.com/gavinying/modpoll/commit/cf1e2b9b732c5de1639549b06744251a9b7e746e))
+* forward mqtt tls flags to handler ([#93](https://github.com/gavinying/modpoll/issues/93)) ([d31db25](https://github.com/gavinying/modpoll/commit/d31db252257cc4b8c1ddcd5b8cdca2c8072ca227))
+* guard mqtt cleanup on setup errors ([#95](https://github.com/gavinying/modpoll/issues/95)) ([daa8c0c](https://github.com/gavinying/modpoll/commit/daa8c0c7d838468ba880397c5e38f98a3b0eb460))
+* incompatibility issues due to pymodbus 3.9+ ([d59a336](https://github.com/gavinying/modpoll/commit/d59a336eb68758f2bd521158926a1c1c6171a995))
+* Sphinx build errors ([2d06ee6](https://github.com/gavinying/modpoll/commit/2d06ee64ebda3303e9c8be9ebecdf0808c72b3f7))
+
 ## [1.5.1](https://github.com/gavinying/modpoll/compare/v1.5.0...v1.5.1) (2025-09-29)
 
 
