@@ -9,6 +9,12 @@ from prettytable import PrettyTable
 from pymodbus.client import ModbusSerialClient, ModbusTcpClient, ModbusUdpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
+from pymodbus.framer import (
+    ModbusAsciiFramer,
+    ModbusBinaryFramer,
+    ModbusRtuFramer,
+    ModbusSocketFramer,
+)
 from pymodbus.payload import BinaryPayloadDecoder
 
 from .utils import on_threading_event, delay_thread
@@ -609,50 +615,59 @@ def setup_modbus_handlers(args, mqtt_handler: Optional[MqttHandler] = None):
 
 
 def _create_modbus_client(args):
-    if args.rtu:
-        return _create_rtu_client(args)
-    elif args.tcp:
-        return _create_tcp_client(args)
-    elif args.udp:
-        return _create_udp_client(args)
-    else:
-        raise ValueError("No communication method specified.")
+    transport = _determine_transport(args)
+
+    if transport == "rtu":
+        framer = _resolve_framer("serial", args.framer)
+        return _create_serial_client(args, args.rtu, framer)
+
+    if transport == "tcp":
+        framer = _resolve_framer("tcp", args.framer)
+        return _create_tcp_client(args, framer)
+
+    if transport == "udp":
+        framer = _resolve_framer("udp", args.framer)
+        return _create_udp_client(args, framer)
+
+    raise ValueError("No communication method specified.")
 
 
-def _create_rtu_client(args):
+def _create_serial_client(args, port, framer):
+    if not port:
+        raise ValueError("Serial port/URL must be provided for serial transports.")
     parity = _get_parity(args.rtu_parity)
     client_args = {
-        "port": args.rtu,
+        "port": port,
         "baudrate": int(args.rtu_baud),
         "bytesize": 8,
         "parity": parity,
         "stopbits": 1,
         "timeout": args.timeout,
     }
-    if args.framer != "default":
-        client_args["framer"] = args.framer
+    if framer:
+        client_args["framer"] = framer
     return ModbusSerialClient(**client_args)
 
 
-def _create_tcp_client(args):
+def _create_tcp_client(args, framer):
     client_args = {
         "host": args.tcp,
         "port": args.tcp_port,
         "timeout": args.timeout,
     }
-    if args.framer != "default":
-        client_args["framer"] = args.framer
+    if framer:
+        client_args["framer"] = framer
     return ModbusTcpClient(**client_args)
 
 
-def _create_udp_client(args):
+def _create_udp_client(args, framer):
     client_args = {
         "host": args.udp,
         "port": args.udp_port,
         "timeout": args.timeout,
     }
-    if args.framer != "default":
-        client_args["framer"] = args.framer
+    if framer:
+        client_args["framer"] = framer
     return ModbusUdpClient(**client_args)
 
 
@@ -663,3 +678,52 @@ def _get_parity(rtu_parity):
         return "E"
     else:
         return "N"
+
+
+def _determine_transport(args):
+    transports = []
+    if args.rtu:
+        transports.append("rtu")
+    if args.tcp:
+        transports.append("tcp")
+    if args.udp:
+        transports.append("udp")
+
+    if not transports:
+        raise ValueError("No communication method specified.")
+    if len(transports) > 1:
+        raise ValueError(
+            "Multiple communication methods specified; pick one of --rtu/--tcp/--udp."
+        )
+    return transports[0]
+
+
+def _resolve_framer(transport, framer_name):
+    if framer_name == "default":
+        # Let pymodbus choose its transport defaults:
+        # Serial -> ModbusRtuFramer; TCP/UDP -> ModbusSocketFramer.
+        return None
+
+    framer_map = {
+        "rtu": ModbusRtuFramer,
+        "ascii": ModbusAsciiFramer,
+        "binary": ModbusBinaryFramer,
+        "socket": ModbusSocketFramer,
+    }
+    allowed = {
+        "serial": {"rtu", "ascii", "binary"},
+        "tcp": {"socket"},
+        "udp": {"socket"},
+    }
+
+    if transport in ("tcp", "udp"):
+        transport_key = transport
+    else:
+        transport_key = "serial"
+
+    if framer_name not in allowed[transport_key]:
+        raise ValueError(
+            f"Framer '{framer_name}' is not valid for transport '{transport_key}'."
+        )
+
+    return framer_map[framer_name]

@@ -34,3 +34,9 @@ Commandline Usage
   .. code-block:: shell
 
     modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv --export data.csv
+
+Framers and transports
+----------------------
+
+- Serial (`--rtu`) supports framers `rtu`, `ascii`, and `binary` (e.g., `--rtu ... --framer ascii`). If `--framer default` is used, pymodbus defaults to RTU framer.
+- TCP/UDP (`--tcp`/`--udp`) use the `socket` framer; other framers are rejected. If `--framer default` is used, pymodbus defaults to socket framer.

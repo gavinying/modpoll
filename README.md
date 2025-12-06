@@ -95,6 +95,11 @@ modpoll --once \
 
 > the modsim code is also available [here](https://github.com/gavinying/modsim)
 
+### Modbus ASCII and framers
+
+- Serial transports: use `--rtu PORT --framer ascii`; pyserial URLs such as `socket://host:port` and `rfc2217://host:port` work for serial-over-TCP tunnels.
+- Serial supports framers `ascii`, `rtu`, and `binary` (pymodbus defaults to RTU if `--framer default`). TCP/UDP use the `socket` framer (default when `--framer default`); other framers are rejected.
+
 ### Prepare Modbus configure file
 
 The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv) for *modsim* device as following,
