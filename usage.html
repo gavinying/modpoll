@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Basic Usage &mdash; Modpoll  documentation</title>
@@ -11,10 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -47,6 +48,8 @@
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#commandline-usage">Commandline Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-file">Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#framers-and-transports">Framers and transports</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="configure.html">Configuration</a></li>
@@ -78,18 +81,18 @@
            <div itemprop="articleBody">
              
   <section id="basic-usage">
-<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline"></a></h1>
+<h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h1>
 <p>The <cite>config</cite> option is required.</p>
 <section id="commandline-usage">
-<h2>Commandline Usage<a class="headerlink" href="#commandline-usage" title="Permalink to this headline"></a></h2>
+<h2>Commandline Usage<a class="headerlink" href="#commandline-usage" title="Link to this heading"></a></h2>
 <ul>
 <li><p>Connect to Modbus TCP device</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>modpoll<span class="w"> </span>--tcp<span class="w"> </span><span class="m">192</span>.168.1.10<span class="w"> </span>--config<span class="w"> </span>examples/modsim.csv
 </pre></div>
 </div>
 </li>
-<li><p>Connect to Modbus RTU device</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>modpoll<span class="w"> </span>--rtu<span class="w"> </span>/dev/ttyUSB0<span class="w"> </span>--rtu-baud<span class="w"> </span><span class="m">9600</span><span class="w"> </span>--config<span class="w"> </span>contrib/eniwise/scpms6.csv
+<li><p>Connect to Modbus serial device</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>modpoll<span class="w"> </span>--serial<span class="w"> </span>/dev/ttyUSB0<span class="w"> </span>--serial-baud<span class="w"> </span><span class="m">9600</span><span class="w"> </span>--config<span class="w"> </span>contrib/eniwise/scpms6.csv
 </pre></div>
 </div>
 </li>
@@ -99,10 +102,27 @@
 </div>
 </li>
 <li><p>Connect to Modbus TCP device and export data to local csv file</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>modpoll<span class="w"> </span>--tcp<span class="w"> </span>modsim.topmaker.net<span class="w"> </span>--config<span class="w"> </span>https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv<span class="w"> </span>--export<span class="w"> </span>data.csv
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>modpoll<span class="w"> </span>--tcp<span class="w"> </span>modsim.topmaker.net<span class="w"> </span>--config<span class="w"> </span>https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv<span class="w"> </span>--export<span class="w"> </span>data.csv
 </pre></div>
 </div>
 </li>
+</ul>
+</section>
+<section id="configuration-file">
+<h2>Configuration File<a class="headerlink" href="#configuration-file" title="Link to this heading"></a></h2>
+<p>The configuration file (<cite>–config</cite>) is a CSV file that defines the devices, pollers, and references to be read.</p>
+<p>For register references (i.e., Holding or Input registers) with a <code class="docutils literal notranslate"><span class="pre">dtype</span></code> of <code class="docutils literal notranslate"><span class="pre">bool</span></code>, you can specify a single bit to be extracted from the 16-bit register. This is done by appending <code class="docutils literal notranslate"><span class="pre">:bit</span></code> to the address, where <code class="docutils literal notranslate"><span class="pre">bit</span></code> is an integer from 0 to 15.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">40110</span></code>: Reads the entire 16-bit register at address 40110.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">40110:15</span></code>: Reads the 16-bit register at address 40110, extracts bit 15, and returns a boolean value.</p></li>
+</ul>
+<p>The bit is extracted from the final 16-bit value after byte/word swapping based on the poller’s endianness configuration.</p>
+</section>
+<section id="framers-and-transports">
+<h2>Framers and transports<a class="headerlink" href="#framers-and-transports" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Serial (<cite>–serial</cite>, alias <cite>–rtu</cite>) supports framers <cite>rtu</cite> and <cite>ascii</cite> (e.g., <cite>–serial … –framer ascii</cite>). Binary framer was removed in pymodbus 3.9+. If <cite>–framer default</cite> is used, pymodbus defaults to RTU framer.</p></li>
+<li><p>TCP/UDP (<cite>–tcp</cite>/<cite>–udp</cite>) use the <cite>socket</cite> framer; other framers are rejected. If <cite>–framer default</cite> is used, pymodbus defaults to socket framer.</p></li>
 </ul>
 </section>
 </section>

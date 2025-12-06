@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Configuration &mdash; Modpoll  documentation</title>
@@ -11,10 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -80,9 +81,9 @@
            <div itemprop="articleBody">
              
   <section id="configuration">
-<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline"></a></h1>
+<h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h1>
 <section id="modbus-configure-file">
-<h2>Modbus Configure File<a class="headerlink" href="#modbus-configure-file" title="Permalink to this headline"></a></h2>
+<h2>Modbus Configure File<a class="headerlink" href="#modbus-configure-file" title="Link to this heading"></a></h2>
 <p>In order to communicate with modbus devices, a proper modbus configure file is required.
 It is mainly to describe the device address and register mappings.</p>
 <p>Here is the basic structure of modbus configure file.</p>
@@ -147,11 +148,14 @@ It is mainly to describe the device address and register mappings.</p>
 <span class="linenos">59</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg12</span><span class="p">,</span><span class="mi">40014</span><span class="p">,</span><span class="n">int32</span><span class="p">,</span><span class="n">rw</span>
 <span class="linenos">60</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg13</span><span class="p">,</span><span class="mi">40016</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
 <span class="linenos">61</span><span class="n">ref</span><span class="p">,</span><span class="n">holding_reg14</span><span class="p">,</span><span class="mi">40018</span><span class="p">,</span><span class="n">float32</span><span class="p">,</span><span class="n">rw</span>
+<span class="linenos">62</span><span class="c1"># Example of reading a single bit from a register</span>
+<span class="linenos">63</span><span class="c1"># The format is address:bit (0-15), and is only for dtype=bool on registers.</span>
+<span class="linenos">64</span><span class="n">ref</span><span class="p">,</span><span class="n">alarm_bit_15</span><span class="p">,</span><span class="mi">40019</span><span class="p">:</span><span class="mi">15</span><span class="p">,</span><span class="nb">bool</span><span class="p">,</span><span class="n">r</span><span class="p">,</span>
 </pre></div>
 </div>
 </section>
 <section id="example-1-modsim-device-modbus-tcp-device">
-<h2>Example 1: Modsim device (Modbus TCP device)<a class="headerlink" href="#example-1-modsim-device-modbus-tcp-device" title="Permalink to this headline"></a></h2>
+<h2>Example 1: Modsim device (Modbus TCP device)<a class="headerlink" href="#example-1-modsim-device-modbus-tcp-device" title="Link to this heading"></a></h2>
 <p>This online Modbus TCP device simulator is designed for user to quickly test the modpoll functions.</p>
 <p>Here is an example of modbus configure file for reading modsim device.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">device</span><span class="p">,</span><span class="n">modsim01</span><span class="p">,</span><span class="mi">1</span><span class="p">,,</span>
@@ -200,7 +204,7 @@ It is mainly to describe the device address and register mappings.</p>
 </div>
 </section>
 <section id="example-2-scpm-s6-power-meter-modbus-rtu-device">
-<h2>Example 2: SCPM-S6 Power Meter (Modbus RTU device)<a class="headerlink" href="#example-2-scpm-s6-power-meter-modbus-rtu-device" title="Permalink to this headline"></a></h2>
+<h2>Example 2: SCPM-S6 Power Meter (Modbus RTU device)<a class="headerlink" href="#example-2-scpm-s6-power-meter-modbus-rtu-device" title="Link to this heading"></a></h2>
 <p>SCPM-S6 is designed as a sub-circuit power meter to monitor multiple electrical circuit power consumptions.</p>
 <p>Here is an example of modbus configure file for SCPM-S6.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="n">device</span><span class="p">,</span><span class="n">scpm001</span><span class="p">,</span><span class="mi">1</span><span class="p">,,,</span>

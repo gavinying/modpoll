@@ -20,13 +20,13 @@ Test with modsim
 
   .. code-block:: shell
 
-    modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+    modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
 
   or run *modpoll* in docker,
 
   .. code-block:: shell
 
-    docker run topmaker/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+    docker run topmaker/modpoll modpoll --tcp modsim.topmaker.net --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
 
 
   Meanwhile, if you prefer a local test or simply failed to connect to online *modsim* service, you can always launch your own device simulator via the following command,
@@ -39,4 +39,4 @@ Test with modsim
 
   .. code-block:: shell
 
-    modpoll --tcp localhost --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+    modpoll --tcp localhost --tcp-port 5020 --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv

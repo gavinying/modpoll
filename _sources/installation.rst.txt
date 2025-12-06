@@ -1,7 +1,7 @@
 Installation
 ============
 
-This program is tested on python 3.8+.
+This program is tested on python 3.10+ (Ubuntu 22.04+ or equivalent). Ubuntu 20.04 and python 3.8 are no longer supported.
 
 Install with pip or pipx
 -------------------------

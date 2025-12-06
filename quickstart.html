@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quickstart &mdash; Modpoll  documentation</title>
@@ -11,10 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -78,14 +79,14 @@
            <div itemprop="articleBody">
              
   <section id="quickstart">
-<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline"></a></h1>
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
 <p><strong>Modpoll</strong> is a tool for communication with Modbus devices, so ideally it makes more sense if you have a real modbus device on hand for the following test, but it is OK if you don’t, we have deployed a virtual Modbus TCP device on cloud at <a class="reference external" href="modsim.topmaker.net:502">modsim.topmaker.net:502</a>, the code is available in my another project <a class="reference external" href="https://github.com/gavinying/modsim">modsim</a>, let’s start expoloring <em>modpoll</em> tool with the virtual device <em>modsim</em>.</p>
 <section id="test-with-modsim">
-<h2>Test with modsim<a class="headerlink" href="#test-with-modsim" title="Permalink to this headline"></a></h2>
+<h2>Test with modsim<a class="headerlink" href="#test-with-modsim" title="Link to this heading"></a></h2>
 <blockquote>
 <div><p><em>modsim</em> is a very simple Modbus TCP device simulator deployed on cloud, it populates the first 100 registers for each type of Coil / Discrete input / Input register / Holding register,</p>
-<table class="colwidths-given docutils align-default" id="id1">
-<caption><span class="caption-text">modsim register configuration</span><a class="headerlink" href="#id1" title="Permalink to this table"></a></caption>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">modsim register configuration</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
 <colgroup>
 <col style="width: 31%" />
 <col style="width: 23%" />
@@ -123,11 +124,11 @@
 </tbody>
 </table>
 <p>Using <em>modpoll</em> tool, you can poll the first 5 holding registers via the following command,</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>modpoll<span class="w"> </span>--tcp<span class="w"> </span>modsim.topmaker.net<span class="w"> </span>--config<span class="w"> </span>https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>modpoll<span class="w"> </span>--tcp<span class="w"> </span>modsim.topmaker.net<span class="w"> </span>--config<span class="w"> </span>https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
 </pre></div>
 </div>
 <p>or run <em>modpoll</em> in docker,</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>topmaker/modpoll<span class="w"> </span>modpoll<span class="w"> </span>--tcp<span class="w"> </span>modsim.topmaker.net<span class="w"> </span>--config<span class="w"> </span>https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>topmaker/modpoll<span class="w"> </span>modpoll<span class="w"> </span>--tcp<span class="w"> </span>modsim.topmaker.net<span class="w"> </span>--config<span class="w"> </span>https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
 </pre></div>
 </div>
 <p>Meanwhile, if you prefer a local test or simply failed to connect to online <em>modsim</em> service, you can always launch your own device simulator via the following command,</p>
@@ -135,7 +136,7 @@
 </pre></div>
 </div>
 <p>It will simulate a Modbus TCP device running at <a class="reference external" href="localhost:5020">localhost:5020</a>, and you shall be able to connect it via the following command,</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>modpoll<span class="w"> </span>--tcp<span class="w"> </span>localhost<span class="w"> </span>--tcp-port<span class="w"> </span><span class="m">5020</span><span class="w"> </span>--config<span class="w"> </span>https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>modpoll<span class="w"> </span>--tcp<span class="w"> </span>localhost<span class="w"> </span>--tcp-port<span class="w"> </span><span class="m">5020</span><span class="w"> </span>--config<span class="w"> </span>https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
 </pre></div>
 </div>
 </div></blockquote>
