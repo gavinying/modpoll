@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.1](https://github.com/gavinying/modpoll/compare/v1.6.0...v1.6.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* Fail fast on Poetry lock drift and invalidate stale CI venv caches ([#107](https://github.com/gavinying/modpoll/issues/107)) ([e274c4a](https://github.com/gavinying/modpoll/commit/e274c4afaff286bee248b12e356b906c24c22b44))
+* remove clean_session from MQTT v3.1.1 connect call ([#105](https://github.com/gavinying/modpoll/issues/105)) ([565e4c9](https://github.com/gavinying/modpoll/commit/565e4c9d58fd542c74a708952c7723bafdbbca1a))
+
 ## [1.6.0](https://github.com/gavinying/modpoll/compare/v1.5.1...v1.6.0) (2025-12-06)
 
 
