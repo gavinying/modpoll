@@ -28,12 +28,16 @@ runs:
         installer-parallel: true
         plugins: poetry-plugin-export==1.8.0
 
+    - name: Validate lock file
+      run: poetry check --lock
+      shell: bash
+
     - name: Load cached venv
       id: cached-poetry-dependencies
       uses: actions/cache@v4
       with:
         path: .venv
-        key: venv-${{ runner.os }}-${{ inputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+        key: venv-${{ runner.os }}-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml', 'poetry.lock') }}
         restore-keys: |
           venv-${{ runner.os }}-${{ inputs.python-version }}-
 
