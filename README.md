@@ -166,7 +166,7 @@ The configuration can be either a local file or a remote public URL resource.
 
 > *Refer to the [documentation](https://gavinying.github.io/modpoll/configure.html) site for more details.*
 
-CSV validation requires a unique device name, a device ID from 1 to 254, a positive poll size within the Modbus function-code limit, and an address range that stays within 0–65535. Reference data types, read/write modes, endian values, and scales must be valid; errors include the CSV line number. A scale of `0` is valid.
+CSV validation requires a unique device name, a device ID from 1 to 254, a positive poll size within the Modbus function-code limit, and an address range that stays within 0–65535. Reference data types, read/write modes, endian values, and scales must be valid; errors include the CSV line number. A scale of `0` is valid; non-finite scales are rejected. Non-finite floating-point samples are treated as invalid and omitted from MQTT output. Device names must also be unique across all configuration files; duplicate names stop startup. Rename conflicting devices and update their MQTT topics before upgrading.
 
 ### Poll local device (modsim)
 
@@ -254,7 +254,7 @@ The *modpoll* tool will subscribe to the topic `modpoll/{{device_name}}/set` by 
 
 A register array is written with FC16 and must contain 1–123 unsigned 16-bit values within the address range. Invalid, oversized, malformed, ambiguous, or retained write messages are ignored and logged. Brokers may clear the retained flag on live forwarding, so configure the broker not to retain commands on the `set` topic; QoS does not make a write exactly-once.
 
-When a sample is invalid in a poll cycle, modpoll omits it from MQTT output and writes `null` for that reference in the JSON snapshot. JSON snapshots from multiple configuration files are combined and replaced atomically.
+When a sample is invalid in a poll cycle, modpoll omits it from MQTT output and writes `null` for that reference in the JSON snapshot. JSON snapshots from multiple configuration files are combined and replaced atomically. When `--timestamp` is enabled, the timestamp is the start time of the poll cycle in Unix seconds, not the time each individual value was read.
 
 
 ## Run with docker
@@ -349,3 +349,15 @@ Thanks to Max Brueggemann and Oliver Wagner for their great work.
 ## License
 
 MIT © 2021-2026, Ying Shaodong
+
+When `--autoremove` is enabled, a poller is disabled after three consecutive
+failed polling attempts, including connection failures. A successful poll resets
+its failure count. Restart modpoll to retry a disabled poller; the default is to
+keep retrying without disabling pollers.
+
+For coil and discrete input polls, reference addresses identify consecutive
+eight-bit groups beginning at the poll start, as shown in the configuration
+example. Values follow Modbus bit order; a final partial group contains only the
+requested bits. Earlier versions could reverse bits or decode out-of-order
+references incorrectly, so consumers relying on those results should review the
+change.

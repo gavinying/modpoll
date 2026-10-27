@@ -131,3 +131,32 @@ def test_mqtt_setup_close_errors_are_suppressed(monkeypatch):
         main.app()
 
     assert excinfo.value.code == 1
+
+
+@pytest.mark.parametrize("utc_values", [(1000.0, 1.0, 2.0), (1.0, 1000000.0, 2.0)])
+def test_poll_schedule_uses_monotonic_clock_when_utc_changes(monkeypatch, utc_values):
+    polls = []
+    clock = iter([10.0, 11.0, 16.0])
+    utc = iter(utc_values)
+
+    class Handler:
+        def poll(self):
+            polls.append(True)
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(main, "setup_modbus_handlers", lambda args, mqtt: [Handler()])
+    monkeypatch.setattr(main.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(main, "get_utc_time", lambda: next(utc))
+    monkeypatch.setattr(main, "on_threading_event", lambda: len(polls) >= 2)
+    monkeypatch.setattr(main, "delay_thread", lambda timeout: None)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["modpoll", "--config", "dummy.csv", "--tcp", "localhost", "--rate", "5"],
+    )
+
+    main.app()
+
+    assert len(polls) == 2

@@ -50,7 +50,7 @@ def export_modbus_handlers(handlers, file, timestamp=None) -> bool:
             prefix=f".{target.name}.", suffix=".tmp", dir=target.parent
         )
         with os.fdopen(fd, "w", encoding="utf-8") as output:
-            json.dump(data, output, indent=2)
+            json.dump(data, output, indent=2, allow_nan=False)
             output.flush()
             os.fsync(output.fileno())
         os.replace(temporary, target)
@@ -128,31 +128,50 @@ class Poller:
             if result and not result.isError():
                 if self.fc in (1, 2):
                     data = result.bits
-                    decoder = self._get_decoder(data)
-                    cur_ref = self.start_address
+                    # CSV addresses for bit tables identify eight-bit groups,
+                    # relative to the poll start, as in the documented examples.
+                    group_count = math.ceil(self.size / 8)
                     for ref in self.readableReferences:
-                        ref_count = math.ceil(self.size / 8)
-                        # skip all registers before current reference address
-                        while cur_ref < ref.address:
-                            decoder.skip_bytes(1)
-                            cur_ref += 1
-                        if cur_ref >= self.start_address + ref_count:
-                            break
-                        try:
-                            self._decode_and_update_reference(ref, decoder)
-                        except UnicodeDecodeError:
+                        offset = ref.address - self.start_address
+                        if (
+                            offset < 0
+                            or offset + ref.ref_width > group_count
+                            or len(data) < min((offset + ref.ref_width) * 8, self.size)
+                        ):
                             ref.update_value(None, valid=False)
                             decode_success = False
                             self.logger.error(
-                                f"Failed to decode unicode string for reference: {ref.name}, check the reference address or length of string in configuration file"
+                                "Reference %s is outside the polled bit groups",
+                                ref.name,
                             )
+                            continue
+                        try:
+                            if (
+                                ref.dtype in ("bool", "bool8", "bool16")
+                                and ref.bit is None
+                            ):
+                                start = offset * 8
+                                ref.update_value(
+                                    list(
+                                        data[
+                                            start : min(
+                                                start + ref.ref_width * 8, self.size
+                                            )
+                                        ]
+                                    )
+                                )
+                            else:
+                                decoder = self._get_decoder(data)
+                                decoder.skip_bytes(offset)
+                                self._decode_and_update_reference(ref, decoder)
+                            if not ref.valid_this_poll:
+                                decode_success = False
                         except Exception:
                             ref.update_value(None, valid=False)
                             decode_success = False
-                            self.logger.error(
-                                f"Failed to decode value for reference: {ref.name}"
+                            self.logger.exception(
+                                "Failed to decode value for reference: %s", ref.name
                             )
-                        cur_ref += ref.ref_width
                 else:  # Function codes 3 and 4
                     data = result.registers
                     # Sort refs by address to ensure predictable decoding order
@@ -167,10 +186,14 @@ class Poller:
                             self.logger.warning(
                                 f"Reference {ref.name} address {ref.address} is outside of poller range starting at {self.start_address}"
                             )
+                            ref.update_value(None, valid=False)
+                            decode_success = False
                             continue
                         decoder.skip_bytes(offset_bytes)
                         try:
                             self._decode_and_update_reference(ref, decoder)
+                            if not ref.valid_this_poll:
+                                decode_success = False
                         except Exception as e:
                             ref.update_value(None, valid=False)
                             decode_success = False
@@ -361,9 +384,22 @@ class Reference:
                 v = v * float(self.scale)
             except (ValueError, TypeError):
                 pass
+        if isinstance(v, float) and not math.isfinite(v):
+            logging.getLogger(__name__).warning(
+                "Non-finite value for reference %s on device %s",
+                self.name,
+                self.device.name,
+            )
+            v = None
+            valid = False
         self.last_val = self.val
         self.val = v
         self.valid_this_poll = valid and v is not None
+
+
+class _ConfigLogAdapter(logging.LoggerAdapter):
+    def process(self, message, kwargs):
+        return "[%s] %s" % (self.extra["config"], message), kwargs
 
 
 class ModbusHandler:
@@ -378,6 +414,7 @@ class ModbusHandler:
         mqtt_publish_topic_pattern: Optional[str] = None,
         mqtt_diagnostics_topic_pattern: Optional[str] = None,
         mqtt_single_publish: bool = False,
+        autoremove: bool = False,
     ):
         self.modbus_client = modbus_client
         self.config_file = config_file
@@ -388,9 +425,12 @@ class ModbusHandler:
         self.mqtt_publish_topic_pattern = mqtt_publish_topic_pattern
         self.mqtt_diagnostics_topic_pattern = mqtt_diagnostics_topic_pattern
         self.mqtt_single_publish = mqtt_single_publish
+        self.autoremove = autoremove
         self.connected = False
         self.deviceList: List[Device] = []
-        self.logger = logging.getLogger(__name__)
+        self.logger = _ConfigLogAdapter(
+            logging.getLogger(__name__), {"config": config_file}
+        )
 
     def load_config(self) -> bool:
         self.logger.info(f"Loading config from: {self.config_file}")
@@ -420,6 +460,7 @@ class ModbusHandler:
         device_list = []
         current_device = None
         current_poller = None
+        duplicate_devices = []
         for line_number, row in enumerate(csv_reader, start=1):
             if not row or all(cell.strip() == "" for cell in row):
                 continue
@@ -437,6 +478,7 @@ class ModbusHandler:
                             line_number,
                             device_name,
                         )
+                        duplicate_devices.append((line_number, device_name))
                         current_device = None
                         current_poller = None
                         continue
@@ -511,6 +553,13 @@ class ModbusHandler:
                 self.logger.error(
                     "Config line %s: invalid row %r: %s", line_number, row, exc
                 )
+        if duplicate_devices:
+            details = ", ".join(
+                "%s (line %s)" % (name, line) for line, name in duplicate_devices
+            )
+            raise ValueError(
+                "Duplicate device names in %s: %s" % (self.config_file, details)
+            )
         return device_list
 
     def _create_poller(self, row, current_device):
@@ -587,6 +636,8 @@ class ModbusHandler:
         unit = row[5] if len(row) > 5 else None
         try:
             scale = float(row[6]) if len(row) > 6 and row[6] else None
+            if scale is not None and not math.isfinite(scale):
+                raise ValueError("scale must be finite")
         except ValueError:
             self.logger.error("Invalid scale for reference %s", ref_name)
             return None
@@ -596,7 +647,12 @@ class ModbusHandler:
         if ref in current_poller.readableReferences:
             self.logger.warning(f"Reference {ref.name} is already added, ignoring it.")
             return False
-        if not ref.check_sanity(current_poller.start_address, current_poller.size):
+        reference_size = (
+            math.ceil(current_poller.size / 8)
+            if current_poller.fc in (1, 2)
+            else current_poller.size
+        )
+        if not ref.check_sanity(current_poller.start_address, reference_size):
             self.logger.warning(
                 f"Reference {ref.name} failed to pass sanity check, ignoring it."
             )
@@ -613,6 +669,16 @@ class ModbusHandler:
             self.modbus_client.close()
             self.connected = False
 
+    def _record_poller_result(self, poller, success, previous_failures):
+        poller.failcounter = 0 if success else previous_failures + 1
+        if self.autoremove and poller.failcounter >= 3:
+            poller.disabled = True
+            self.logger.warning(
+                "Disabled poller for %s at address %s after 3 consecutive failures; restart to retry",
+                poller.device.name,
+                poller.start_address,
+            )
+
     def poll(self):
         for dev in self.deviceList:
             dev.pollSuccess = False
@@ -623,6 +689,9 @@ class ModbusHandler:
             for dev in self.deviceList:
                 for ref in dev.references.values():
                     ref.update_value(None, valid=False)
+                for poller in dev.pollerList:
+                    if not poller.disabled:
+                        self._record_poller_result(poller, False, poller.failcounter)
             return
         try:
             for dev in self.deviceList:
@@ -630,13 +699,17 @@ class ModbusHandler:
                 pollers = [p for p in dev.pollerList if not p.disabled]
                 poll_success = bool(pollers)
                 for p in pollers:
+                    previous_failures = p.failcounter
                     try:
-                        poll_success = p.poll(self.modbus_client) and poll_success
+                        succeeded = p.poll(self.modbus_client)
+                        poll_success = succeeded and poll_success
                     except Exception:
                         self.logger.exception("Unexpected polling error")
+                        succeeded = False
                         poll_success = False
                         for ref in p.readableReferences:
                             ref.update_value(None, valid=False)
+                    self._record_poller_result(p, succeeded, previous_failures)
                     if on_threading_event():
                         return
                     delay_thread(timeout=self.interval)
@@ -805,23 +878,46 @@ class ModbusHandler:
 
 def setup_modbus_handlers(args, mqtt_handler: Optional[MqttHandler] = None):
     modbus_handlers = []
-    modbus_client = _create_modbus_client(args)
-    for config_file in args.config:
-        modbus_handler = ModbusHandler(
-            modbus_client,
-            config_file,
-            mqtt_handler,
-            timeout=args.timeout,
-            interval=args.interval,
-            daemon=args.daemon,
-            mqtt_publish_topic_pattern=args.mqtt_publish_topic_pattern,
-            mqtt_diagnostics_topic_pattern=args.mqtt_diagnostics_topic_pattern,
-            mqtt_single_publish=args.mqtt_single,
-        )
-        if modbus_handler.load_config():
-            modbus_handlers.append(modbus_handler)
-        else:
-            modbus_handler.close()
+    current_handler = None
+    device_names = set()
+    try:
+        for config_file in args.config:
+            current_handler = ModbusHandler(
+                _create_modbus_client(args),
+                config_file,
+                mqtt_handler,
+                timeout=args.timeout,
+                interval=args.interval,
+                daemon=args.daemon,
+                mqtt_publish_topic_pattern=args.mqtt_publish_topic_pattern,
+                mqtt_diagnostics_topic_pattern=args.mqtt_diagnostics_topic_pattern,
+                mqtt_single_publish=args.mqtt_single,
+                autoremove=args.autoremove,
+            )
+            if current_handler.load_config():
+                names = {device.name for device in current_handler.get_device_list()}
+                duplicates = names & device_names
+                if duplicates:
+                    raise ValueError(
+                        "Duplicate device names across configurations: "
+                        + ", ".join(sorted(duplicates))
+                    )
+                device_names.update(names)
+                modbus_handlers.append(current_handler)
+            else:
+                current_handler.close()
+            current_handler = None
+    except Exception:
+        for handler in (
+            [current_handler] if current_handler is not None else []
+        ) + modbus_handlers:
+            try:
+                handler.close()
+            except Exception:
+                logging.getLogger(__name__).exception(
+                    "Failed to close handler after setup error"
+                )
+        raise
     return modbus_handlers
 
 
