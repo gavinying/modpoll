@@ -1,9 +1,0 @@
-{
-  "packages": {
-    ".": {
-      "release-type": "python",
-      "draft": false,
-      "prerelease": false
-    }
-  }
-}

@@ -79,15 +79,31 @@ pipx upgrade modpoll
 
 ## Quickstart
 
-*modpoll* is a python tool for communicating with Modbus devices, so ideally it makes more sense if you have a real Modbus device on hand for the following test, but it is OK if you don't, we provide a virtual Modbus TCP device deployed at `modsim.topmaker.net:502` for your quick testing purpose.
-
-Let's start exploring *modpoll* with *modsim* device, run the following command to get a first glimpse,
+Use the public Modbus TCP simulator at `modsim.topmaker.net:502` for a quick test:
 
 ```bash
 modpoll --once \
-  --tcp modsim.topmaker.net \
+  --tcp modsim.topmaker.net --tcp-port 502 \
   --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
 ```
+
+### Run a local simulator
+
+Start a local [modsim](https://github.com/gavinying/modsim) server, then use the provided configuration to read its sample data:
+
+```bash
+docker run --rm -p 5020:5020 topmaker/modsim:latest
+```
+
+In another terminal, run:
+
+```bash
+modpoll --once \
+  --tcp 127.0.0.1 --tcp-port 5020 \
+  --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
+```
+
+You can download the configuration and pass a local file instead of the URL.
 
 <p align="center">
   <img src="docs/assets/screenshot-modpoll.png">
@@ -102,7 +118,7 @@ modpoll --once \
 
 ### Prepare Modbus configure file
 
-The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv) for *modsim* device as following,
+The [modsim configuration](https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv) maps the simulator's four tables as follows:
 
 ```CSV
 device,modsim01,1,,
@@ -166,11 +182,11 @@ The configuration can be either a local file or a remote public URL resource.
 
 > *Refer to the [documentation](https://gavinying.github.io/modpoll/configure.html) site for more details.*
 
-CSV validation requires a unique device name, a device ID from 1 to 254, a positive poll size within the Modbus function-code limit, and an address range that stays within 0–65535. Reference data types, read/write modes, endian values, and scales must be valid; errors include the CSV line number. A scale of `0` is valid.
+CSV validation requires a unique device name, a device ID from 1 to 254, a positive poll size within the Modbus function-code limit, and an address range that stays within 0–65535. Reference data types, read/write modes, endian values, and scales must be valid; errors include the CSV line number. A scale of `0` is valid; non-finite scales are rejected. Non-finite floating-point samples are treated as invalid and omitted from MQTT output. Device names must also be unique across all configuration files; duplicate names stop startup. Rename conflicting devices and update their MQTT topics before upgrading.
 
 ### Poll local device (modsim)
 
-If you are blocked by company firewall for online device or prefer a local test, you can launch your own device simulator by running *modsim* locally,
+To run the simulator locally, start the container:
 
 ```bash
 docker run --rm -p 5020:5020 topmaker/modsim
@@ -207,7 +223,7 @@ The following example uses a public MQTT broker `broker.emqx.io` for test purpos
 
 ```bash
 modpoll \
-  --tcp modsim.topmaker.net \
+  --tcp 127.0.0.1 --tcp-port 5020 \
   --mqtt-host broker.emqx.io \
   --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
 ```
@@ -254,7 +270,7 @@ The *modpoll* tool will subscribe to the topic `modpoll/{{device_name}}/set` by 
 
 A register array is written with FC16 and must contain 1–123 unsigned 16-bit values within the address range. Invalid, oversized, malformed, ambiguous, or retained write messages are ignored and logged. Brokers may clear the retained flag on live forwarding, so configure the broker not to retain commands on the `set` topic; QoS does not make a write exactly-once.
 
-When a sample is invalid in a poll cycle, modpoll omits it from MQTT output and writes `null` for that reference in the JSON snapshot. JSON snapshots from multiple configuration files are combined and replaced atomically.
+When a sample is invalid in a poll cycle, modpoll omits it from MQTT output and writes `null` for that reference in the JSON snapshot. JSON snapshots from multiple configuration files are combined and replaced atomically. When `--timestamp` is enabled, the timestamp is the start time of the poll cycle in Unix seconds, not the time each individual value was read.
 
 
 ## Run with docker
@@ -267,22 +283,24 @@ A docker image has been provided for user to directly run the tool without local
 
 It shows the version of the tool by default.
 
-Similar to the above *modsim* test, we can poll data with `docker run`, in order to avoid printing out received data, the argument `--daemon` or `-d` is recommended to use with docker.
+On Linux, use host networking to connect the container to a simulator on the host. Add `--daemon` or `-d` to suppress the table output.
 
   ```bash
-  docker run --rm topmaker/modpoll \
+  docker run --rm --network host topmaker/modpoll \
     modpoll -d \
-      --tcp modsim.topmaker.net \
+      --tcp 127.0.0.1 --tcp-port 5020 \
       --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
   ```
+
+For host networking on other platforms, consult the Docker networking documentation.
 
 If you want to load a local configure file, you need to mount a local folder onto container volume,
 for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command,
 
   ```bash
-  docker run --rm -v $(pwd)/examples:/app/examples topmaker/modpoll \
+  docker run --rm --network host -v $(pwd)/examples:/app/examples topmaker/modpoll \
     modpoll -d \
-      --tcp modsim.topmaker.net \
+      --tcp 127.0.0.1 --tcp-port 5020 \
       --config /app/examples/modsim.csv
   ```
 
@@ -310,17 +328,17 @@ for example, if the child folder `examples` contains the config file `modsim.csv
 
   ```bash
   modpoll \
-    --tcp modsim.topmaker.net \
+    --tcp 127.0.0.1 --tcp-port 5020 \
     --mqtt-host broker.emqx.io \
     --config examples/modsim.csv
   ```
 
-- Connect to Modbus TCP device and export data to local csv file
+- Connect to Modbus TCP device and export a local JSON snapshot
 
   ```bash
   modpoll \
-    --tcp modsim.topmaker.net \
-    --export data.csv \
+    --tcp 127.0.0.1 --tcp-port 5020 \
+    --export data.json \
     --config examples/modsim.csv
   ```
 
@@ -328,7 +346,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
 
   ```bash
   modpoll \
-    --tcp modsim.topmaker.net \
+    --tcp 127.0.0.1 --tcp-port 5020 \
     --config examples/modsim.csv examples/modsim2.csv
   ```
 
@@ -349,3 +367,15 @@ Thanks to Max Brueggemann and Oliver Wagner for their great work.
 ## License
 
 MIT © 2021-2026, Ying Shaodong
+
+When `--autoremove` is enabled, a poller is disabled after three consecutive
+failed polling attempts, including connection failures. A successful poll resets
+its failure count. Restart modpoll to retry a disabled poller; the default is to
+keep retrying without disabling pollers.
+
+For coil and discrete input polls, reference addresses identify consecutive
+eight-bit groups beginning at the poll start, as shown in the configuration
+example. Values follow Modbus bit order; a final partial group contains only the
+requested bits. Earlier versions could reverse bits or decode out-of-order
+references incorrectly, so consumers relying on those results should review the
+change.

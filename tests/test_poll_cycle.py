@@ -30,6 +30,7 @@ class FakePoller:
         self.succeeds = succeeds
         self.readableReferences = refs
         self.disabled = False
+        self.failcounter = 0
 
     def poll(self, master):
         for ref in self.readableReferences:
@@ -169,11 +170,12 @@ def test_csv_parser_reports_line_and_keeps_valid_rows(caplog):
     devices = handler._parse_config(rows)
 
     assert [device.name for device in devices] == ["meter", "backup"]
+    assert "unused.csv" in caplog.text
     assert "line 4" in caplog.text.lower()
     assert "start address" in caplog.text.lower()
 
 
-def test_csv_parser_rejects_invalid_ranges_and_duplicate_devices(caplog):
+def test_csv_parser_rejects_invalid_ranges_and_device_ids(caplog):
     import csv
     from io import StringIO
 
@@ -185,7 +187,6 @@ def test_csv_parser_rejects_invalid_ranges_and_duplicate_devices(caplog):
             "poll,holding_register,0,0,BE_BE\n"
             "poll,holding_register,0,1,BE_BE\n"
             "ref,value,0,uint16,r,,not-a-number\n"
-            "device,meter,2,duplicate\n"
             "device,backup,256,invalid-id\n"
         )
     )
@@ -197,7 +198,6 @@ def test_csv_parser_rejects_invalid_ranges_and_duplicate_devices(caplog):
     assert not devices[0].references
     assert "address" in caplog.text.lower()
     assert "size" in caplog.text.lower()
-    assert "duplicate" in caplog.text.lower()
     assert "device id" in caplog.text.lower()
 
 
@@ -221,3 +221,191 @@ def test_csv_parser_rejects_unsupported_dtype_and_invalid_rw_mode(caplog):
     assert not devices[0].references
     assert "unsupported dtype" in caplog.text.lower()
     assert "read/write mode" in caplog.text.lower()
+
+
+def test_autoremove_requires_three_consecutive_failures_and_restart(monkeypatch):
+    from modpoll.modbus_task import Poller
+
+    monkeypatch.setattr(modbus_task, "delay_thread", lambda timeout=0: None)
+    monkeypatch.setattr(modbus_task, "on_threading_event", lambda: False)
+    device = Device("meter", 1)
+    poller = Poller(device, 3, 0, 1, "BE_BE")
+    outcomes = iter([False, False, True, False, False, False])
+    poller.poll = lambda client: next(outcomes)
+    device.pollerList = [poller]
+    handler = ModbusHandler(FakeClient(), "unused.csv", daemon=True, autoremove=True)
+    handler.deviceList = [device]
+
+    for expected in (1, 2, 0, 1, 2):
+        handler.poll()
+        assert poller.failcounter == expected
+        assert not poller.disabled
+    handler.poll()
+    assert poller.failcounter == 3
+    assert poller.disabled
+    handler.poll()
+    assert poller.disabled
+
+
+def test_connection_failures_count_for_autoremove():
+    from modpoll.modbus_task import Poller
+
+    device = Device("meter", 1)
+    poller = Poller(device, 3, 0, 1, "BE_BE")
+    device.pollerList = [poller]
+    handler = ModbusHandler(
+        FakeClient(connected=False), "unused.csv", daemon=True, autoremove=True
+    )
+    handler.deviceList = [device]
+    for _ in range(3):
+        handler.poll()
+    assert poller.disabled
+
+
+def test_failure_and_recovery_never_publish_old_samples(monkeypatch, tmp_path):
+    from modpoll.modbus_task import Poller
+
+    monkeypatch.setattr(modbus_task, "delay_thread", lambda timeout=0: None)
+    monkeypatch.setattr(modbus_task, "on_threading_event", lambda: False)
+    device = Device("meter", 1)
+    ref = Reference(device, "value", "0", "uint16", "r", None, None)
+    device.add_reference_mapping(ref)
+    poller = Poller(device, 3, 0, 1, "BE_BE")
+    poller.add_readable_reference(ref)
+    device.pollerList = [poller]
+
+    class Client(FakeClient):
+        response = 7
+
+        def read_holding_registers(self, address, count, slave):
+            if self.response is None:
+                return None
+            return type(
+                "Response",
+                (),
+                {"registers": [self.response], "isError": lambda self: False},
+            )()
+
+    client = Client()
+    mqtt = FakeMqtt()
+    handler = ModbusHandler(
+        client,
+        "unused.csv",
+        mqtt,
+        daemon=True,
+        mqtt_publish_topic_pattern="data/{{device_name}}",
+    )
+    handler.deviceList = [device]
+    path = tmp_path / "snapshot.json"
+    handler.poll()
+    handler.publish_data(timestamp=1)
+    assert json.loads(mqtt.messages[-1][1]) == {"value": 7, "timestamp": 1}
+    client.response = None
+    handler.poll()
+    handler.publish_data(timestamp=2)
+    assert len(mqtt.messages) == 1
+    assert handler.export(path, timestamp=2)
+    assert json.loads(path.read_text()) == {"meter": {"value": None, "timestamp": 2}}
+    client.response = 9
+    handler.poll()
+    handler.publish_data(timestamp=3)
+    assert json.loads(mqtt.messages[-1][1]) == {"value": 9, "timestamp": 3}
+    assert handler.export(path, timestamp=3)
+    assert json.loads(path.read_text()) == {"meter": {"value": 9, "timestamp": 3}}
+    handler.mqtt_single_publish = True
+    client.response = None
+    handler.poll()
+    before = len(mqtt.messages)
+    handler.publish_data(timestamp=4)
+    assert len(mqtt.messages) == before
+
+
+def test_csv_duplicate_device_names_fail_with_filename_and_line():
+    import csv
+    from io import StringIO
+    import pytest
+
+    handler = ModbusHandler(FakeClient(), "site.csv", daemon=True)
+    rows = csv.reader(
+        StringIO("device,meter,1,description\ndevice,meter,2,description\n")
+    )
+    with pytest.raises(ValueError, match=r"site.csv: meter \(line 2\)"):
+        handler._parse_config(rows)
+
+
+def test_documented_modsim_csv_preserves_device_and_reference_mappings(caplog):
+    import csv
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "examples/modsim.csv"
+    handler = ModbusHandler(FakeClient(), str(path), daemon=True)
+    with path.open() as source:
+        devices = handler._parse_config(csv.reader(source))
+    assert len(devices) == 1
+    device = devices[0]
+    assert (device.name, device.devid) == ("modsim01", 1)
+    assert len(device.references) == 37
+    assert [poller.fc for poller in device.pollerList] == [1, 2, 4, 3]
+    assert (
+        device.references["coil01-08"].address,
+        device.references["coil01-08"].dtype,
+    ) == (0, "bool8")
+    assert (
+        device.references["coil09-16"].address,
+        device.references["coil09-16"].dtype,
+    ) == (1, "bool8")
+    assert not [record for record in caplog.records if record.levelno >= 30]
+
+
+def test_nonfinite_scale_is_rejected_and_nonfinite_sample_is_invalid(caplog):
+    import csv
+    from io import StringIO
+
+    handler = ModbusHandler(FakeClient(), "site.csv", daemon=True)
+    rows = csv.reader(
+        StringIO(
+            "device,meter,1,description\npoll,holding_register,0,1,BE_BE\nref,value,0,uint16,r,,nan\n"
+        )
+    )
+    device = handler._parse_config(rows)[0]
+    assert not device.references
+    assert "invalid scale" in caplog.text.lower()
+    ref = Reference(device, "temperature", "0", "float32", "r", None, None)
+    ref.update_value(float("inf"))
+    assert ref.val is None and not ref.valid_this_poll
+
+
+def test_nonfinite_register_sample_marks_poll_failed(monkeypatch):
+    from modpoll.modbus_task import Poller
+
+    device = Device("meter", 1)
+    ref = Reference(device, "temperature", "0", "float32", "r", None, None)
+    poller = Poller(device, 3, 0, 2, "BE_BE")
+    poller.add_readable_reference(ref)
+
+    class Client:
+        def read_holding_registers(self, address, count, slave):
+            return type(
+                "Response",
+                (),
+                {"registers": [0x7F80, 0], "isError": lambda self: False},
+            )()
+
+    assert not poller.poll(Client())
+    assert not ref.valid_this_poll
+    assert device.errorCount == 1
+
+
+def test_snapshot_rejects_nonstandard_nan_without_damaging_existing_file(tmp_path):
+    device = Device("meter", 1)
+    ref = make_ref(device, "value", 1)
+    ref.val = float("nan")
+    ref.valid_this_poll = True
+    device.add_reference_mapping(ref)
+    handler = ModbusHandler(FakeClient(), "unused.csv")
+    handler.deviceList = [device]
+    path = tmp_path / "snapshot.json"
+    path.write_text('{"previous": true}')
+    assert not handler.export(path)
+    assert path.read_text() == '{"previous": true}'
+    assert list(tmp_path.glob(".snapshot.json.*.tmp")) == []

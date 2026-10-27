@@ -2,6 +2,7 @@ import json
 import logging
 import signal
 import sys
+import time
 
 from .arg_parser import get_parser
 from .mqtt_task import MqttHandler
@@ -206,17 +207,18 @@ def app(name="modpoll"):
             exit(1)
 
         # main loop
-        last_check = 0
-        last_diag = 0
+        last_check = None
+        last_diag = None
         while not on_threading_event():
             now = get_utc_time()
-            # routine check
-            if now > last_check + args.rate:
-                if last_check == 0:
+            monotonic_now = time.monotonic()
+            # Use a monotonic clock for scheduling; timestamps remain UTC.
+            if last_check is None or monotonic_now >= last_check + args.rate:
+                if last_check is None:
                     elapsed = args.rate
                 else:
-                    elapsed = round(now - last_check, 6)
-                last_check = now
+                    elapsed = round(monotonic_now - last_check, 6)
+                last_check = monotonic_now
                 logger.info(
                     f" === Modpoll is polling at rate:{args.rate}s, actual:{elapsed}s ==="
                 )
@@ -235,8 +237,10 @@ def app(name="modpoll"):
                         args.export,
                         timestamp=now if args.timestamp else None,
                     )
-            if args.diagnostics_rate > 0 and now > last_diag + args.diagnostics_rate:
-                last_diag = now
+            if args.diagnostics_rate > 0 and (
+                last_diag is None or monotonic_now >= last_diag + args.diagnostics_rate
+            ):
+                last_diag = monotonic_now
                 for modbus_handler in modbus_handlers:
                     modbus_handler.publish_diagnostics()
             if on_threading_event():

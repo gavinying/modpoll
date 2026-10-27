@@ -48,3 +48,96 @@ def test_modbus_task_poll_modsim():
 
     modbus_handler.disconnect()
     modbus_handler.close()
+
+
+def test_each_configuration_owns_its_client(monkeypatch, tmp_path):
+    from modpoll import modbus_task
+
+    clients = []
+
+    class Client:
+        def __init__(self):
+            self.closed = 0
+            clients.append(self)
+
+        def connect(self):
+            return True
+
+        def close(self):
+            self.closed += 1
+
+    monkeypatch.setattr(modbus_task, "_create_modbus_client", lambda args: Client())
+    valid = tmp_path / "valid.csv"
+    valid.write_text(
+        "device,meter,1,description\npoll,holding_register,0,1,BE_BE\nref,value,0,uint16,r\n"
+    )
+    second = tmp_path / "second.csv"
+    second.write_text(valid.read_text().replace("device,meter,", "device,second,"))
+    missing = tmp_path / "missing.csv"
+    args = get_parser().parse_args(
+        ["--config", str(valid), str(missing), str(second), "--tcp", "localhost"]
+    )
+    handlers = setup_modbus_handlers(args)
+
+    assert len(handlers) == 2
+    assert handlers[0].modbus_client is clients[0]
+    assert handlers[1].modbus_client is clients[2]
+    assert handlers[0].connect()
+    handlers[0].close()
+    assert clients[0].closed == 1
+    assert clients[2].closed == 0
+    assert handlers[1].connect()
+    handlers[1].close()
+    assert clients[2].closed == 1
+
+
+def test_setup_closes_previously_created_handlers_on_initialization_failure(
+    monkeypatch,
+):
+    from modpoll import modbus_task
+
+    handlers = []
+
+    class StubHandler:
+        def __init__(self, client, config, *args, **kwargs):
+            self.config = config
+            self.closed = False
+            handlers.append(self)
+
+        def load_config(self):
+            if self.config == "broken.csv":
+                raise RuntimeError("cannot load configuration")
+            return True
+
+        def get_device_list(self):
+            return []
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setattr(modbus_task, "_create_modbus_client", lambda args: object())
+    monkeypatch.setattr(modbus_task, "ModbusHandler", StubHandler)
+    args = get_parser().parse_args(
+        ["--config", "valid.csv", "broken.csv", "--tcp", "localhost"]
+    )
+    with pytest.raises(RuntimeError, match="cannot load"):
+        setup_modbus_handlers(args)
+    assert [handler.closed for handler in handlers] == [True, True]
+
+
+def test_duplicate_device_names_across_configs_fail_before_polling(
+    monkeypatch, tmp_path
+):
+    from modpoll import modbus_task
+
+    monkeypatch.setattr(modbus_task, "_create_modbus_client", lambda args: object())
+    first = tmp_path / "first.csv"
+    second = tmp_path / "second.csv"
+    contents = "device,meter,1,description\npoll,holding_register,0,1,BE_BE\nref,value,0,uint16,r\n"
+    first.write_text(contents)
+    second.write_text(contents)
+    args = get_parser().parse_args(
+        ["--config", str(first), str(second), "--tcp", "localhost"]
+    )
+    with pytest.raises(ValueError, match="Duplicate device names.*meter"):
+        setup_modbus_handlers(args)

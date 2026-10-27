@@ -104,3 +104,58 @@ def test_bit_syntax_only_allowed_with_bool_dtype():
     # Should work: uint16 dtype without bit syntax
     ref_uint = Reference(device, "uint_ref", "40000", "uint16", "r", None, None)
     assert ref_uint.bit is None
+
+
+def test_coil_groups_decode_independently_in_any_reference_order():
+    device = Device("dev", 1)
+    poller = Poller(device, 1, 100, 16, "BE_BE")
+    second = Reference(device, "second", "101", "bool8", "r", None, None)
+    first = Reference(device, "first", "100", "bool8", "r", None, None)
+    poller.add_readable_reference(second)
+    poller.add_readable_reference(first)
+    bits = [
+        True,
+        False,
+        False,
+        True,
+        False,
+        False,
+        True,
+        False,
+        False,
+        True,
+        True,
+        False,
+        True,
+        False,
+        False,
+        True,
+    ]
+
+    class Client:
+        def read_coils(self, address, count, slave):
+            return FakeResult(bits=bits)
+
+    assert poller.poll(Client())
+    assert first.val == bits[:8]
+    assert second.val == bits[8:]
+
+
+def test_coil_group_reports_only_requested_bits_and_rejects_short_response():
+    device = Device("dev", 1)
+    poller = Poller(device, 1, 0, 10, "BE_BE")
+    ref = Reference(device, "tail", "1", "bool8", "r", None, None)
+    poller.add_readable_reference(ref)
+
+    class Client:
+        bits = [True, False] * 8
+
+        def read_coils(self, address, count, slave):
+            return FakeResult(bits=self.bits)
+
+    client = Client()
+    assert poller.poll(client)
+    assert ref.val == [True, False]
+    client.bits = [True] * 9
+    assert not poller.poll(client)
+    assert not ref.valid_this_poll
