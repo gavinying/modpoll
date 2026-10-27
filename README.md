@@ -166,6 +166,8 @@ The configuration can be either a local file or a remote public URL resource.
 
 > *Refer to the [documentation](https://gavinying.github.io/modpoll/configure.html) site for more details.*
 
+CSV validation requires a unique device name, a device ID from 1 to 254, a positive poll size within the Modbus function-code limit, and an address range that stays within 0–65535. Reference data types, read/write modes, endian values, and scales must be valid; errors include the CSV line number. A scale of `0` is valid.
+
 ### Poll local device (modsim)
 
 If you are blocked by company firewall for online device or prefer a local test, you can launch your own device simulator by running *modsim* locally,
@@ -249,6 +251,10 @@ The *modpoll* tool will subscribe to the topic `modpoll/{{device_name}}/set` by 
     "value": [12, 13, 14, 15]
   }
   ```
+
+A register array is written with FC16 and must contain 1–123 unsigned 16-bit values within the address range. Invalid, oversized, malformed, ambiguous, or retained write messages are ignored and logged. Brokers may clear the retained flag on live forwarding, so configure the broker not to retain commands on the `set` topic; QoS does not make a write exactly-once.
+
+When a sample is invalid in a poll cycle, modpoll omits it from MQTT output and writes `null` for that reference in the JSON snapshot. JSON snapshots from multiple configuration files are combined and replaced atomically.
 
 
 ## Run with docker

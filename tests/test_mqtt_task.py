@@ -1,5 +1,6 @@
 import pytest
 import time
+import queue
 from modpoll.mqtt_task import MqttHandler
 
 
@@ -37,10 +38,11 @@ def test_receive_empty_queue_returns_none():
         qos=0,
     )
 
-    topic, payload = handler.receive()
+    topic, payload, retained = handler.receive()
 
     assert topic is None
     assert payload is None
+    assert retained is False
 
 
 def test_receive_returns_message_when_available():
@@ -56,14 +58,36 @@ def test_receive_returns_message_when_available():
 
     class FakeQueue:
         def get(self, block=False):
-            return ("some/topic", b"payload")
+            return ("some/topic", b"payload", True)
 
     handler.rx_queue = FakeQueue()
 
-    topic, payload = handler.receive()
+    topic, payload, retained = handler.receive()
 
     assert topic == "some/topic"
     assert payload == b"payload"
+    assert retained is True
+
+
+def test_message_callback_preserves_retained_flag():
+    handler = MqttHandler(
+        name="test_mqtt",
+        host="broker.local",
+        port=1883,
+        user=None,
+        password=None,
+        clientid="test_client",
+        qos=0,
+    )
+
+    class Message:
+        topic = "modpoll/meter/set"
+        payload = b"{}"
+        retain = 1
+
+    handler.rx_queue = queue.Queue(maxsize=1000)
+    handler._on_message(None, None, Message())
+    assert handler.receive() == ("modpoll/meter/set", b"{}", True)
 
 
 def test_publish_when_connected_calls_client_publish():
@@ -171,7 +195,14 @@ def test_connect_mqtt_v311_omits_clean_session_kwarg(monkeypatch):
         return 0
 
     monkeypatch.setattr(handler.mqtt_client, "connect", fake_connect)
-    monkeypatch.setattr(handler.mqtt_client, "loop_start", lambda: None)
+
+    class Flags:
+        session_present = False
+
+    def fake_loop_start():
+        handler._on_connect(handler.mqtt_client, None, Flags(), 0, None)
+
+    monkeypatch.setattr(handler.mqtt_client, "loop_start", fake_loop_start)
 
     assert handler.connect() is True
     assert "clean_session" not in captured
@@ -236,3 +267,64 @@ def test_mqtt_task_connect():
 
     # Clean up
     mqtt_handler.close()
+
+
+def test_connect_waits_for_connack_and_reports_rejection(monkeypatch):
+    handler = MqttHandler(
+        name="test_mqtt",
+        host="broker.local",
+        port=1883,
+        user=None,
+        password=None,
+        clientid="test_client",
+        qos=0,
+    )
+    assert handler.setup()
+
+    class StubClient:
+        def connect(self, **kwargs):
+            return 0
+
+        def loop_start(self):
+            handler._on_connect(
+                self, None, type("Flags", (), {"session_present": False})(), 5, None
+            )
+
+        def loop_stop(self):
+            pass
+
+        def is_connected(self):
+            return False
+
+    handler.mqtt_client = StubClient()
+    assert handler.connect() is False
+    assert not handler.is_connected()
+
+
+def test_connect_reports_success_after_connack():
+    handler = MqttHandler(
+        name="test_mqtt",
+        host="broker.local",
+        port=1883,
+        user=None,
+        password=None,
+        clientid="test_client",
+        qos=0,
+    )
+    assert handler.setup()
+
+    class StubClient:
+        def connect(self, **kwargs):
+            return 0
+
+        def loop_start(self):
+            handler._on_connect(
+                self, None, type("Flags", (), {"session_present": False})(), 0, None
+            )
+
+        def is_connected(self):
+            return True
+
+    handler.mqtt_client = StubClient()
+    assert handler.connect() is True
+    assert handler.is_connected()

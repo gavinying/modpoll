@@ -9,6 +9,9 @@ It is mainly to describe the device address and register mappings.
 
 Here is the basic structure of modbus configure file.
 
+The parser checks device IDs (1–254), unique device and reference names, positive poll sizes within the function-code limits, address ranges, endian settings, data types, read/write modes, and numeric scales. Configuration errors include the CSV line number; invalid rows are skipped while later rows continue to be checked.
+
+
 .. literalinclude:: ../examples/config_template.csv
    :language: default
    :emphasize-lines: 8-10
