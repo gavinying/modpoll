@@ -9,7 +9,7 @@ It is mainly to describe the device address and register mappings.
 
 Here is the basic structure of modbus configure file.
 
-The parser checks device IDs (1–254), unique device and reference names, positive poll sizes within the function-code limits, address ranges, endian settings, data types, read/write modes, and numeric scales. Configuration errors include the CSV line number; invalid rows are skipped while later rows continue to be checked.
+The parser checks device IDs (1–254), unique device and reference names, positive poll sizes within the function-code limits, address ranges, endian settings, data types, read/write modes, and numeric scales. Configuration errors include the file name and CSV line number. Invalid rows are skipped while later rows continue to be checked; duplicate device names stop startup, including duplicates across configuration files. Rename duplicates and update the associated MQTT topics before upgrading. Non-finite scales are rejected.
 
 
 .. literalinclude:: ../examples/config_template.csv

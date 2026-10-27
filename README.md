@@ -79,15 +79,21 @@ pipx upgrade modpoll
 
 ## Quickstart
 
-*modpoll* is a python tool for communicating with Modbus devices, so ideally it makes more sense if you have a real Modbus device on hand for the following test, but it is OK if you don't, we provide a virtual Modbus TCP device deployed at `modsim.topmaker.net:502` for your quick testing purpose.
+Start a local [modsim](https://github.com/gavinying/modsim) server, then use the provided configuration to read its sample data:
 
-Let's start exploring *modpoll* with *modsim* device, run the following command to get a first glimpse,
+```bash
+docker run --rm -p 5020:5020 topmaker/modsim:latest
+```
+
+In another terminal, run:
 
 ```bash
 modpoll --once \
-  --tcp modsim.topmaker.net \
+  --tcp 127.0.0.1 --tcp-port 5020 \
   --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
 ```
+
+You can download the configuration and pass a local file instead of the URL.
 
 <p align="center">
   <img src="docs/assets/screenshot-modpoll.png">
@@ -102,7 +108,7 @@ modpoll --once \
 
 ### Prepare Modbus configure file
 
-The reason we can magically poll data from the online device *modsim* is because we have already provided the [Modbus configure file](https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv) for *modsim* device as following,
+The [modsim configuration](https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv) maps the simulator's four tables as follows:
 
 ```CSV
 device,modsim01,1,,
@@ -170,7 +176,7 @@ CSV validation requires a unique device name, a device ID from 1 to 254, a posit
 
 ### Poll local device (modsim)
 
-If you are blocked by company firewall for online device or prefer a local test, you can launch your own device simulator by running *modsim* locally,
+To run the simulator locally, start the container:
 
 ```bash
 docker run --rm -p 5020:5020 topmaker/modsim
@@ -207,7 +213,7 @@ The following example uses a public MQTT broker `broker.emqx.io` for test purpos
 
 ```bash
 modpoll \
-  --tcp modsim.topmaker.net \
+  --tcp 127.0.0.1 --tcp-port 5020 \
   --mqtt-host broker.emqx.io \
   --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
 ```
@@ -267,22 +273,24 @@ A docker image has been provided for user to directly run the tool without local
 
 It shows the version of the tool by default.
 
-Similar to the above *modsim* test, we can poll data with `docker run`, in order to avoid printing out received data, the argument `--daemon` or `-d` is recommended to use with docker.
+On Linux, use host networking to connect the container to a simulator on the host. Add `--daemon` or `-d` to suppress the table output.
 
   ```bash
-  docker run --rm topmaker/modpoll \
+  docker run --rm --network host topmaker/modpoll \
     modpoll -d \
-      --tcp modsim.topmaker.net \
+      --tcp 127.0.0.1 --tcp-port 5020 \
       --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
   ```
+
+For host networking on other platforms, consult the Docker networking documentation.
 
 If you want to load a local configure file, you need to mount a local folder onto container volume,
 for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command,
 
   ```bash
-  docker run --rm -v $(pwd)/examples:/app/examples topmaker/modpoll \
+  docker run --rm --network host -v $(pwd)/examples:/app/examples topmaker/modpoll \
     modpoll -d \
-      --tcp modsim.topmaker.net \
+      --tcp 127.0.0.1 --tcp-port 5020 \
       --config /app/examples/modsim.csv
   ```
 
@@ -310,17 +318,17 @@ for example, if the child folder `examples` contains the config file `modsim.csv
 
   ```bash
   modpoll \
-    --tcp modsim.topmaker.net \
+    --tcp 127.0.0.1 --tcp-port 5020 \
     --mqtt-host broker.emqx.io \
     --config examples/modsim.csv
   ```
 
-- Connect to Modbus TCP device and export data to local csv file
+- Connect to Modbus TCP device and export a local JSON snapshot
 
   ```bash
   modpoll \
-    --tcp modsim.topmaker.net \
-    --export data.csv \
+    --tcp 127.0.0.1 --tcp-port 5020 \
+    --export data.json \
     --config examples/modsim.csv
   ```
 
@@ -328,7 +336,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
 
   ```bash
   modpoll \
-    --tcp modsim.topmaker.net \
+    --tcp 127.0.0.1 --tcp-port 5020 \
     --config examples/modsim.csv examples/modsim2.csv
   ```
 
