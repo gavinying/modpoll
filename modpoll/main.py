@@ -1,12 +1,11 @@
 import json
 import logging
-import re
 import signal
 import sys
 
 from .arg_parser import get_parser
 from .mqtt_task import MqttHandler
-from .modbus_task import setup_modbus_handlers
+from .modbus_task import export_modbus_handlers, setup_modbus_handlers
 
 from . import __version__
 from .utils import set_threading_event, delay_thread, on_threading_event, get_utc_time
@@ -16,8 +15,115 @@ LOG_SIMPLE = "%(asctime)s | %(levelname).1s | %(name)s | %(message)s"
 logger = None
 
 
-def _signal_handler(signal, frame):
-    logger.info(f"Exiting {sys.argv[0]}")
+def _device_from_topic(topic_pattern, topic):
+    """Match an MQTT subscription filter and return its first + level."""
+    pattern_levels = topic_pattern.split("/")
+    topic_levels = topic.split("/")
+    device_name = None
+
+    for index, level in enumerate(pattern_levels):
+        if level == "#":
+            if index != len(pattern_levels) - 1 or len(topic_levels) < index:
+                return None
+            return device_name
+        if index >= len(topic_levels):
+            return None
+        if level == "+":
+            if device_name is None:
+                device_name = topic_levels[index]
+        elif "+" in level or "#" in level or level != topic_levels[index]:
+            return None
+
+    if len(pattern_levels) != len(topic_levels):
+        return None
+    return device_name
+
+
+def process_mqtt_command(topic, payload, retained, topic_pattern, handlers):
+    """Validate and dispatch one MQTT write command without leaking input errors."""
+    command_logger = logger or logging.getLogger(__name__)
+    if retained:
+        command_logger.warning("Ignoring retained MQTT write command on %s", topic)
+        return False
+
+    device_name = _device_from_topic(topic_pattern, topic)
+    if device_name is None:
+        command_logger.error("MQTT topic does not identify one device: %s", topic)
+        return False
+
+    try:
+        if isinstance(payload, bytes) and len(payload) > 65536:
+            raise ValueError("Payload exceeds 65536 bytes")
+        command = json.loads(payload)
+        if not isinstance(command, dict):
+            raise ValueError("Payload must be a JSON object")
+        object_type = command["object_type"]
+        address = command["address"]
+        value = command["value"]
+        if type(address) is not int or not 0 <= address <= 65535:
+            raise ValueError("Address must be an integer between 0 and 65535")
+        if object_type == "coil":
+            if type(value) not in (bool, int) or value not in (0, 1):
+                raise ValueError("Coil value must be boolean or 0/1")
+        elif object_type == "holding_register":
+            if isinstance(value, list):
+                if (
+                    not value
+                    or len(value) > 123
+                    or any(
+                        type(item) is not int or not 0 <= item <= 65535
+                        for item in value
+                    )
+                    or address + len(value) > 65536
+                ):
+                    raise ValueError("Invalid holding register values or span")
+            elif type(value) is not int or not 0 <= value <= 65535:
+                raise ValueError(
+                    "Register value must be an integer between 0 and 65535"
+                )
+        else:
+            raise ValueError("Unsupported Modbus object_type")
+    except (
+        KeyError,
+        TypeError,
+        ValueError,
+        UnicodeDecodeError,
+        json.JSONDecodeError,
+    ) as e:
+        command_logger.warning("Ignoring invalid MQTT write command: %s", e)
+        return False
+
+    matches = [
+        (handler, device)
+        for handler in handlers
+        for device in handler.get_device_list()
+        if device.name == device_name
+    ]
+    if len(matches) != 1:
+        command_logger.error(
+            "Expected exactly one device named %s, found %d", device_name, len(matches)
+        )
+        return False
+
+    handler = matches[0][0]
+    if object_type == "coil":
+        success = handler.write_coil(device_name, address, value)
+    else:
+        success = handler.write_register(device_name, address, value)
+    if not success:
+        command_logger.warning(
+            "Failed to write %s: device=%s, address=%s, value=%s",
+            object_type,
+            device_name,
+            address,
+            value,
+        )
+    return success
+
+
+def _signal_handler(signal_number, frame):
+    if logger:
+        logger.info(f"Exiting {sys.argv[0]}")
     set_threading_event()
 
 
@@ -35,6 +141,7 @@ def app(name="modpoll"):
     )
 
     signal.signal(signal.SIGINT, _signal_handler)
+    signal.signal(signal.SIGTERM, _signal_handler)
 
     # parse args
     args = get_parser().parse_args()
@@ -88,117 +195,80 @@ def app(name="modpoll"):
                     )
             exit(1)
 
-    # setup modbus tasks
-    modbus_handlers = setup_modbus_handlers(args, mqtt_handler)
-    if modbus_handlers:
-        logger.info(f"Loaded {len(modbus_handlers)} Modbus config(s).")
-        delay_thread(args.delay)
-    else:
-        logger.error("No Modbus config(s) defined. Exiting...")
-        if mqtt_handler:
-            mqtt_handler.close()
-        exit(1)
+    try:
+        # setup modbus tasks
+        modbus_handlers = setup_modbus_handlers(args, mqtt_handler)
+        if modbus_handlers:
+            logger.info(f"Loaded {len(modbus_handlers)} Modbus config(s).")
+            delay_thread(args.delay)
+        else:
+            logger.error("No Modbus config(s) defined. Exiting...")
+            exit(1)
 
-    # main loop
-    last_check = 0
-    last_diag = 0
-    while not on_threading_event():
-        now = get_utc_time()
-        # routine check
-        if now > last_check + args.rate:
-            if last_check == 0:
-                elapsed = args.rate
-            else:
-                elapsed = round(now - last_check, 6)
-            last_check = now
-            logger.info(
-                f" === Modpoll is polling at rate:{args.rate}s, actual:{elapsed}s ==="
-            )
-            for modbus_handler in modbus_handlers:
-                modbus_handler.poll()
-                if on_threading_event():
-                    break
-                if args.mqtt_host:
-                    if args.timestamp:
-                        modbus_handler.publish_data(timestamp=now)
-                    else:
-                        modbus_handler.publish_data()
-                if args.export:
-                    if args.timestamp:
-                        modbus_handler.export(args.export, timestamp=now)
-                    else:
-                        modbus_handler.export(args.export)
-        if args.diagnostics_rate > 0 and now > last_diag + args.diagnostics_rate:
-            last_diag = now
-            for modbus_handler in modbus_handlers:
-                modbus_handler.publish_diagnostics()
-        if on_threading_event():
-            break
-        # Check if receive mqtt request
-        if mqtt_handler:
-            topic, payload = mqtt_handler.receive()
-            if topic and payload:
-                # extract device_name
-                topic_regex = args.mqtt_subscribe_topic_pattern.replace(
-                    "+", "([^/\n]*)"
-                )
-                match = re.search(topic_regex, topic)
-                if match:
-                    device_name = match.group(1)
-                    logger.info(
-                        f"Received request to write data for device {device_name}"
-                    )
-                    try:
-                        reg = json.loads(payload)
-                        object_type = reg["object_type"]
-                        address = reg["address"]
-                        value = reg["value"]
-
-                        device_found = False
-                        for modbus_handler in modbus_handlers:
-                            if device_name in [
-                                dev.name for dev in modbus_handler.get_device_list()
-                            ]:
-                                device_found = True
-                                write_success = False
-                                if object_type == "coil":
-                                    write_success = modbus_handler.write_coil(
-                                        device_name, address, value
-                                    )
-                                elif object_type == "holding_register":
-                                    write_success = modbus_handler.write_register(
-                                        device_name, address, value
-                                    )
-
-                                if write_success:
-                                    logger.info(
-                                        f"Successfully wrote {object_type}: device={device_name}, address={address}, value={value}"
-                                    )
-                                else:
-                                    logger.warning(
-                                        f"Failed to write {object_type}: device={device_name}, address={address}, value={value}"
-                                    )
-                                break
-
-                        if not device_found:
-                            logger.error(f"No device found with name: {device_name}")
-
-                    except KeyError as e:
-                        logger.error(f"Missing required key in payload: {e}")
-                    except json.JSONDecodeError:
-                        logger.error(f"Failed to parse JSON message: {payload}")
+        # main loop
+        last_check = 0
+        last_diag = 0
+        while not on_threading_event():
+            now = get_utc_time()
+            # routine check
+            if now > last_check + args.rate:
+                if last_check == 0:
+                    elapsed = args.rate
                 else:
-                    logger.error(f"Failed to extract device name from topic: {topic}")
-        if args.once:
-            set_threading_event()
-            break
+                    elapsed = round(now - last_check, 6)
+                last_check = now
+                logger.info(
+                    f" === Modpoll is polling at rate:{args.rate}s, actual:{elapsed}s ==="
+                )
+                for modbus_handler in modbus_handlers:
+                    modbus_handler.poll()
+                    if on_threading_event():
+                        break
+                    if args.mqtt_host:
+                        if args.timestamp:
+                            modbus_handler.publish_data(timestamp=now)
+                        else:
+                            modbus_handler.publish_data()
+                if args.export and not on_threading_event():
+                    export_modbus_handlers(
+                        modbus_handlers,
+                        args.export,
+                        timestamp=now if args.timestamp else None,
+                    )
+            if args.diagnostics_rate > 0 and now > last_diag + args.diagnostics_rate:
+                last_diag = now
+                for modbus_handler in modbus_handlers:
+                    modbus_handler.publish_diagnostics()
+            if on_threading_event():
+                break
+            # Check if receive mqtt request
+            if mqtt_handler:
+                topic, payload, retained = mqtt_handler.receive()
+                if topic and payload is not None:
+                    process_mqtt_command(
+                        topic,
+                        payload,
+                        retained,
+                        args.mqtt_subscribe_topic_pattern,
+                        modbus_handlers,
+                    )
+            if args.once:
+                set_threading_event()
+                break
 
-        delay_thread(0.01)
+            delay_thread(0.01)
 
-    for modbus_handler in modbus_handlers:
-        modbus_handler.close()
-    if mqtt_handler:
-        mqtt_handler.close()
+    finally:
+        for modbus_handler in modbus_handlers:
+            try:
+                modbus_handler.close()
+            except Exception:
+                logger.exception("Failed to close Modbus handler")
+        if mqtt_handler:
+            try:
+                mqtt_handler.close()
+            except Exception:
+                logger.exception("Failed to close MQTT handler")
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import logging
 import queue
 import socket
 import ssl
+import threading
 from multiprocessing import Queue
 from typing import Optional, Tuple, List
 
@@ -52,6 +53,10 @@ class MqttHandler:
         self.clean_start_or_session = qos == 0
         self.rx_queue: Queue = Queue(maxsize=1000)
         self.logger = logging.getLogger(__name__)
+        self._connack_event = threading.Event()
+        self._connack_success = False
+        self._network_loop_started = False
+        self.connack_timeout = 10.0
 
     def _on_connect(self, client, userdata, flags, reason_code, properties):
         if isinstance(flags, dict):  # MQTTv5
@@ -64,6 +69,8 @@ class MqttHandler:
         else:
             rc = reason_code
 
+        self._connack_success = rc == 0
+        self._connack_event.set()
         if rc == 0:
             self.logger.debug("Connected to MQTT broker.")
             if session_present:
@@ -97,13 +104,14 @@ class MqttHandler:
             self.logger.info(
                 f"Receive retained message ({message.topic}): {message.payload}"
             )
-        msg = (message.topic, message.payload)
+        msg = (message.topic, message.payload, bool(message.retain))
         try:
             self.rx_queue.put(msg, block=False)
         except queue.Full:
             self.logger.warning("MQTT receiving queue is full, ignoring new message.")
 
     def _on_disconnect(self, client, userdata, flags, reason_code, properties):
+        self._connack_success = False
         if reason_code == 0:
             self.logger.info("Disconnected.")
         else:
@@ -177,7 +185,14 @@ class MqttHandler:
         if not self.mqtt_client:
             self.logger.error("MQTT client not initialized. Call setup() first.")
             return False
+        if self.is_connected():
+            return True
+        if self._network_loop_started:
+            # Paho owns reconnects after loop_start; do not start a second loop.
+            return False
 
+        self._connack_event.clear()
+        self._connack_success = False
         try:
             connect_kwargs = {
                 "host": self.host,
@@ -189,7 +204,11 @@ class MqttHandler:
 
             self.mqtt_client.connect(**connect_kwargs)
             self.mqtt_client.loop_start()
-            return True
+            self._network_loop_started = True
+            if not self._connack_event.wait(self.connack_timeout):
+                self.logger.warning("Timed out waiting for MQTT CONNACK.")
+                return False
+            return self._connack_success
         except (OSError, MQTTException) as ex:
             self.logger.error(f"MQTT connection error: {ex}")
             return False
@@ -226,12 +245,12 @@ class MqttHandler:
             )
             return None
 
-    def receive(self) -> Tuple[Optional[str], Optional[bytes]]:
+    def receive(self) -> Tuple[Optional[str], Optional[bytes], bool]:
         try:
-            topic, payload = self.rx_queue.get(block=False)
-            return topic, payload
+            topic, payload, retained = self.rx_queue.get(block=False)
+            return topic, payload, retained
         except queue.Empty:
-            return None, None
+            return None, None, False
 
     def is_connected(self) -> bool:
         return self.mqtt_client is not None and self.mqtt_client.is_connected()
@@ -240,6 +259,7 @@ class MqttHandler:
         if self.mqtt_client:
             try:
                 self.mqtt_client.loop_stop()
+                self._network_loop_started = False
                 self.mqtt_client.disconnect()
             except MQTTException as ex:
                 self.logger.error(f"Error during MQTT client closure: {ex}")
