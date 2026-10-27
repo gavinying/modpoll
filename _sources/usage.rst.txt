@@ -52,3 +52,7 @@ Framers and transports
 
 - Serial (`--serial`, alias `--rtu`) supports framers `rtu` and `ascii` (e.g., `--serial ... --framer ascii`). Binary framer was removed in pymodbus 3.9+. If `--framer default` is used, pymodbus defaults to RTU framer.
 - TCP/UDP (`--tcp`/`--udp`) use the `socket` framer; other framers are rejected. If `--framer default` is used, pymodbus defaults to socket framer.
+
+MQTT write commands with malformed payloads, invalid values, ambiguous device names, or a retained-message flag are ignored and logged. Register arrays use FC16 and support 1–123 unsigned 16-bit values. Configure the broker not to retain messages on write-command topics; the MQTT retained flag is not guaranteed to remain set during live forwarding.
+
+References that fail in a poll cycle are omitted from MQTT output and represented as ``null`` in JSON snapshots. Multiple configuration files are combined into one atomically replaced snapshot.

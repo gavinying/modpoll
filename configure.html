@@ -87,6 +87,7 @@
 <p>In order to communicate with modbus devices, a proper modbus configure file is required.
 It is mainly to describe the device address and register mappings.</p>
 <p>Here is the basic structure of modbus configure file.</p>
+<p>The parser checks device IDs (1–254), unique device and reference names, positive poll sizes within the function-code limits, address ranges, endian settings, data types, read/write modes, and numeric scales. Configuration errors include the CSV line number; invalid rows are skipped while later rows continue to be checked.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="c1"># Modbus Configuration File</span>
 <span class="linenos"> 2</span><span class="c1"># --------------------------</span>
 <span class="linenos"> 3</span><span class="c1"># This configuration file is to describe the Modbus registers of target device(s) and defines poller(s) to help polling data.</span>
@@ -104,7 +105,7 @@ It is mainly to describe the device address and register mappings.</p>
 <span class="linenos">15</span><span class="c1"># &lt;device_id&gt;: integer 1 to 254 to describe device ID</span>
 <span class="linenos">16</span><span class="c1"># &lt;object_type&gt;: coil/discrete_input/holding_register/input_register</span>
 <span class="linenos">17</span><span class="c1"># &lt;start_address&gt;: integer 0 to 65535 (The start address of Modbus registers to poll)</span>
-<span class="linenos">18</span><span class="c1"># &lt;size&gt;: integer 0 to 65535 (No. of registers to poll and value must not exceed the limits of Modbus)</span>
+<span class="linenos">18</span><span class="c1"># &lt;size&gt;: positive integer within the Modbus limit (2000 bits or 123 registers per poll)</span>
 <span class="linenos">19</span><span class="c1"># &lt;endian&gt;: byte_order and word_order e.g. BE_BE/BE_LE/LE_LE/LE_BE</span>
 <span class="linenos">20</span><span class="c1"># &lt;ref_name&gt;: any string without spaces to describe the reference</span>
 <span class="linenos">21</span><span class="c1"># &lt;address&gt;: integer 0 to 65535 (the modbus address and should match the poller range)</span>
