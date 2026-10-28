@@ -2,7 +2,7 @@ name: main
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, develop/v2]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
@@ -52,7 +52,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    if: github.event_name != 'pull_request'
     steps:
       - name: Check out
         uses: actions/checkout@v4
