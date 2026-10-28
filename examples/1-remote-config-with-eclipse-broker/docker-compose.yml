@@ -12,4 +12,4 @@ services:
         --mqtt-qos 1
         --rate 30
         --timestamp
-        --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
+        --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv

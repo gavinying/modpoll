@@ -1,13 +1,13 @@
 # Modpoll - A New Command-line Tool for Modbus and MQTT
 
-[![Release](https://img.shields.io/github/v/release/gavinying/modpoll)](https://img.shields.io/github/v/release/gavinying/modpoll)
-[![Build status](https://img.shields.io/github/actions/workflow/status/gavinying/modpoll/main.yml?branch=main)](https://github.com/gavinying/modpoll/actions/workflows/main.yml?query=branch%3Amain)
-[![License](https://img.shields.io/github/license/gavinying/modpoll)](https://img.shields.io/github/license/gavinying/modpoll)
+[![Release](https://img.shields.io/github/v/release/top-maker/modpoll)](https://img.shields.io/github/v/release/top-maker/modpoll)
+[![Build status](https://img.shields.io/github/actions/workflow/status/top-maker/modpoll/main.yml?branch=main)](https://github.com/top-maker/modpoll/actions/workflows/main.yml?query=branch%3Amain)
+[![License](https://img.shields.io/github/license/top-maker/modpoll)](https://img.shields.io/github/license/top-maker/modpoll)
 [![Downloads](https://static.pepy.tech/badge/modpoll/week)](https://pepy.tech/project/modpoll)
 
 > 📢 **Announcement:** Since the release of v1.3.0, our official dockerhub namespace has been changed to `topmaker`, you can pull the latest images from [topmaker/modpoll](https://hub.docker.com/repository/docker/topmaker/modpoll) at dockerhub.
 
-> Learn more about *modpoll* usage at [documentation](https://gavinying.github.io/modpoll) site.
+> Learn more about *modpoll* usage at [documentation](https://top-maker.github.io/modpoll) site.
 
 ## Motivation
 
@@ -84,12 +84,12 @@ Use the public Modbus TCP simulator at `modsim.topmaker.net:502` for a quick tes
 ```bash
 modpoll --once \
   --tcp modsim.topmaker.net --tcp-port 502 \
-  --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
+  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
 ```
 
 ### Run a local simulator
 
-Start a local [modsim](https://github.com/gavinying/modsim) server, then use the provided configuration to read its sample data:
+Start a local [modsim](https://github.com/top-maker/modsim) server, then use the provided configuration to read its sample data:
 
 ```bash
 docker run --rm -p 5020:5020 topmaker/modsim:latest
@@ -100,7 +100,7 @@ In another terminal, run:
 ```bash
 modpoll --once \
   --tcp 127.0.0.1 --tcp-port 5020 \
-  --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
+  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
 ```
 
 You can download the configuration and pass a local file instead of the URL.
@@ -109,7 +109,7 @@ You can download the configuration and pass a local file instead of the URL.
   <img src="docs/assets/screenshot-modpoll.png">
 </p>
 
-> the modsim code is also available [here](https://github.com/gavinying/modsim)
+> the modsim code is also available [here](https://github.com/top-maker/modsim)
 
 ### Modbus ASCII and framers
 
@@ -118,7 +118,7 @@ You can download the configuration and pass a local file instead of the URL.
 
 ### Prepare Modbus configure file
 
-The [modsim configuration](https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv) maps the simulator's four tables as follows:
+The [modsim configuration](https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv) maps the simulator's four tables as follows:
 
 ```CSV
 device,modsim01,1,,
@@ -176,11 +176,11 @@ This configuration tells *modpoll* to do the following for each poll,
 
 In practical, you usually need to customize a Modbus configuration file for your own device before running *modpoll* tool, which defines the optimal polling patterns and register mappings according to device vendor's documents.
 
-You can also take a look at [contrib](https://github.com/gavinying/modpoll/tree/main/contrib) folder, which collects a few types of device configuration shared by contributors.
+You can also take a look at [contrib](https://github.com/top-maker/modpoll/tree/main/contrib) folder, which collects a few types of device configuration shared by contributors.
 
 The configuration can be either a local file or a remote public URL resource.
 
-> *Refer to the [documentation](https://gavinying.github.io/modpoll/configure.html) site for more details.*
+> *Refer to the [documentation](https://top-maker.github.io/modpoll/configure.html) site for more details.*
 
 CSV validation requires a unique device name, a device ID from 1 to 254, a positive poll size within the Modbus function-code limit, and an address range that stays within 0–65535. Reference data types, read/write modes, endian values, and scales must be valid; errors include the CSV line number. A scale of `0` is valid; non-finite scales are rejected. Non-finite floating-point samples are treated as invalid and omitted from MQTT output. Device names must also be unique across all configuration files; duplicate names stop startup. Rename conflicting devices and update their MQTT topics before upgrading.
 
@@ -204,7 +204,7 @@ It will create a virtual Modbus TCP device running at `localhost:5020`, and you 
 modpoll \
   --tcp localhost \
   --tcp-port 5020 \
-  --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
+  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
 ```
 
 > Use `sudo` before the docker command if you want to use the standard port `502`.
@@ -218,7 +218,7 @@ In a new terminal,
 ```
 modpoll \
   --tcp localhost \
-  --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
+  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
 ```
 
 ### Publish data to MQTT broker
@@ -231,7 +231,7 @@ The following example uses a public MQTT broker `broker.emqx.io` for test purpos
 modpoll \
   --tcp 127.0.0.1 --tcp-port 5020 \
   --mqtt-host broker.emqx.io \
-  --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
+  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
 ```
 
 With successful data polling and publishing, you can subscribe the default data topic `modpoll/modsim01/data` on the same MQTT broker `broker.emqx.io` to view the collected data.
@@ -242,7 +242,7 @@ The MQTT topics can be customized by providing the following arguments,
   - `mqtt-subscribe-topic-pattern`
   - `mqtt-diagnostics-topic-pattern`
 
-See [document](https://gavinying.github.io/modpoll/usage.html#Named%20Arguments) for details.
+See [document](https://top-maker.github.io/modpoll/usage.html#Named%20Arguments) for details.
 
 
 <p align="center">
@@ -295,7 +295,7 @@ On Linux, use host networking to connect the container to a simulator on the hos
   docker run --rm --network host topmaker/modpoll \
     modpoll -d \
       --tcp 127.0.0.1 --tcp-port 5020 \
-      --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
+      --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
   ```
 
 For host networking on other platforms, consult the Docker networking documentation.
@@ -357,7 +357,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```
 
 
-> Refer to the [documentation](https://gavinying.github.io/modpoll) site for more details about the configuration and examples.
+> Refer to the [documentation](https://top-maker.github.io/modpoll) site for more details about the configuration and examples.
 
 > *If you find this tool useful, please support us by starring 🌟 our repository to encourage further improvements.*
 

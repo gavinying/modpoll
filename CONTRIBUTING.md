@@ -8,7 +8,7 @@ You can contribute in many ways:
 
 ### Report Bugs
 
-Report bugs at [https://github.com/gavinying/modpoll/issues](https://github.com/gavinying/modpoll/issues).
+Report bugs at [https://github.com/top-maker/modpoll/issues](https://github.com/top-maker/modpoll/issues).
 
 When reporting a bug, please include:
 
@@ -30,7 +30,7 @@ Look through the GitHub issues for features. Anything tagged with "enhancement" 
 
 ### Submit Feedback
 
-The best way to send feedback is to file an issue at [https://github.com/gavinying/modpoll/issues](https://github.com/gavinying/modpoll/issues).
+The best way to send feedback is to file an issue at [https://github.com/top-maker/modpoll/issues](https://github.com/top-maker/modpoll/issues).
 
 If you are proposing a new feature:
 

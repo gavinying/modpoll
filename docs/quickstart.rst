@@ -6,12 +6,12 @@ modpoll without starting a local server:
 
 .. code-block:: shell
 
-    modpoll --once --tcp modsim.topmaker.net --tcp-port 502 --config https://raw.githubusercontent.com/gavinying/modpoll/main/examples/modsim.csv
+    modpoll --once --tcp modsim.topmaker.net --tcp-port 502 --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
 
 Run a local simulator
 ---------------------
 
-Start a local `modsim <https://github.com/gavinying/modsim>`_ simulator in one
+Start a local `modsim <https://github.com/top-maker/modsim>`_ simulator in one
 terminal:
 
 .. code-block:: shell
