@@ -11,11 +11,11 @@ class ModelValidationError(ValueError):
     """The supplied JSON document does not match the selected schema."""
 
 
-@lru_cache(maxsize=2)
+@lru_cache(maxsize=3)
 def _validator(kind):
-    if kind not in ("tm", "td"):
+    if kind not in ("tm", "td", "acquisition"):
         raise ValueError("kind must be 'tm' or 'td'")
-    schema = json.loads(files("modpoll_wot_modbus").joinpath("schemas", f"{kind}-1.1.json").read_text(encoding="utf-8"))
+    schema = json.loads(files("modpoll_wot_modbus").joinpath("schemas", ("acquisition-0.1.json" if kind == "acquisition" else f"{kind}-1.1.json")).read_text(encoding="utf-8"))
     return Draft7Validator(schema)
 
 

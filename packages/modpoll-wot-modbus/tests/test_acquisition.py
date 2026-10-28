@@ -31,7 +31,7 @@ class AcquisitionTests(unittest.TestCase):
             lambda g: g.update({"modpoll:quantity": 3}),
             lambda g: g.update({"modpoll:start": 65535}),
             lambda g: g.update({"modpoll:quantity": True}),
-            lambda g: g.update({"modpoll:table": "coil"}),
+            lambda g: g.update({"modpoll:table": "unknown"}),
             lambda g: g["modpoll:members"][0].update({"modpoll:property": "missing"}),
             lambda g: g["modpoll:members"][0].update({"modpoll:dataType": "unit32"}),
             lambda g: g["modpoll:members"][0].update({"modpoll:scale": 2}),
