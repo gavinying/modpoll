@@ -275,7 +275,7 @@ class Poller:
             ref.update_value(decode_methods[ref.dtype]())
         elif ref.dtype.startswith("string"):
             ref.update_value(
-                decoder.decode_string(ref.ref_width * 2).decode("utf-8").rstrip("\x00")
+                decoder.decode_string(int(ref.dtype[6:])).decode("utf-8").rstrip("\x00")
             )
 
     def add_readable_reference(self, ref: "Reference"):
@@ -467,6 +467,8 @@ class ModbusHandler:
             try:
                 if "device" in row[0].lower():
                     if len(row) < CONFIG_DEVICE_COL_MIN:
+                        current_device = None
+                        current_poller = None
                         self.logger.error(
                             "Config line %s: invalid device configuration", line_number
                         )
@@ -611,9 +613,9 @@ class ModbusHandler:
                 f"Too many coils/discrete inputs (max. 2000): {size}. Ignoring poller."
             )
             return False
-        if function_code in (3, 4) and size > 123:
+        if function_code in (3, 4) and size > 125:
             self.logger.error(
-                f"Too many registers (max. 123): {size}. Ignoring poller."
+                f"Too many registers (max. 125): {size}. Ignoring poller."
             )
             return False
         return True
@@ -623,11 +625,7 @@ class ModbusHandler:
             self.logger.error("Invalid reference configuration")
             return None
         ref_name = row[1].replace(" ", "_")
-        try:
-            address = row[2]
-        except ValueError:
-            self.logger.error(f"Invalid address for reference {ref_name}")
-            return None
+        address = row[2]
         dtype = row[3].lower()
         rw = (row[4] or "r").lower()
         if rw not in {"r", "w", "rw"}:
@@ -644,6 +642,9 @@ class ModbusHandler:
         return Reference(current_device, ref_name, address, dtype, rw, unit, scale)
 
     def _validate_reference(self, ref, current_poller):
+        if current_poller.fc in (1, 2) and ref.bit is not None:
+            self.logger.warning("Bit selectors require a register poller: %s", ref.name)
+            return False
         if ref in current_poller.readableReferences:
             self.logger.warning(f"Reference {ref.name} is already added, ignoring it.")
             return False

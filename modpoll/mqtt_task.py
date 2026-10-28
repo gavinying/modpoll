@@ -3,7 +3,6 @@ import queue
 import socket
 import ssl
 import threading
-from multiprocessing import Queue
 from typing import Optional, Tuple, List
 
 from paho.mqtt.client import (
@@ -26,7 +25,7 @@ class MqttHandler:
         password: Optional[str],
         clientid: Optional[str],
         qos: int,
-        subscribe_topics: List[str] = [],
+        subscribe_topics: Optional[List[str]] = None,
         use_tls: bool = False,
         tls_version: str = "tlsv1.2",
         cacerts: Optional[str] = None,
@@ -41,7 +40,7 @@ class MqttHandler:
         self.password = password
         self.clientid = clientid
         self.qos = qos
-        self.subscribe_topics = subscribe_topics
+        self.subscribe_topics = subscribe_topics or []
         self.use_tls = use_tls
         self.tls_version = tls_version
         self.cacerts = cacerts
@@ -51,7 +50,7 @@ class MqttHandler:
 
         self.mqtt_client: Optional[MQTTClient] = None
         self.clean_start_or_session = qos == 0
-        self.rx_queue: Queue = Queue(maxsize=1000)
+        self.rx_queue = queue.Queue(maxsize=1000)
         self.logger = logging.getLogger(__name__)
         self._connack_event = threading.Event()
         self._connack_success = False
@@ -89,7 +88,7 @@ class MqttHandler:
         if isinstance(reason_codes, int):
             reason_codes = [reason_codes]
         for rc in reason_codes:
-            if rc == 0 or rc == 1:
+            if rc in (0, 1, 2):
                 self.logger.info("Subscribed successfully.")
             else:
                 self.logger.warning(f"Failed to subscribe. Reason code: {rc}")

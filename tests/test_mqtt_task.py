@@ -90,6 +90,13 @@ def test_message_callback_preserves_retained_flag():
     assert handler.receive() == ("modpoll/meter/set", b"{}", True)
 
 
+def test_message_is_immediately_available_on_default_queue():
+    handler = MqttHandler("test", "localhost", 1883, None, None, None, 0)
+    message = type("Message", (), {"topic": "a", "payload": b"x", "retain": 0})()
+    handler._on_message(None, None, message)
+    assert handler.receive() == ("a", b"x", False)
+
+
 def test_publish_when_connected_calls_client_publish():
     handler = MqttHandler(
         name="test_mqtt",

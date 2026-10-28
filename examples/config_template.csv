@@ -15,11 +15,11 @@
 # <device_id>: integer 1 to 254 to describe device ID
 # <object_type>: coil/discrete_input/holding_register/input_register
 # <start_address>: integer 0 to 65535 (The start address of Modbus registers to poll)
-# <size>: positive integer within the Modbus limit (2000 bits or 123 registers per poll)
+# <size>: positive integer within the Modbus limit (2000 bits or 125 registers per poll)
 # <endian>: byte_order and word_order e.g. BE_BE/BE_LE/LE_LE/LE_BE
 # <ref_name>: any string without spaces to describe the reference
 # <address>: integer 0 to 65535 (the modbus address and should match the poller range)
-# <dtype>: uint16/int16/uint32/int32/float16/float32/bool8/bool16/stringXXX (defaults to uint16)
+# <dtype>: uint16/int16/uint32/int32/uint64/int64/float16/float32/float64/bool/bool8/bool16/stringXXX (XXX is the number of bytes)
 # <rw>: read/write setting e.g. r/w/rw
 # <unit> (optional): the measurement unit of reference
 # <scale> (Optional): a float value to be multiplied with actual register reading

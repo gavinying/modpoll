@@ -409,3 +409,54 @@ def test_snapshot_rejects_nonstandard_nan_without_damaging_existing_file(tmp_pat
     assert not handler.export(path)
     assert path.read_text() == '{"previous": true}'
     assert list(tmp_path.glob(".snapshot.json.*.tmp")) == []
+
+
+def test_register_read_limit_and_invalid_device_do_not_reuse_context():
+    import csv
+    from io import StringIO
+
+    handler = ModbusHandler(FakeClient(), "site.csv", daemon=True)
+    devices = handler._parse_config(
+        csv.reader(
+            StringIO(
+                "device,meter,1\npoll,holding_register,0,125,BE_BE\n"
+                "poll,holding_register,0,126,BE_BE\n"
+                "device,broken\nref,misplaced,0,uint16,r\n"
+            )
+        )
+    )
+    assert len(devices[0].pollerList) == 1
+    assert not devices[0].references
+
+
+def test_odd_length_string_does_not_include_padding_byte():
+    from modpoll.modbus_task import Poller
+
+    device = Device("meter", 1)
+    ref = Reference(device, "label", "0", "string3", "r", None, None)
+    poller = Poller(device, 3, 0, 2, "BE_BE")
+    poller.add_readable_reference(ref)
+
+    class Client:
+        def read_holding_registers(self, address, count, slave):
+            return type(
+                "Response",
+                (),
+                {"registers": [0x4142, 0x4358], "isError": lambda self: False},
+            )()
+
+    assert poller.poll(Client())
+    assert ref.val == "ABC"
+
+
+def test_bit_selector_is_rejected_for_coil_polls():
+    import csv
+    from io import StringIO
+
+    handler = ModbusHandler(FakeClient(), "site.csv", daemon=True)
+    devices = handler._parse_config(
+        csv.reader(
+            StringIO("device,meter,1\npoll,coil,0,16,BE_BE\nref,bit,0:1,bool,r\n")
+        )
+    )
+    assert not devices[0].references
