@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Set up poetry
         uses: ./.github/actions/setup-poetry
@@ -48,9 +50,12 @@ jobs:
     needs: build-and-publish-pypi
     outputs:
       latest: ${{ steps.image-tags.outputs.latest }}
+      docs: ${{ steps.image-tags.outputs.docs }}
     steps:
       - name: Check out
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -97,13 +102,18 @@ jobs:
 
   deploy-docs:
     needs: [build-and-publish-pypi, publish-docker]
-    if: needs.publish-docker.outputs.latest == 'true'
+    if: needs.publish-docker.outputs.docs == 'true'
+    concurrency:
+      group: modpoll-pages
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Check out
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Set up poetry
         uses: ./.github/actions/setup-poetry
@@ -114,8 +124,27 @@ jobs:
       - name: Build documentation
         run: make docs
 
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: .pages
+
+      - name: Preserve both documentation lines and vocabulary
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          UPDATE_ROOT: ${{ needs.publish-docker.outputs.latest }}
+        run: |
+          mkdir .site
+          rsync -a --exclude=.git .pages/ .site/
+          line=v2
+          if [[ "$TAG" == v1.* || "$TAG" == 1.* ]]; then line=1.x; fi
+          args=()
+          if [[ "$UPDATE_ROOT" == true ]]; then args+=(--root); fi
+          python .github/scripts/assemble-docs.py docs/_build/html .site "$line" "${args[@]}"
+          printf '%s\n' "$GITHUB_SHA" > ".site/$line/source-sha.txt"
+
       - name: Deploy documentation
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/_build/html
+          publish_dir: .site

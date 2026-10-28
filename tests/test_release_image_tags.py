@@ -119,4 +119,4 @@ def test_release_selection_emits_image_names_and_latest_flag(
         "registry.example/team/modpoll:1",
         "registry.example/team/modpoll:1.2",
     ]
-    assert output.read_text() == "latest=false\n"
+    assert output.read_text() == "latest=false\ndocs=true\n"
