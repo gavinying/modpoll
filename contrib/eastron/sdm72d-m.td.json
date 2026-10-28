@@ -1,0 +1,1036 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "modpoll": "https://top-maker.github.io/modpoll/vocab/wot-modbus#",
+      "modv": "https://www.w3.org/2019/wot/modbus",
+      "xsd": "http://www.w3.org/2001/XMLSchema#"
+    }
+  ],
+  "title": "eastron001",
+  "modpoll:version": "0.1",
+  "modv:unitID": 1,
+  "properties": {
+    "PHASE_1_LINE_TO_NEUTRAL_VOLTS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "V",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/0?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_2_LINE_TO_NEUTRAL_VOLTS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "V",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/2?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_3_LINE_TO_NEUTRAL_VOLTS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "V",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/4?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_1_CURRENT": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "A",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/6?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_2_CURRENT": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "A",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/8?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_3_CURRENT": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "A",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/10?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_1_ACTIVE_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "W",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/12?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_2_ACTIVE_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "W",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/14?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_3_ACTIVE_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "W",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/16?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_1_APPARENT_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "VA",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/18?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_2_APPARENT_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "VA",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/20?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_3_APPARENT_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "VA",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/22?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_1_REACTIVE_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "VAR",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/24?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_2_REACTIVE_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "VAR",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/26?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_3_REACTIVE_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "VAR",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/28?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_1_POWER_FACTOR": {
+      "type": "number",
+      "readOnly": true,
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/30?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_2_POWER_FACTOR": {
+      "type": "number",
+      "readOnly": true,
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/32?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "PHASE_3_POWER_FACTOR": {
+      "type": "number",
+      "readOnly": true,
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/34?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "AVERAGE_LINE_TO_NEUTRAL_VOLTS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "V",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/42?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "AVERAGE_LINE_CURRENT": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "A",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/46?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "SUM_OF_LINE_CURRENTS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "A",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/48?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "TOTAL_SYSTEM_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "W",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/52?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "TOTAL_SYSTEM_VOLT_AMPS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "VA",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/56?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "TOTAL_SYSTEM_VAR": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "VAR",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/60?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "TOTAL_SYSTEM_POWER_FACTOR": {
+      "type": "number",
+      "readOnly": true,
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/62?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "FREQUENCY_OF_SUPPLY_VOLTAGES": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "Hz",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/70?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "IMPORT_ACTIVE_ENERGY": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "kWh",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/72?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "EXPORT_ACTIVE_ENERGY": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "kWh",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/74?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "LINE_1_TO_LINE_2_VOLTS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "V",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/200?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "LINE_2_TO_LINE_3_VOLTS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "V",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/202?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "LINE_3_TO_LINE_1_VOLTS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "V",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/204?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "AVERAGE_LINE_TO_LINE_VOLTS": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "V",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/206?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "NEUTRAL_CURRENT": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "A",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/224?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "TOTAL_ACTIVE_ENERGY": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "kWh",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/342?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "TOTAL_REACTIVE_ENERGY": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "kVARh",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/344?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "RESETTABLE_TOTAL_ACTIVE_ENERGY": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "kWh",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/384?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "RESETTABLE_IMPORT_ACTIVE_ENERGY": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "kWh",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/388?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "RESETTABLE_EXPORT_ACTIVE_ENERGY": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "kWh",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/390?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "NET_KWH": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "kWh",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/396?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "TOTAL_IMPORT_ACTIVE_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "W",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/1280?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    },
+    "TOTAL_EXPORT_ACTIVE_POWER": {
+      "type": "number",
+      "readOnly": true,
+      "unit": "W",
+      "forms": [
+        {
+          "href": "modbus+tcp://127.0.0.1:502/1/1282?quantity=2",
+          "op": [
+            "readproperty"
+          ],
+          "contentType": "application/octet-stream",
+          "modv:entity": "InputRegister",
+          "modv:mostSignificantByte": true,
+          "modv:mostSignificantWord": true,
+          "modv:type": "xsd:float"
+        }
+      ]
+    }
+  },
+  "modpoll:acquisition": [
+    {
+      "modpoll:members": [
+        {
+          "modpoll:property": "PHASE_1_LINE_TO_NEUTRAL_VOLTS",
+          "modpoll:offset": 0,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_2_LINE_TO_NEUTRAL_VOLTS",
+          "modpoll:offset": 2,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_3_LINE_TO_NEUTRAL_VOLTS",
+          "modpoll:offset": 4,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_1_CURRENT",
+          "modpoll:offset": 6,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_2_CURRENT",
+          "modpoll:offset": 8,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_3_CURRENT",
+          "modpoll:offset": 10,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_1_ACTIVE_POWER",
+          "modpoll:offset": 12,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_2_ACTIVE_POWER",
+          "modpoll:offset": 14,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_3_ACTIVE_POWER",
+          "modpoll:offset": 16,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_1_APPARENT_POWER",
+          "modpoll:offset": 18,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_2_APPARENT_POWER",
+          "modpoll:offset": 20,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_3_APPARENT_POWER",
+          "modpoll:offset": 22,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_1_REACTIVE_POWER",
+          "modpoll:offset": 24,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_2_REACTIVE_POWER",
+          "modpoll:offset": 26,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_3_REACTIVE_POWER",
+          "modpoll:offset": 28,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_1_POWER_FACTOR",
+          "modpoll:offset": 30,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_2_POWER_FACTOR",
+          "modpoll:offset": 32,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "PHASE_3_POWER_FACTOR",
+          "modpoll:offset": 34,
+          "modpoll:dataType": "float32"
+        }
+      ],
+      "modv:entity": "InputRegister",
+      "modv:address": 0,
+      "modv:quantity": 36,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
+    },
+    {
+      "modpoll:members": [
+        {
+          "modpoll:property": "AVERAGE_LINE_TO_NEUTRAL_VOLTS",
+          "modpoll:offset": 0,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "AVERAGE_LINE_CURRENT",
+          "modpoll:offset": 4,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "SUM_OF_LINE_CURRENTS",
+          "modpoll:offset": 6,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "TOTAL_SYSTEM_POWER",
+          "modpoll:offset": 10,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "TOTAL_SYSTEM_VOLT_AMPS",
+          "modpoll:offset": 14,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "TOTAL_SYSTEM_VAR",
+          "modpoll:offset": 18,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "TOTAL_SYSTEM_POWER_FACTOR",
+          "modpoll:offset": 20,
+          "modpoll:dataType": "float32"
+        }
+      ],
+      "modv:entity": "InputRegister",
+      "modv:address": 42,
+      "modv:quantity": 22,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
+    },
+    {
+      "modpoll:members": [
+        {
+          "modpoll:property": "FREQUENCY_OF_SUPPLY_VOLTAGES",
+          "modpoll:offset": 0,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "IMPORT_ACTIVE_ENERGY",
+          "modpoll:offset": 2,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "EXPORT_ACTIVE_ENERGY",
+          "modpoll:offset": 4,
+          "modpoll:dataType": "float32"
+        }
+      ],
+      "modv:entity": "InputRegister",
+      "modv:address": 70,
+      "modv:quantity": 6,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
+    },
+    {
+      "modpoll:members": [
+        {
+          "modpoll:property": "LINE_1_TO_LINE_2_VOLTS",
+          "modpoll:offset": 0,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "LINE_2_TO_LINE_3_VOLTS",
+          "modpoll:offset": 2,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "LINE_3_TO_LINE_1_VOLTS",
+          "modpoll:offset": 4,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "AVERAGE_LINE_TO_LINE_VOLTS",
+          "modpoll:offset": 6,
+          "modpoll:dataType": "float32"
+        }
+      ],
+      "modv:entity": "InputRegister",
+      "modv:address": 200,
+      "modv:quantity": 8,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
+    },
+    {
+      "modpoll:members": [
+        {
+          "modpoll:property": "NEUTRAL_CURRENT",
+          "modpoll:offset": 0,
+          "modpoll:dataType": "float32"
+        }
+      ],
+      "modv:entity": "InputRegister",
+      "modv:address": 224,
+      "modv:quantity": 2,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
+    },
+    {
+      "modpoll:members": [
+        {
+          "modpoll:property": "TOTAL_ACTIVE_ENERGY",
+          "modpoll:offset": 0,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "TOTAL_REACTIVE_ENERGY",
+          "modpoll:offset": 2,
+          "modpoll:dataType": "float32"
+        }
+      ],
+      "modv:entity": "InputRegister",
+      "modv:address": 342,
+      "modv:quantity": 4,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
+    },
+    {
+      "modpoll:members": [
+        {
+          "modpoll:property": "RESETTABLE_TOTAL_ACTIVE_ENERGY",
+          "modpoll:offset": 0,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "RESETTABLE_IMPORT_ACTIVE_ENERGY",
+          "modpoll:offset": 4,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "RESETTABLE_EXPORT_ACTIVE_ENERGY",
+          "modpoll:offset": 6,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "NET_KWH",
+          "modpoll:offset": 12,
+          "modpoll:dataType": "float32"
+        }
+      ],
+      "modv:entity": "InputRegister",
+      "modv:address": 384,
+      "modv:quantity": 14,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
+    },
+    {
+      "modpoll:members": [
+        {
+          "modpoll:property": "TOTAL_IMPORT_ACTIVE_POWER",
+          "modpoll:offset": 0,
+          "modpoll:dataType": "float32"
+        },
+        {
+          "modpoll:property": "TOTAL_EXPORT_ACTIVE_POWER",
+          "modpoll:offset": 2,
+          "modpoll:dataType": "float32"
+        }
+      ],
+      "modv:entity": "InputRegister",
+      "modv:address": 1280,
+      "modv:quantity": 4,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
+    }
+  ],
+  "security": [
+    "nosec_sc"
+  ],
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  }
+}
