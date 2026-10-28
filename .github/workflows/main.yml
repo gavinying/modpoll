@@ -2,7 +2,7 @@ name: main
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, develop/v2]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
@@ -52,7 +52,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    if: github.event_name != 'pull_request'
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -65,3 +64,43 @@ jobs:
 
       - name: Build documentation
         run: make docs
+
+  modsim-equivalence:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-poetry
+      - name: Check out the 1.x baseline
+        uses: actions/checkout@v4
+        with:
+          repository: top-maker/modpoll
+          ref: 0b42099e8b22eaaa4788a9f91e8bf60b4870204c
+          path: .interop/modpoll-1x
+      - name: Check out the simulator fixture
+        uses: actions/checkout@v4
+        with:
+          repository: top-maker/modsim
+          ref: 92fe5d4c417b2691693feb2b6bd93fd1f54439fe
+          path: .interop/modsim
+      - name: Install isolated baseline and simulator environments
+        run: |
+          python -m venv .interop/modpoll-1x/.venv
+          .interop/modpoll-1x/.venv/bin/pip install -r .interop/modpoll-1x/requirements.txt
+          .interop/modpoll-1x/.venv/bin/pip install --no-deps ./.interop/modpoll-1x
+          python -m venv .interop/modsim/.venv
+          .interop/modsim/.venv/bin/pip install -r .interop/modsim/requirements.txt
+          .interop/modsim/.venv/bin/pip install --no-deps ./.interop/modsim
+      - name: Compare CSV, TM and TD requests and outputs
+        run: |
+          poetry run python tools/verify_modsim_equivalence.py --modpoll-1x .interop/modpoll-1x --modsim .interop/modsim --report .interop/report.json
+      - name: Verify lifecycle and existing write commands
+        env:
+          MODSIM_PYTHON: ${{ github.workspace }}/.interop/modsim/.venv/bin/python
+          MODSIM_SOURCE: ${{ github.workspace }}/.interop/modsim
+        run: poetry run pytest -q tests/test_process_lifecycle.py tests/test_modsim_interop.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: modsim-equivalence
+          path: .interop/report.json

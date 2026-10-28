@@ -15,39 +15,38 @@
       "items": {
         "type": "object",
         "required": [
-          "modpoll:table",
-          "modpoll:start",
-          "modpoll:quantity",
-          "modpoll:byteOrder",
+          "modv:entity",
+          "modv:address",
+          "modv:quantity",
+          "modv:mostSignificantByte",
+          "modv:mostSignificantWord",
           "modpoll:members"
         ],
         "additionalProperties": false,
         "properties": {
-          "modpoll:table": {
+          "modv:entity": {
             "enum": [
-              "coil",
-              "discrete_input",
-              "input_register",
-              "holding_register"
+              "Coil",
+              "DiscreteInput",
+              "InputRegister",
+              "HoldingRegister"
             ]
           },
-          "modpoll:start": {
+          "modv:address": {
             "type": "integer",
             "minimum": 0,
             "maximum": 65535
           },
-          "modpoll:quantity": {
+          "modv:quantity": {
             "type": "integer",
             "minimum": 1,
             "maximum": 2000
           },
-          "modpoll:byteOrder": {
-            "enum": [
-              "BE_BE",
-              "BE_LE",
-              "LE_BE",
-              "LE_LE"
-            ]
+          "modv:mostSignificantByte": {
+            "type": "boolean"
+          },
+          "modv:mostSignificantWord": {
+            "type": "boolean"
           },
           "modpoll:members": {
             "type": "array",
@@ -67,11 +66,12 @@
                 },
                 "modpoll:offset": {
                   "type": "integer",
-                  "minimum": 0
+                  "minimum": 0,
+                  "maximum": 65535
                 },
                 "modpoll:dataType": {
                   "type": "string",
-                  "pattern": "^(u?int(16|32|64)|float(16|32|64)|bool(8|16)?|string[1-9][0-9]*)$"
+                  "pattern": "^(u?int(16|32|64)|float(16|32|64)|bool(8|16)?|string[1-9][0-9]{0,3})$"
                 },
                 "modpoll:bit": {
                   "type": "integer",
@@ -79,9 +79,14 @@
                   "maximum": 15
                 },
                 "modpoll:multiplier": {
-                  "type": [
-                    "number",
-                    "string"
+                  "oneOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[+-]?([0-9]+(\\.[0-9]*)?|\\.[0-9]+)([eE][+-]?[0-9]+)?$"
+                    }
                   ]
                 }
               }

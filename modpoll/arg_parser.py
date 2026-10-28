@@ -17,8 +17,14 @@ def get_parser():
         "-f",
         "--config",
         required=True,
-        help="A local path or URL of Modbus configuration file. Required!",
+        help="Local path or URL of a WoT TM/TD JSON configuration. Required!",
         nargs="+",
+    )
+    parser.add_argument(
+        "--unit-id",
+        type=int,
+        default=1,
+        help="Modbus unit ID for the model instance (1-254). Defaults to 1",
     )
     parser.add_argument(
         "-d",

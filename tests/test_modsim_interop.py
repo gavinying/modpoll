@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 """Cross-project TCP regression; set MODSIM_PYTHON and MODSIM_SOURCE to opt in."""
 
 import os
@@ -44,14 +47,14 @@ def test_four_table_reads_and_fc5_fc6_fc16_writes(tmp_path):
                 if time.monotonic() >= deadline:
                     pytest.fail("simulator did not start")
                 time.sleep(0.05)
-        config = tmp_path / "meter.csv"
-        config.write_text(
-            "device,meter,7,description\n"
-            "poll,coil,0,16,BE_BE\nref,coil_1,0,bool8,r\nref,coil_2,1,bool8,r\n"
-            "poll,discrete_input,10000,8,BE_BE\nref,di,10000,bool8,r\n"
-            "poll,input_register,30000,1,BE_BE\nref,ir,30000,uint16,r\n"
-            "poll,holding_register,40000,4,BE_BE\nref,hr,40000,uint16,r\n"
+        config = tmp_path / "meter.tm.json"
+        model = json.loads(
+            (
+                Path(__file__).resolve().parents[1] / "examples/modsim.tm.json"
+            ).read_text()
         )
+        model["title"] = "meter"
+        config.write_text(json.dumps(model))
         args = get_parser().parse_args(
             [
                 "--config",
@@ -60,6 +63,8 @@ def test_four_table_reads_and_fc5_fc6_fc16_writes(tmp_path):
                 "127.0.0.1",
                 "--tcp-port",
                 str(port),
+                "--unit-id",
+                "7",
                 "--daemon",
                 "--interval",
                 "0",
@@ -70,17 +75,17 @@ def test_four_table_reads_and_fc5_fc6_fc16_writes(tmp_path):
         handler.poll()
         device = handler.get_device_list()[0]
         bits = [True, False, True, False, False, False, False, True]
-        assert device.references["coil_1"].val == bits
-        assert device.references["coil_2"].val == bits
-        assert device.references["di"].val == bits
-        assert device.references["ir"].val == 1
-        assert device.references["hr"].val == 1
+        assert device.references["coil01-08"].val == bits
+        assert device.references["coil09-16"].val == bits
+        assert device.references["di01-08"].val == bits
+        assert device.references["input_reg01"].val == 1
+        assert device.references["holding_reg01"].val == 1
         assert handler.write_coil("meter", 1, True)
         assert handler.write_register("meter", 40000, 123)
         assert handler.write_register("meter", 40001, [12, 13, 14])
         handler.poll()
-        assert device.references["coil_1"].val[1] is True
-        assert device.references["hr"].val == 123
+        assert device.references["coil01-08"].val[1] is True
+        assert device.references["holding_reg01"].val == 123
         assert handler.connect()
         result = handler.modbus_client.read_holding_registers(40000, count=4, slave=7)
         assert not result.isError()

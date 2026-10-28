@@ -8,10 +8,10 @@ schema, and acquisition semantics. It does not execute Modbus requests.
 
 ```python
 from modpoll_wot_modbus.loading import load_model
-model = load_model("tests/fixtures/modsim.tm.json", kind="tm", unit_id=1)
+model = load_model("examples/modsim.tm.json", kind="tm", unit_id=1)
 ```
 
-Run checks from the repository root:
+The application adapter is connected to the existing Modpoll poll/decode/output engine. Run checks from the repository root:
 
 ```sh
 PYTHONPATH=packages/modpoll-wot-modbus python -m unittest discover -s packages/modpoll-wot-modbus/tests

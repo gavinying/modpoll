@@ -2,7 +2,8 @@
   "@context": [
     "https://www.w3.org/2022/wot/td/v1.1",
     {
-      "modpoll": "https://top-maker.github.io/modpoll/vocab/wot-modbus#"
+      "modpoll": "https://top-maker.github.io/modpoll/vocab/wot-modbus#",
+      "modv": "https://www.w3.org/2019/wot/modbus"
     }
   ],
   "@type": "tm:ThingModel",
@@ -151,10 +152,6 @@
   },
   "modpoll:acquisition": [
     {
-      "modpoll:table": "coil",
-      "modpoll:start": 0,
-      "modpoll:quantity": 16,
-      "modpoll:byteOrder": "BE_BE",
       "modpoll:members": [
         {
           "modpoll:property": "coil01-08",
@@ -166,13 +163,14 @@
           "modpoll:offset": 1,
           "modpoll:dataType": "bool8"
         }
-      ]
+      ],
+      "modv:entity": "Coil",
+      "modv:address": 0,
+      "modv:quantity": 16,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
     },
     {
-      "modpoll:table": "discrete_input",
-      "modpoll:start": 10000,
-      "modpoll:quantity": 16,
-      "modpoll:byteOrder": "BE_BE",
       "modpoll:members": [
         {
           "modpoll:property": "di01-08",
@@ -184,13 +182,14 @@
           "modpoll:offset": 1,
           "modpoll:dataType": "bool8"
         }
-      ]
+      ],
+      "modv:entity": "DiscreteInput",
+      "modv:address": 10000,
+      "modv:quantity": 16,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
     },
     {
-      "modpoll:table": "input_register",
-      "modpoll:start": 30000,
-      "modpoll:quantity": 20,
-      "modpoll:byteOrder": "BE_BE",
       "modpoll:members": [
         {
           "modpoll:property": "input_reg01",
@@ -264,13 +263,14 @@
           "modpoll:offset": 18,
           "modpoll:dataType": "float32"
         }
-      ]
+      ],
+      "modv:entity": "InputRegister",
+      "modv:address": 30000,
+      "modv:quantity": 20,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
     },
     {
-      "modpoll:table": "holding_register",
-      "modpoll:start": 40000,
-      "modpoll:quantity": 44,
-      "modpoll:byteOrder": "BE_BE",
       "modpoll:members": [
         {
           "modpoll:property": "holding_reg01",
@@ -369,7 +369,12 @@
           "modpoll:offset": 36,
           "modpoll:dataType": "string16"
         }
-      ]
+      ],
+      "modv:entity": "HoldingRegister",
+      "modv:address": 40000,
+      "modv:quantity": 44,
+      "modv:mostSignificantByte": true,
+      "modv:mostSignificantWord": true
     }
   ]
 }

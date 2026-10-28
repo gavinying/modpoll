@@ -13,7 +13,7 @@ check: ## Run code quality tools.
 	@echo "🚀 Checking Poetry lock file consistency with 'pyproject.toml': Running poetry check --lock"
 	@poetry check --lock
 	@echo "🚀 Exporting 'requirements.txt' file: Running poetry export"
-	@poetry export -f requirements.txt -o requirements.txt --without-hashes
+	@poetry run python tools/export_requirements.py
 	@echo "🚀 Linting code: Running pre-commit"
 	@poetry run pre-commit run -a
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"

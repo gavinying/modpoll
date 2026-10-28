@@ -1,13 +1,17 @@
-[build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
-
-[project]
+[tool.poetry]
 name = "modpoll-wot-modbus"
 version = "0.1.0a1"
-description = "Modpoll WoT Modbus configuration support"
-requires-python = ">=3.10"
-dependencies = ["jsonschema>=4.18,<5"]
+description = "WoT Modbus configuration interpreter for Modpoll"
+authors = ["Ying Shaodong <helloysd@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "modpoll_wot_modbus" }]
+include = ["CONTRACT.md", "modpoll_wot_modbus/schemas/*.json"]
 
-[tool.setuptools.package-data]
-modpoll_wot_modbus = ["schemas/*.json"]
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+jsonschema = ">=4.18,<5"
+referencing = ">=0.28.4,<1"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"

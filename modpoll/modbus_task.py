@@ -1,4 +1,3 @@
-import csv
 import json
 import logging
 import math
@@ -22,9 +21,6 @@ from .mqtt_task import MqttHandler
 
 
 FLOAT_TYPE_PRECISION = 3
-CONFIG_DEVICE_COL_MIN = 3
-CONFIG_POLL_COL_MIN = 5
-CONFIG_REF_COL_MIN = 5
 
 
 def export_modbus_handlers(handlers, file, timestamp=None) -> bool:
@@ -415,9 +411,11 @@ class ModbusHandler:
         mqtt_diagnostics_topic_pattern: Optional[str] = None,
         mqtt_single_publish: bool = False,
         autoremove: bool = False,
+        unit_id: int = 1,
     ):
         self.modbus_client = modbus_client
         self.config_file = config_file
+        self.unit_id = unit_id
         self.mqtt_handler = mqtt_handler
         self.timeout = timeout
         self.interval = interval
@@ -433,231 +431,18 @@ class ModbusHandler:
         )
 
     def load_config(self) -> bool:
-        self.logger.info(f"Loading config from: {self.config_file}")
+        from .wot_config import create_devices, read_model
+
+        self.logger.info(f"Loading WoT config from: {self.config_file}")
         try:
-            with requests.Session() as s:
-                response = s.get(self.config_file, timeout=self.timeout)
-                response.raise_for_status()
-                decoded_content = response.content.decode("utf-8")
-                csv_reader = csv.reader(decoded_content.splitlines(), delimiter=",")
-                self.deviceList = self._parse_config(csv_reader)
-        except requests.RequestException:
-            try:
-                with open(self.config_file, "r") as f:
-                    csv_reader = csv.reader(f)
-                    self.deviceList = self._parse_config(csv_reader)
-            except IOError as e:
-                self.logger.error(f"Error opening file: {e}")
-                return False
-        if self.deviceList:
-            self.logger.info(f"Added {len(self.deviceList)} device(s)...")
-            return True
-        else:
-            self.logger.error("No device found in the config file. Skipping.")
-            return False
-
-    def _parse_config(self, csv_reader) -> List[Device]:
-        device_list = []
-        current_device = None
-        current_poller = None
-        duplicate_devices = []
-        for line_number, row in enumerate(csv_reader, start=1):
-            if not row or all(cell.strip() == "" for cell in row):
-                continue
-            try:
-                if "device" in row[0].lower():
-                    if len(row) < CONFIG_DEVICE_COL_MIN:
-                        current_device = None
-                        current_poller = None
-                        self.logger.error(
-                            "Config line %s: invalid device configuration", line_number
-                        )
-                        continue
-                    device_name = row[1].strip()
-                    if any(device.name == device_name for device in device_list):
-                        self.logger.error(
-                            "Config line %s: duplicate device name %s",
-                            line_number,
-                            device_name,
-                        )
-                        duplicate_devices.append((line_number, device_name))
-                        current_device = None
-                        current_poller = None
-                        continue
-                    try:
-                        device_id = int(row[2], 0)
-                    except ValueError:
-                        self.logger.error(
-                            "Config line %s: invalid device ID for %s",
-                            line_number,
-                            device_name,
-                        )
-                        current_device = None
-                        current_poller = None
-                        continue
-                    if not 1 <= device_id <= 254:
-                        self.logger.error(
-                            "Config line %s: device ID out of range for %s",
-                            line_number,
-                            device_name,
-                        )
-                        current_device = None
-                        current_poller = None
-                        continue
-                    current_device = Device(device_name, device_id)
-                    device_list.append(current_device)
-                    current_poller = None
-                elif "poll" in row[0].lower():
-                    if not current_device:
-                        self.logger.error(
-                            "Config line %s: no device to add poller", line_number
-                        )
-                        current_poller = None
-                        continue
-                    current_poller = self._create_poller(row, current_device)
-                    if current_poller:
-                        current_device.pollerList.append(current_poller)
-                    else:
-                        self.logger.error("Config line %s: poller ignored", line_number)
-                elif "ref" in row[0].lower():
-                    if not current_device or not current_poller:
-                        self.logger.error(
-                            "Config line %s: reference has no valid device/poller",
-                            line_number,
-                        )
-                        continue
-                    ref = self._create_reference(row, current_device)
-                    if ref is None:
-                        self.logger.error(
-                            "Config line %s: reference ignored", line_number
-                        )
-                        continue
-                    if ref.name in current_device.references:
-                        self.logger.error(
-                            "Config line %s: duplicate reference name %s",
-                            line_number,
-                            ref.name,
-                        )
-                        continue
-                    if self._validate_reference(ref, current_poller):
-                        if "r" in ref.rw.lower():
-                            current_poller.add_readable_reference(ref)
-                        current_device.add_reference_mapping(ref)
-                    else:
-                        self.logger.error(
-                            "Config line %s: reference failed validation", line_number
-                        )
-                else:
-                    self.logger.warning(
-                        "Config line %s: unknown row type %r", line_number, row[0]
-                    )
-            except Exception as exc:
-                self.logger.error(
-                    "Config line %s: invalid row %r: %s", line_number, row, exc
-                )
-        if duplicate_devices:
-            details = ", ".join(
-                "%s (line %s)" % (name, line) for line, name in duplicate_devices
+            model = read_model(
+                self.config_file, timeout=self.timeout, unit_id=self.unit_id
             )
-            raise ValueError(
-                "Duplicate device names in %s: %s" % (self.config_file, details)
-            )
-        return device_list
-
-    def _create_poller(self, row, current_device):
-        if len(row) < CONFIG_POLL_COL_MIN:
-            self.logger.error("Invalid poller configuration")
-            return None
-        fc = row[1].lower()
-        try:
-            start_address = int(row[2], 0)
-            size = int(row[3], 0)
-        except ValueError:
-            self.logger.error("Invalid start address or size for poller")
-            return None
-        endian = row[4].upper()
-        if endian not in {"BE_BE", "BE_LE", "LE_BE", "LE_LE"}:
-            self.logger.error("Invalid endian setting: %s", endian)
-            return None
-        function_code = self._get_function_code(fc)
-        if function_code is None:
-            return None
-        if not 0 <= start_address <= 65535:
-            self.logger.error("Invalid poller start address: %s", start_address)
-            return None
-        if not self._validate_poller_size(function_code, size):
-            return None
-        if start_address + size > 65536:
-            self.logger.error("Poller address range exceeds Modbus address space")
-            return None
-        return Poller(current_device, function_code, start_address, size, endian)
-
-    def _get_function_code(self, fc):
-        fc_map = {
-            "coil": 1,
-            "discrete_input": 2,
-            "holding_register": 3,
-            "input_register": 4,
-        }
-        if fc in fc_map:
-            return fc_map[fc]
-        self.logger.warning(f"Unknown function code ({fc}) ignoring poller.")
-        return None
-
-    def _validate_poller_size(self, function_code, size):
-        if size <= 0:
-            self.logger.error("Poller size must be positive: %s", size)
+            self.deviceList = create_devices(model)
+        except (ValueError, OSError, requests.RequestException) as exc:
+            self.logger.error("Invalid WoT configuration: %s", exc)
             return False
-        if function_code in (1, 2) and size > 2000:
-            self.logger.error(
-                f"Too many coils/discrete inputs (max. 2000): {size}. Ignoring poller."
-            )
-            return False
-        if function_code in (3, 4) and size > 125:
-            self.logger.error(
-                f"Too many registers (max. 125): {size}. Ignoring poller."
-            )
-            return False
-        return True
-
-    def _create_reference(self, row, current_device):
-        if len(row) < CONFIG_REF_COL_MIN:
-            self.logger.error("Invalid reference configuration")
-            return None
-        ref_name = row[1].replace(" ", "_")
-        address = row[2]
-        dtype = row[3].lower()
-        rw = (row[4] or "r").lower()
-        if rw not in {"r", "w", "rw"}:
-            self.logger.error("Invalid read/write mode for reference %s", ref_name)
-            return None
-        unit = row[5] if len(row) > 5 else None
-        try:
-            scale = float(row[6]) if len(row) > 6 and row[6] else None
-            if scale is not None and not math.isfinite(scale):
-                raise ValueError("scale must be finite")
-        except ValueError:
-            self.logger.error("Invalid scale for reference %s", ref_name)
-            return None
-        return Reference(current_device, ref_name, address, dtype, rw, unit, scale)
-
-    def _validate_reference(self, ref, current_poller):
-        if current_poller.fc in (1, 2) and ref.bit is not None:
-            self.logger.warning("Bit selectors require a register poller: %s", ref.name)
-            return False
-        if ref in current_poller.readableReferences:
-            self.logger.warning(f"Reference {ref.name} is already added, ignoring it.")
-            return False
-        reference_size = (
-            math.ceil(current_poller.size / 8)
-            if current_poller.fc in (1, 2)
-            else current_poller.size
-        )
-        if not ref.check_sanity(current_poller.start_address, reference_size):
-            self.logger.warning(
-                f"Reference {ref.name} failed to pass sanity check, ignoring it."
-            )
-            return False
+        self.logger.info("Added %d device(s)", len(self.deviceList))
         return True
 
     def connect(self) -> bool:
@@ -894,6 +679,7 @@ def setup_modbus_handlers(args, mqtt_handler: Optional[MqttHandler] = None):
                 mqtt_diagnostics_topic_pattern=args.mqtt_diagnostics_topic_pattern,
                 mqtt_single_publish=args.mqtt_single,
                 autoremove=args.autoremove,
+                unit_id=args.unit_id,
             )
             if current_handler.load_config():
                 names = {device.name for device in current_handler.get_device_list()}

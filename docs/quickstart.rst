@@ -6,7 +6,7 @@ modpoll without starting a local server:
 
 .. code-block:: shell
 
-    modpoll --once --tcp modsim.topmaker.net --tcp-port 502 --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
+    modpoll --once --tcp modsim.topmaker.net --tcp-port 502 --config examples/modsim.tm.json
 
 Run a local simulator
 ---------------------
@@ -22,10 +22,10 @@ In another terminal, poll its sample data once:
 
 .. code-block:: shell
 
-    modpoll --once --tcp 127.0.0.1 --tcp-port 5020 --config examples/modsim.csv
+    modpoll --once --tcp 127.0.0.1 --tcp-port 5020 --config examples/modsim.tm.json
 
 The command assumes you are in the modpoll repository. You can instead provide
-the published configuration URL or your own local CSV file.
+the published configuration URL or your own local TM/TD JSON file.
 
 The simulator's default datastore uses literal Modbus addresses:
 

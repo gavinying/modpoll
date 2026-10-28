@@ -1,3 +1,4 @@
+from tests.wot_helpers import write_meter
 import pytest  # type: ignore
 from modpoll.arg_parser import get_parser
 from modpoll.modbus_task import setup_modbus_handlers
@@ -9,8 +10,8 @@ def test_modbus_task_modbus_setup():
     args = parser.parse_args(
         [
             "--config",
-            "examples/modsim.csv",
-            "examples/modsim2.csv",
+            "examples/modsim.tm.json",
+            "examples/modsim2.tm.json",
             "--tcp",
             "modsim.topmaker.net",
         ]
@@ -25,7 +26,7 @@ def test_modbus_task_poll_modsim():
     args = parser.parse_args(
         [
             "--config",
-            "examples/modsim.csv",
+            "examples/modsim.tm.json",
             "--tcp",
             "modsim.topmaker.net",
         ]
@@ -67,13 +68,9 @@ def test_each_configuration_owns_its_client(monkeypatch, tmp_path):
             self.closed += 1
 
     monkeypatch.setattr(modbus_task, "_create_modbus_client", lambda args: Client())
-    valid = tmp_path / "valid.csv"
-    valid.write_text(
-        "device,meter,1,description\npoll,holding_register,0,1,BE_BE\nref,value,0,uint16,r\n"
-    )
-    second = tmp_path / "second.csv"
-    second.write_text(valid.read_text().replace("device,meter,", "device,second,"))
-    missing = tmp_path / "missing.csv"
+    valid = write_meter(tmp_path / "valid.tm.json")
+    second = write_meter(tmp_path / "second.tm.json", name="second")
+    missing = tmp_path / "missing.tm.json"
     args = get_parser().parse_args(
         ["--config", str(valid), str(missing), str(second), "--tcp", "localhost"]
     )
@@ -131,11 +128,8 @@ def test_duplicate_device_names_across_configs_fail_before_polling(
     from modpoll import modbus_task
 
     monkeypatch.setattr(modbus_task, "_create_modbus_client", lambda args: object())
-    first = tmp_path / "first.csv"
-    second = tmp_path / "second.csv"
-    contents = "device,meter,1,description\npoll,holding_register,0,1,BE_BE\nref,value,0,uint16,r\n"
-    first.write_text(contents)
-    second.write_text(contents)
+    first = write_meter(tmp_path / "first.tm.json")
+    second = write_meter(tmp_path / "second.tm.json")
     args = get_parser().parse_args(
         ["--config", str(first), str(second), "--tcp", "localhost"]
     )

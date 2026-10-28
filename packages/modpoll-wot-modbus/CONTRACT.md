@@ -1,35 +1,88 @@
-# Experimental acquisition contract 0.1
+# Executable configuration contract 0.1 (development)
 
-This contract is for Modpoll configuration replacement. It is not a W3C Modbus
-binding and does not claim support for arbitrary TM/TD. W3C structural validity
-and executable acquisition validity are checked separately, using local schemas.
-The namespace is reserved for this project; its documentation is not published yet.
+This is Modpoll's supported WoT TM/TD 1.1 subset for replacing CSV configuration.
+It is not a general WoT runtime. The Modbus binding document remains a draft:
+https://w3c.github.io/wot-binding-templates/bindings/protocols/modbus/.
+Its entity, address, quantity and byte/word-order vocabulary is reused. Ordered
+acquisition groups, offsets, precise decoding and multipliers are project extensions.
+They do not claim standard W3C acquisition or transformation semantics.
 
-| 1.x CSV field | Contract 0.1 |
+Use `python -m modpoll_wot_modbus MODEL [--unit-id N]` to validate and inspect a
+model without opening a device connection. Schemas are bundled locally; the
+loader does not dereference contexts or remote schema dependencies. The official
+TD/TM schemas identify themselves as `1.1-12-March-2025` (Draft 7).
+
+| 1.x input | Contract 0.1 |
 | --- | --- |
-| device name | TM/TD title; preserve effective output name |
-| Unit ID | Explicit load_model unit_id parameter, default 1, range 1–254 (legacy range) |
-| poll table/start/count | acquisition table/start/quantity; literal PDU addresses |
-| poll endian | byteOrder BE_BE, BE_LE, LE_BE, LE_LE |
-| ref name | property key and member property reference |
-| ref address | register offset from poll start; bit tables use eight-bit group offsets |
-| ref `address:bit` | member bit, 0–15, register bool only |
-| ref dtype | integer, float, bool/bool8/bool16, stringN |
-| ref rw | standard readOnly/writeOnly; neither means rw |
-| ref unit | standard property unit |
-| ref scale | member multiplier; decimal multiplier, never inferred as divisor |
+| device name | `title`, used verbatim as output device name |
+| Unit ID | Explicit instance argument; default 1, range 1–254 |
+| poll table | group `modv:entity`: Coil, DiscreteInput, InputRegister, HoldingRegister |
+| poll start/count | group `modv:address` / `modv:quantity`, literal PDU addresses |
+| poll endian | `modv:mostSignificantByte` and `modv:mostSignificantWord` booleans |
+| ref effective name | property key and member `modpoll:property` |
+| ref address | member `modpoll:offset`, relative to group start |
+| ref `address:bit` | member `modpoll:bit`, 0–15, register bool only |
+| ref dtype | member `modpoll:dataType` |
+| ref rw | standard property `readOnly` / `writeOnly`; neither means rw |
+| ref unit | standard property `unit` |
+| ref scale | member `modpoll:multiplier`, multiplication, never inferred division |
 
-Block order, boundaries and gaps are preserved. Coils and DI count physical bits;
-legacy bit-member offsets count eight-bit groups. This asymmetry is explicit to
-preserve 1.x behavior. Register offsets count 16-bit registers; stringN lengths
-count bytes. Read-only tables require readOnly, correcting the sample CSV's rw
-labels rather than promising unsupported writes. Shared backing addresses are
-permitted; duplicate property membership is rejected. No automatic coalescing,
-TM inheritance, placeholder substitution, remote context resolution or protocol
-execution is performed by this layer. Unsupported semantics are deliberately rejected or excluded; runtime integration
-and instantiation of protocol forms remain subsequent work.
+The JSON root declares `modpoll:version: "0.1"` and `modpoll:acquisition`.
+Context aliases must match the supported project and draft Modbus namespaces;
+these are not arbitrary remotely resolved JSON-LD aliases. The project namespace
+is reserved for this development contract; its hosted documentation is not yet
+published. Concrete TD Forms use `modbus+tcp` URLs. The Form's entity, operations,
+unit/address/quantity and declared payload/byte order must match the group/member.
+Explicit transport CLI options select the actual endpoint, allowing the same
+configuration to be tested through a proxy or alternate transport. Concrete TD
+Unit IDs must match `--unit-id`; unbound TMs can be instantiated with any supported ID.
 
-The modsim fixture is an explicitly authored mapping of modpoll/examples/modsim.csv,
-including its full 44-register holding group and 37 output properties. It does not
-claim the default server is generated from the fixture. Standard schema success
-alone does not verify decoding, write commands or device behavior.
+Register member offsets count 16-bit registers. Bit-table member offsets count
+eight-bit groups relative to poll start, preserving the old behavior; poll counts
+still specify physical bits. A final partial bit group is clipped by the executor.
+Bit tables support bool/bool8/bool16; numeric bit-table decoding is explicitly
+unsupported in this subset. Register types are int/uint16/32/64, float16/32/64,
+bool/bool8/bool16 and stringN. String lengths count bytes, including odd lengths;
+spans must fit the declared block. A register bool with a bit selector is a scalar
+boolean; bool groups are arrays with boolean items. Strings cannot be multiplied.
+Float and fractional-multiplier outputs require a number property schema.
+
+Groups preserve order, boundaries and holes. Reads are limited to 125 registers
+or 2000 physical bits per request, within 0–65535. No coalescing takes place.
+Each property must have exactly one mapping. Duplicate backing address/bit pairs
+within a group are rejected to avoid silent omission by the existing executor.
+Overlapping views at distinct starting offsets remain explicit, independent values.
+Missing fields, unknown executable extension fields, invalid access, non-finite
+values/multipliers, duplicate JSON keys and invalid type combinations fail the
+whole file with source and field diagnostics. Inputs are bounded to 1 MiB and 64
+nested containers. Invalid files do not yield partially configured devices.
+
+DI/IR are read-only. The historical simulator CSV's rw flags for those tables are
+corrected to readOnly in the fixtures; no unsupported write capability is promised.
+The interpreter records access flags; raw MQTT write commands retain the 1.x raw
+address behavior. This milestone does not add property-based writes or inverse
+engineering-value transforms. Multipliers are retained as Decimal in the model
+but adapted to the existing float execution semantics. Int64 without a multiplier
+stays a Python integer. JSON/JavaScript consumers must still account for their own
+numeric precision limits.
+
+Inheritance, links, optional TM members, URI templates, root operation Forms,
+actions/events, unsupported Form terms and non-nosec security schemes are rejected.
+Model/TD schema validation does not prove that a stock WoT consumer will implement
+this acquisition extension or its transforms. In particular, a direct Modbus Form
+identifies raw device access; engineering-value interpretation requires the project
+transform metadata. No HTTP endpoint or cache service is declared.
+
+`examples/modsim.tm.json` is an authored mapping of `examples/modsim.csv`, retaining
+four groups and 37 properties; it is not generated from CSV at runtime.
+`examples/modsim.td.json` binds the same mapping to the documented local TCP
+endpoint. Their mappings are checked against the CSV in tests. Runtime equivalence
+checks additionally compare independently known initial values, complete JSON
+snapshots, rendered tables, and the exact four requests against modsim. Shared
+remote modsim state may have been written by others, so remote checks compare
+successive read-only snapshots rather than assuming fixed initial values.
+
+The shared package currently uses a local Poetry path dependency for development.
+Before publishing the application, publish the shared package and replace that
+path with its exact registry version. A development application wheel containing
+a local dependency URL is not a portable public release artifact.
