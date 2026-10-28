@@ -25,7 +25,8 @@ class _PayloadDecoder:
     """Decode Modbus values without pymodbus's deprecated payload helpers."""
 
     def __init__(self, data, *, byteorder="big", wordorder="big", coils=False):
-        self.wordorder = wordorder
+        self.byteorder = byteorder
+        self.wordorder = "big" if coils else wordorder
         if coils:
             self.data = bytearray(
                 sum(
@@ -38,8 +39,6 @@ class _PayloadDecoder:
             self.data = bytearray()
             for register in data:
                 self.data.extend(register.to_bytes(2, "big"))
-                if byteorder == "little":
-                    self.data[-2:] = self.data[-2:][::-1]
         self.offset = 0
 
     def skip_bytes(self, count):
@@ -50,6 +49,8 @@ class _PayloadDecoder:
         self.offset += size
         if len(payload) != size:
             raise ValueError("not enough payload data")
+        if self.byteorder == "little":
+            payload = b"".join(payload[i : i + 2][::-1] for i in range(0, size, 2))
         if self.wordorder == "little" and size > 2:
             payload = b"".join(payload[i : i + 2] for i in range(size - 2, -1, -2))
         return struct.unpack(">" + fmt, payload)[0]
