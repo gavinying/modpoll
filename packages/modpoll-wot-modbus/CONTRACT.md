@@ -15,7 +15,7 @@ TD/TM schemas identify themselves as `1.1-12-March-2025` (Draft 7).
 | 1.x input | Contract 0.1 |
 | --- | --- |
 | device name | `title`, used verbatim as output device name |
-| Unit ID | Explicit instance argument; default 1, range 1–254 |
+| Unit ID | Optional root modv:unitID default per file; explicit CLI overrides it; fallback 1; range 1–254 |
 | poll table | group `modv:entity`: Coil, DiscreteInput, InputRegister, HoldingRegister |
 | poll start/count | group `modv:address` / `modv:quantity`, literal PDU addresses |
 | poll endian | `modv:mostSignificantByte` and `modv:mostSignificantWord` booleans |

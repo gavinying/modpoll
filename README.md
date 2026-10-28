@@ -123,7 +123,7 @@ The JSON examples are included in this checkout. A public URL containing the sam
 Use [examples/modsim.tm.json](examples/modsim.tm.json) for the simulator model or
 [examples/modsim.td.json](examples/modsim.td.json) for a concrete TCP description.
 Both preserve the four original blocks and 37 output references. `--unit-id`
-selects the instance Unit ID (default 1); a concrete TD's forms must agree with it.
+overrides each model's optional root `modv:unitID` (fallback 1); a concrete TD's forms must agree with it.
 The existing transport, polling, output and MQTT arguments remain available.
 
 See [the executable contract](packages/modpoll-wot-modbus/CONTRACT.md) for field

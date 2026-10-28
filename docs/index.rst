@@ -11,6 +11,7 @@ Welcome to Modpoll's documentation!
     quickstart
     usage
     configure
+    validation
     changelog
 
 Indices and tables

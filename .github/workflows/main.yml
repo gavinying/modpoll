@@ -99,8 +99,27 @@ jobs:
         env:
           MODSIM_PYTHON: ${{ github.workspace }}/.interop/modsim/.venv/bin/python
           MODSIM_SOURCE: ${{ github.workspace }}/.interop/modsim
-        run: poetry run pytest -q tests/test_process_lifecycle.py tests/test_modsim_interop.py
+        run: poetry run pytest -q tests/test_process_lifecycle.py tests/test_modsim_interop.py tests/test_wot_reading_interop.py
+      - name: Start private MQTT acceptance broker
+        run: |
+          printf 'listener 1883\nallow_anonymous true\npersistence false\n' > "$RUNNER_TEMP/modpoll-mqtt.conf"
+          docker run -d --name modpoll-mqtt-${{ github.run_id }}-${{ github.run_attempt }} -p 127.0.0.1:18883:1883 -v "$RUNNER_TEMP/modpoll-mqtt.conf:/mosquitto/config/mosquitto.conf:ro" eclipse-mosquitto:2
+      - name: Verify MQTT equivalence, commands and broker recovery
+        env:
+          MODSIM_PYTHON: ${{ github.workspace }}/.interop/modsim/.venv/bin/python
+          MODSIM_SOURCE: ${{ github.workspace }}/.interop/modsim
+          MODPOLL_1X_SOURCE: ${{ github.workspace }}/.interop/modpoll-1x
+          MODPOLL_MQTT_HOST: 127.0.0.1
+          MODPOLL_MQTT_PORT: '18883'
+          MODPOLL_MQTT_INTEGRATION: '1'
+        run: poetry run pytest -q tests/test_mqtt_modsim_interop.py tests/test_local_mqtt_broker.py --junitxml=.interop/mqtt-results.xml
+      - name: Remove private acceptance broker
+        if: always()
+        run: docker rm -f modpoll-mqtt-${{ github.run_id }}-${{ github.run_attempt }} || true
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: modsim-equivalence
-          path: .interop/report.json
+          path: |
+            .interop/report.json
+            .interop/mqtt-results.xml

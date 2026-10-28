@@ -94,6 +94,11 @@
           }
         }
       }
+    },
+    "modv:unitID": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 254
     }
   }
 }

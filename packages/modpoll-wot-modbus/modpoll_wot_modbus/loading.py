@@ -49,8 +49,8 @@ def _check_depth(value, depth=0):
             _check_depth(item, depth + 1)
 
 
-def parse_model(document, *, kind=None, unit_id=1):
-    if type(unit_id) is not int or not 1 <= unit_id <= 254:
+def parse_model(document, *, kind=None, unit_id=None):
+    if unit_id is not None and (type(unit_id) is not int or not 1 <= unit_id <= 254):
         raise AcquisitionError("unit_id: expected integer between 1 and 254")
     if not isinstance(document, dict):
         raise AcquisitionError("document: expected object")
@@ -105,6 +105,11 @@ def parse_model(document, *, kind=None, unit_id=1):
             raise AcquisitionError(
                 f"/properties/{name}: executable metadata belongs in members/forms"
             )
+    configured_id = document.get("modv:unitID", 1)
+    if type(configured_id) is not int or not 1 <= configured_id <= 254:
+        raise AcquisitionError("/modv:unitID: expected integer between 1 and 254")
+    if unit_id is None:
+        unit_id = configured_id
     groups = parse_acquisition(document)
     validate_forms(document, groups, unit_id, kind)
     if not document["title"].strip():
@@ -112,7 +117,7 @@ def parse_model(document, *, kind=None, unit_id=1):
     return Model(document["title"], kind, groups, unit_id)
 
 
-def loads_model(payload, *, source="<memory>", kind=None, unit_id=1):
+def loads_model(payload, *, source="<memory>", kind=None, unit_id=None):
     try:
         if (
             len(payload.encode("utf-8") if isinstance(payload, str) else payload)
@@ -127,7 +132,7 @@ def loads_model(payload, *, source="<memory>", kind=None, unit_id=1):
         raise AcquisitionError(f"{source}: {exc}") from exc
 
 
-def load_model(path, *, kind=None, unit_id=1):
+def load_model(path, *, kind=None, unit_id=None):
     path = Path(path)
     try:
         with path.open("rb") as stream:

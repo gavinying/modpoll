@@ -6,7 +6,9 @@ It rejects CSV input. The bundled ``examples/modsim.tm.json`` and
 ``examples/modsim.td.json`` describe the same four blocks and 37 output properties.
 
 Each file describes one device. Its ``title`` is the output device name;
-``--unit-id`` selects the instance Unit ID (default 1, range 1–254).
+``--unit-id`` overrides the instance Unit ID (range 1–254). Without it, each file
+uses its optional root ``modv:unitID`` default, falling back to 1. Different files
+can therefore address different Unit IDs in one process.
 Multiple files may be supplied to ``--config``; titles must be unique.
 The existing transport CLI arguments explicitly select the connection endpoint.
 A concrete TD's form Unit IDs, addresses and quantities must agree with the model.

@@ -23,8 +23,8 @@ def get_parser():
     parser.add_argument(
         "--unit-id",
         type=int,
-        default=1,
-        help="Modbus unit ID for the model instance (1-254). Defaults to 1",
+        default=None,
+        help="Override model Unit ID (1-254); otherwise use modv:unitID or 1",
     )
     parser.add_argument(
         "-d",

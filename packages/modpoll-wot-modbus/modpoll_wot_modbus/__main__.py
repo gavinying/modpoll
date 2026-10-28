@@ -10,7 +10,7 @@ from . import AcquisitionError, load_model
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("model")
-    parser.add_argument("--unit-id", type=int, default=1)
+    parser.add_argument("--unit-id", type=int, default=None)
     args = parser.parse_args()
     try:
         model = load_model(args.model, unit_id=args.unit_id)

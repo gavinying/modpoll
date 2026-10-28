@@ -85,3 +85,17 @@ class LoadingTests(unittest.TestCase):
             path.write_text(json.dumps(document))
             with self.assertRaises(AcquisitionError):
                 load_model(path, kind="tm")
+
+
+class ModelUnitDefaultsTests(unittest.TestCase):
+    def test_model_default_and_explicit_override(self):
+        from modpoll_wot_modbus import parse_model
+
+        document = json.loads(FIXTURE.read_text())
+        document["modv:unitID"] = 7
+        self.assertEqual(parse_model(document).unit_id, 7)
+        self.assertEqual(parse_model(document, unit_id=2).unit_id, 2)
+        for value in (0, 255, True, "7"):
+            document["modv:unitID"] = value
+            with self.subTest(value=value), self.assertRaises(AcquisitionError):
+                parse_model(document)

@@ -411,7 +411,7 @@ class ModbusHandler:
         mqtt_diagnostics_topic_pattern: Optional[str] = None,
         mqtt_single_publish: bool = False,
         autoremove: bool = False,
-        unit_id: int = 1,
+        unit_id: Optional[int] = None,
     ):
         self.modbus_client = modbus_client
         self.config_file = config_file
