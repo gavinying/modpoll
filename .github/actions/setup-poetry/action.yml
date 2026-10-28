@@ -44,5 +44,5 @@ runs:
     - name: Install dependencies
       run: |
         poetry config virtualenvs.in-project true
-        poetry install --no-interaction
+        poetry install --no-interaction --all-extras
       shell: bash

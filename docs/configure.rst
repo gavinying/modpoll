@@ -45,12 +45,12 @@ Migration from CSV
 
 The executable contract and test vectors live under
 ``packages/modpoll-wot-modbus``. Strings, bit selectors, four tables and all four
-byte/word orders are represented by the contract. Numeric decoding of bit-table
-payloads, model inheritance, optional members, URI templates, non-Modbus forms,
+byte/word orders are represented by the contract. Model inheritance, optional members, URI templates, non-Modbus forms,
 and security schemes other than ``nosec`` are rejected in this preview subset.
 The interpreter records access flags; raw MQTT write commands retain the existing
 1.x behavior and are not property-based writes.
 
 Standard schema validity alone does not establish device correctness or prove
 that a general WoT consumer will implement the project's acquisition/transform
-extensions. This change adds no HTTP/cache service.
+extensions. This change adds no HTTP/cache service. See :doc:`v1-compatibility` for intentional
+fixes and :doc:`csv-migration` for the reusable AI conversion prompt.

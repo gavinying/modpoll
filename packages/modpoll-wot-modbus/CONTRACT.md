@@ -40,8 +40,9 @@ Unit IDs must match `--unit-id`; unbound TMs can be instantiated with any suppor
 Register member offsets count 16-bit registers. Bit-table member offsets count
 eight-bit groups relative to poll start, preserving the old behavior; poll counts
 still specify physical bits. A final partial bit group is clipped by the executor.
-Bit tables support bool/bool8/bool16; numeric bit-table decoding is explicitly
-unsupported in this subset. Register types are int/uint16/32/64, float16/32/64,
+Bit tables support bool/bool8/bool16 and numeric/string payloads that fit complete
+requested bytes. Numeric assembly preserves v1 bit reversal within each byte; word
+order is ignored for bit-table numeric decoding as in v1. Register types are int/uint16/32/64, float16/32/64,
 bool/bool8/bool16 and stringN. String lengths count bytes, including odd lengths;
 spans must fit the declared block. A register bool with a bit selector is a scalar
 boolean; bool groups are arrays with boolean items. Strings cannot be multiplied.
@@ -49,8 +50,8 @@ Float and fractional-multiplier outputs require a number property schema.
 
 Groups preserve order, boundaries and holes. Reads are limited to 125 registers
 or 2000 physical bits per request, within 0–65535. No coalescing takes place.
-Each property must have exactly one mapping. Duplicate backing address/bit pairs
-within a group are rejected to avoid silent omission by the existing executor.
+Each property must have exactly one mapping. Distinct property aliases at the same backing address/bit are retained and
+decoded independently from one request.
 Overlapping views at distinct starting offsets remain explicit, independent values.
 Missing fields, unknown executable extension fields, invalid access, non-finite
 values/multipliers, duplicate JSON keys and invalid type combinations fail the

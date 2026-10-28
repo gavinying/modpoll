@@ -8,13 +8,12 @@ from typing import List, Optional
 
 import requests
 from prettytable import PrettyTable
+from modpoll_wot_modbus.acquisition import type_width
 from pymodbus.client import ModbusSerialClient, ModbusTcpClient, ModbusUdpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
-from pymodbus.framer.ascii import FramerAscii as ModbusAsciiFramer
-from pymodbus.framer.rtu import FramerRTU as ModbusRtuFramer
-from pymodbus.framer.socket import FramerSocket as ModbusSocketFramer
+from pymodbus.framer import FramerType
 
 from .utils import on_threading_event, delay_thread
 from .mqtt_task import MqttHandler
@@ -129,10 +128,11 @@ class Poller:
                     group_count = math.ceil(self.size / 8)
                     for ref in self.readableReferences:
                         offset = ref.address - self.start_address
+                        span = ref.bit_group_width
                         if (
                             offset < 0
-                            or offset + ref.ref_width > group_count
-                            or len(data) < min((offset + ref.ref_width) * 8, self.size)
+                            or offset + span > group_count
+                            or len(data) < min((offset + span) * 8, self.size)
                         ):
                             ref.update_value(None, valid=False)
                             decode_success = False
@@ -157,7 +157,13 @@ class Poller:
                                     )
                                 )
                             else:
-                                decoder = self._get_decoder(data)
+                                if (offset + span) * 8 > self.size:
+                                    raise ValueError(
+                                        "numeric/string bit span exceeds requested bits"
+                                    )
+                                decoder = self._get_decoder(
+                                    data[: (self.size // 8) * 8]
+                                )
                                 decoder.skip_bytes(offset)
                                 self._decode_and_update_reference(ref, decoder)
                             if not ref.valid_this_poll:
@@ -184,6 +190,13 @@ class Poller:
                             )
                             ref.update_value(None, valid=False)
                             decode_success = False
+                            continue
+                        if offset_bytes // 2 + ref.ref_width > len(data):
+                            ref.update_value(None, valid=False)
+                            decode_success = False
+                            self.logger.error(
+                                "Short register response for %s", ref.name
+                            )
                             continue
                         decoder.skip_bytes(offset_bytes)
                         try:
@@ -275,7 +288,7 @@ class Poller:
             )
 
     def add_readable_reference(self, ref: "Reference"):
-        if ref not in self.readableReferences:
+        if not any(existing is ref for existing in self.readableReferences):
             self.readableReferences.append(ref)
 
     def update_statistics(self, success: bool):
@@ -342,32 +355,11 @@ class Reference:
         return f"<Reference {self.name}@{addr}>"
 
     def _get_ref_width(self) -> int:
-        width_map = {
-            "int16": 1,
-            "uint16": 1,
-            "float16": 1,
-            "bool8": 1,
-            "bool": 1,
-            "int32": 2,
-            "uint32": 2,
-            "float32": 2,
-            "bool16": 2,
-            "int64": 4,
-            "uint64": 4,
-            "float64": 4,
-        }
-        if self.dtype in width_map:
-            return width_map[self.dtype]
-        elif self.dtype.startswith("string"):
-            try:
-                width = int(self.dtype[6:])
-            except ValueError as exc:
-                raise ValueError(f"Invalid string dtype: {self.dtype}") from exc
-            if width <= 0:
-                raise ValueError(f"String length must be positive: {self.dtype}")
-            return (width + 1) // 2
-        else:
-            raise ValueError(f"Unsupported dtype: {self.dtype}")
+        return type_width(self.dtype)
+
+    @property
+    def bit_group_width(self):
+        return type_width(self.dtype, bit_table=True)
 
     def check_sanity(self, reference: int, size: int) -> bool:
         return self.address in range(
@@ -477,7 +469,9 @@ class ModbusHandler:
                     ref.update_value(None, valid=False)
                 for poller in dev.pollerList:
                     if not poller.disabled:
-                        self._record_poller_result(poller, False, poller.failcounter)
+                        previous_failures = poller.failcounter
+                        poller.update_statistics(False)
+                        self._record_poller_result(poller, False, previous_failures)
             return
         try:
             for dev in self.deviceList:
@@ -486,6 +480,7 @@ class ModbusHandler:
                 poll_success = bool(pollers)
                 for p in pollers:
                     previous_failures = p.failcounter
+                    previous_polls = dev.pollCount
                     try:
                         succeeded = p.poll(self.modbus_client)
                         poll_success = succeeded and poll_success
@@ -495,6 +490,10 @@ class ModbusHandler:
                         poll_success = False
                         for ref in p.readableReferences:
                             ref.update_value(None, valid=False)
+                    if dev.pollCount == previous_polls:
+                        dev.pollCount += 1
+                        if not succeeded:
+                            dev.errorCount += 1
                     self._record_poller_result(p, succeeded, previous_failures)
                     if on_threading_event():
                         return
@@ -797,7 +796,7 @@ def _determine_transport(args):
 
 
 def _resolve_framer(transport, framer_name):
-    """Resolve the requested framer to a concrete class."""
+    """Resolve the requested framer using the PyModbus client API enum."""
 
     if framer_name == "default":
         # Let pymodbus choose its transport defaults:
@@ -805,9 +804,9 @@ def _resolve_framer(transport, framer_name):
         return None
 
     framer_map = {
-        "rtu": ModbusRtuFramer,
-        "ascii": ModbusAsciiFramer,
-        "socket": ModbusSocketFramer,
+        "rtu": FramerType.RTU,
+        "ascii": FramerType.ASCII,
+        "socket": FramerType.SOCKET,
     }
     allowed = {
         "serial": {"rtu", "ascii"},

@@ -89,17 +89,20 @@ jobs:
           python -m venv .interop/modpoll-1x/.venv
           .interop/modpoll-1x/.venv/bin/pip install -r .interop/modpoll-1x/requirements.txt
           .interop/modpoll-1x/.venv/bin/pip install --no-deps ./.interop/modpoll-1x
+          .interop/modpoll-1x/.venv/bin/pip install pyserial==3.5
           python -m venv .interop/modsim/.venv
           .interop/modsim/.venv/bin/pip install -r .interop/modsim/requirements.txt
           .interop/modsim/.venv/bin/pip install --no-deps ./.interop/modsim
+          .interop/modsim/.venv/bin/pip install pyserial==3.5
       - name: Compare CSV, TM and TD requests and outputs
         run: |
           poetry run python tools/verify_modsim_equivalence.py --modpoll-1x .interop/modpoll-1x --modsim .interop/modsim --report .interop/report.json
-      - name: Verify lifecycle and existing write commands
+      - name: Verify lifecycle, transports and existing write commands
         env:
           MODSIM_PYTHON: ${{ github.workspace }}/.interop/modsim/.venv/bin/python
           MODSIM_SOURCE: ${{ github.workspace }}/.interop/modsim
-        run: poetry run pytest -q tests/test_process_lifecycle.py tests/test_modsim_interop.py tests/test_wot_reading_interop.py
+          MODPOLL_1X_SOURCE: ${{ github.workspace }}/.interop/modpoll-1x
+        run: poetry run pytest -q tests/test_process_lifecycle.py tests/test_modsim_interop.py tests/test_wot_reading_interop.py tests/test_transport_interop.py tests/test_failure_interop.py --junitxml=.interop/transport-results.xml
       - name: Start private MQTT acceptance broker
         run: |
           printf 'listener 1883\nallow_anonymous true\npersistence false\n' > "$RUNNER_TEMP/modpoll-mqtt.conf"
@@ -112,7 +115,7 @@ jobs:
           MODPOLL_MQTT_HOST: 127.0.0.1
           MODPOLL_MQTT_PORT: '18883'
           MODPOLL_MQTT_INTEGRATION: '1'
-        run: poetry run pytest -q tests/test_mqtt_modsim_interop.py tests/test_local_mqtt_broker.py --junitxml=.interop/mqtt-results.xml
+        run: poetry run pytest -q tests/test_mqtt_modsim_interop.py tests/test_local_mqtt_broker.py tests/test_mqtt_tls.py --junitxml=.interop/mqtt-results.xml
       - name: Remove private acceptance broker
         if: always()
         run: docker rm -f modpoll-mqtt-${{ github.run_id }}-${{ github.run_attempt }} || true
@@ -123,3 +126,4 @@ jobs:
           path: |
             .interop/report.json
             .interop/mqtt-results.xml
+            .interop/transport-results.xml

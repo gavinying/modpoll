@@ -209,6 +209,7 @@ def app(name="modpoll"):
         # main loop
         last_check = None
         last_diag = None
+        cycle_success = True
         while not on_threading_event():
             now = get_utc_time()
             monotonic_now = time.monotonic()
@@ -224,6 +225,11 @@ def app(name="modpoll"):
                 )
                 for modbus_handler in modbus_handlers:
                     modbus_handler.poll()
+                    if args.once:
+                        cycle_success = cycle_success and all(
+                            device.pollSuccess
+                            for device in modbus_handler.get_device_list()
+                        )
                     if on_threading_event():
                         break
                     if args.mqtt_host:
@@ -232,11 +238,12 @@ def app(name="modpoll"):
                         else:
                             modbus_handler.publish_data()
                 if args.export and not on_threading_event():
-                    export_modbus_handlers(
+                    export_success = export_modbus_handlers(
                         modbus_handlers,
                         args.export,
                         timestamp=now if args.timestamp else None,
                     )
+                    cycle_success = export_success and cycle_success
             if args.diagnostics_rate > 0 and (
                 last_diag is None or monotonic_now >= last_diag + args.diagnostics_rate
             ):
@@ -258,6 +265,8 @@ def app(name="modpoll"):
                     )
             if args.once:
                 set_threading_event()
+                if not cycle_success:
+                    raise SystemExit(1)
                 break
 
             delay_thread(0.01)

@@ -40,9 +40,10 @@ def wait_for(predicate, timeout=30):
 
 
 class Observer:
-    def __init__(self, root, version):
+    def __init__(self, root, version, qos=1):
         self.root, self.messages, self.lock = root, {}, threading.Lock()
         self.count = 0
+        self.qos = qos
         self.connected, self.subscribed = threading.Event(), threading.Event()
         self.client = Client(
             CallbackAPIVersion.VERSION2,
@@ -60,7 +61,7 @@ class Observer:
     def on_connect(self, client, userdata, flags, reason_code, properties):
         if reason_code == 0:
             self.connected.set()
-            client.subscribe(self.root + "/#", qos=1)
+            client.subscribe(self.root + "/#", qos=self.qos)
 
     def on_message(self, client, userdata, message):
         with self.lock:
@@ -84,7 +85,7 @@ class Observer:
         return self
 
     def publish(self, topic, payload, retain=False):
-        info = self.client.publish(topic, payload, qos=1, retain=retain)
+        info = self.client.publish(topic, payload, qos=self.qos, retain=retain)
         info.wait_for_publish(timeout=15)
         assert info.is_published(), "MQTT publication not acknowledged"
 

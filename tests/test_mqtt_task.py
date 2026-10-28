@@ -253,13 +253,16 @@ def test_publish_attempts_reconnect_when_disconnected_qos1(monkeypatch):
 
 @pytest.mark.integration
 def test_mqtt_task_connect():
+    import os
+    import uuid
+
     mqtt_handler = MqttHandler(
         name="test_mqtt",
-        host="broker.emqx.io",
-        port=1883,
+        host=os.environ.get("MODPOLL_MQTT_HOST", "broker.emqx.io"),
+        port=int(os.environ.get("MODPOLL_MQTT_PORT", "1883")),
         user=None,
         password=None,
-        clientid="test_client_13579",
+        clientid="modpoll-test-" + uuid.uuid4().hex,
         qos=0,
     )
 

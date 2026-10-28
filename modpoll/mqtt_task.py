@@ -3,6 +3,7 @@ import queue
 import socket
 import ssl
 import threading
+import time
 from typing import Optional, Tuple, List
 
 from paho.mqtt.client import (
@@ -56,6 +57,9 @@ class MqttHandler:
         self._connack_success = False
         self._network_loop_started = False
         self.connack_timeout = 10.0
+        self.close_timeout = 5.0
+        self.unpublished_count = 0
+        self._pending_publishes = []
 
     def _on_connect(self, client, userdata, flags, reason_code, properties):
         if isinstance(flags, dict):  # MQTTv5
@@ -161,6 +165,8 @@ class MqttHandler:
                     protocol=MQTTProtocolVersion.MQTTv311,
                 )
 
+            self.mqtt_client.max_queued_messages_set(1000)
+
             if self.use_tls:
                 self._setup_tls()
 
@@ -233,6 +239,13 @@ class MqttHandler:
 
         try:
             pubinfo = self.mqtt_client.publish(topic, msg, qos, retain)
+            if isinstance(pubinfo, MQTTMessageInfo) and pubinfo.rc == 0:
+                self._pending_publishes = [
+                    info for info in self._pending_publishes if not info.is_published()
+                ]
+                self._pending_publishes.append(pubinfo)
+            elif pubinfo.rc != 0:
+                self.logger.warning("MQTT publication rejected with RC %s", pubinfo.rc)
             self.logger.debug(
                 f"Publishing MQTT topic: {topic}, msg: {msg}, qos: {qos}, RC: {pubinfo.rc}"
             )
@@ -255,12 +268,33 @@ class MqttHandler:
         return self.mqtt_client is not None and self.mqtt_client.is_connected()
 
     def close(self) -> None:
-        if self.mqtt_client:
+        if not self.mqtt_client:
+            return
+        deadline = time.monotonic() + self.close_timeout
+        for info in self._pending_publishes:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
             try:
-                self.mqtt_client.loop_stop()
-                self._network_loop_started = False
-                self.mqtt_client.disconnect()
-            except MQTTException as ex:
-                self.logger.error(f"Error during MQTT client closure: {ex}")
-        else:
-            self.logger.warning("MQTT client not initialized, nothing to close.")
+                info.wait_for_publish(timeout=remaining)
+            except (RuntimeError, ValueError) as exc:
+                self.logger.warning("Unable to flush MQTT publication: %s", exc)
+                break
+        self.unpublished_count = sum(
+            not info.is_published() for info in self._pending_publishes
+        )
+        if self.unpublished_count:
+            self.logger.warning(
+                "Closing MQTT with %s unacknowledged publication(s)",
+                self.unpublished_count,
+            )
+        try:
+            # Disconnect before joining: loop_stop alone can wait indefinitely
+            # for QoS handshakes when a peer stops acknowledging publications.
+            self.mqtt_client.disconnect()
+        except MQTTException as exc:
+            self.logger.error("Error during MQTT client closure: %s", exc)
+        finally:
+            self.mqtt_client.loop_stop()
+            self._network_loop_started = False
+            self._pending_publishes.clear()

@@ -1,7 +1,7 @@
 Configuration replacement verification
 ======================================
 
-M2 exercises the complete TM/TD-to-device-to-output path. Tests use a separate
+M2 and M3 exercise the complete TM/TD-to-device-to-output path. Tests use a separate
 modsim process and compare against the pinned 1.x checkout; no physical device
 or contributed device configuration is required.
 
@@ -60,11 +60,42 @@ disconnect recorded. This public-service observation is not treated as a 2.x
 regression or hidden by retries: the complete individual-topic matrix is verified
 on the isolated broker, where all 1.x/TM/TD messages and values matched.
 
-These tests validate the M2 reading/output contract and selected existing command
-paths. They do not claim serial hardware validation or a release-ready application
-package; those remain later milestone work.
+These tests validate the reading/output contract and existing command paths.
+Serial hardware validation and release-ready packaging are separate from these
+software acceptance results.
 
 The complete local acceptance run on 2026-10-28 passed 109 tests with all
 opt-in environments enabled, including the three local authentication/reconnect/queue
 tests. Public grouped JSON verification passed four cases: MQTT 3.1.1/5.0 with
 QoS 0/1. The six-case local CLI matrix also covered individual-topic output.
+
+M3 compatibility acceptance
+---------------------------
+
+The complete local acceptance run on 2026-10-28 with Python 3.12.13 passed
+**143 tests with no skips**, including the earlier M2 coverage. The separate
+CSV/TM/TD equivalence command again matched all 37 values, terminal tables and
+four actual block requests. Four TLS tests emitted the existing
+``ssl.PROTOCOL_TLSv1_2`` deprecation warning; no certificate failure was ignored.
+
+Additional tests cover UDP, POSIX virtual-serial RTU/ASCII frames with independent
+CRC/LRC checks, numeric/string bit-table compatibility, same-address aliases,
+short responses, failure statistics, one-shot failure exit status, real device
+stop/restart, bounded MQTT shutdown/outgoing queue, and TLS/QoS2 across both MQTT
+versions and output modes. See :doc:`v1-compatibility` for intentional fixes and
+:doc:`csv-migration` for migration instructions and the reusable AI prompt.
+
+Install serial extras in the development environment and both test fixtures.
+With the baseline, simulator and private broker variables above, run::
+
+    export MODPOLL_MQTT_INTEGRATION=1
+    mise exec -- poetry install --all-extras
+    mise exec -- poetry run pytest -q --junitxml=/tmp/modpoll-acceptance.xml
+    mise exec -- poetry run python tools/verify_modsim_equivalence.py --modpoll-1x "$MODPOLL_1X_SOURCE" --modsim "$MODSIM_SOURCE" --report /tmp/modpoll-equivalence.json
+
+The TLS tests create temporary certificates using OpenSSL and own an isolated
+Docker broker. CI runs the transport and failure tests in its interoperability
+job and retains their JUnit report alongside the MQTT/equivalence reports.
+Virtual terminals prove framing and software behavior, not RS485 wiring or
+physical timing. The tested CI range is Python 3.10–3.12 on Linux; application
+packaging and preview publication remain M4 work.

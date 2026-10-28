@@ -12,6 +12,8 @@ Welcome to Modpoll's documentation!
     usage
     configure
     validation
+    v1-compatibility
+    csv-migration
     changelog
 
 Indices and tables

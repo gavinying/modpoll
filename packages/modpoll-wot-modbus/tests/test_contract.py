@@ -132,7 +132,7 @@ class ContractTests(unittest.TestCase):
             lambda d, g, m: g["modpoll:members"].append(copy.deepcopy(m)),
             lambda d, g, m: d["properties"].update({"missing": {"type": "number"}}),
             lambda d, g, m: d["properties"]["value"].update({"writeOnly": True}),
-            lambda d, g, m: g.update({"modv:entity": "Coil"}),
+            lambda d, g, m: g.update({"modv:entity": "Coil", "modv:quantity": 8}),
             lambda d, g, m: d.update({"modpoll:unknown": 1}),
         ]
         for index, mutation in enumerate(mutations):

@@ -31,7 +31,7 @@ def test_rtu_with_ascii_framer_supported(monkeypatch):
 
     mt._create_modbus_client(args)
 
-    assert captured["framer"] is mt.ModbusAsciiFramer
+    assert captured["framer"] is mt.FramerType.ASCII
 
 
 def test_tcp_with_ascii_framer_rejected():
@@ -89,7 +89,7 @@ def test_tcp_socket_framer_is_applied(monkeypatch):
     client = mt._create_modbus_client(args)
 
     assert client == "tcp-client"
-    assert captured["framer"] is mt.ModbusSocketFramer
+    assert captured["framer"] is mt.FramerType.SOCKET
 
 
 def test_rtu_alias_still_parses(monkeypatch):
@@ -116,3 +116,17 @@ def test_rtu_alias_still_parses(monkeypatch):
 
     assert client == "serial-client"
     assert captured["port"] == "/dev/ttyUSB0"
+
+
+@pytest.mark.parametrize(
+    "transport,framer",
+    [("serial", "rtu"), ("serial", "ascii"), ("tcp", "socket"), ("udp", "socket")],
+)
+def test_explicit_framer_constructs_real_pymodbus_client(transport, framer):
+    endpoint = "loop://" if transport == "serial" else "localhost"
+    args = _fake_args(
+        ["--config", "unused.tm.json", "--" + transport, endpoint, "--framer", framer]
+    )
+    client = mt._create_modbus_client(args)
+    assert client is not None
+    client.close()

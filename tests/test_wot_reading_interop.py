@@ -385,3 +385,100 @@ def test_multiple_models_send_their_own_unit_ids(live_modsim, tmp_path):
         finally:
             proxy.shutdown()
             thread.join(timeout=5)
+
+
+@pytest.mark.parametrize("word_big", [True, False])
+def test_numeric_bit_table_csv_parity_uses_complete_bytes(
+    live_modsim, tmp_path, word_big
+):
+    import os
+
+    baseline = os.environ.get("MODPOLL_1X_SOURCE")
+    if not baseline:
+        pytest.skip("requires installed v1 baseline")
+    payload = b"ABC\x00"
+    bits = [bool(byte & (1 << (7 - index))) for byte in payload for index in range(8)]
+    client = ModbusTcpClient("127.0.0.1", port=live_modsim)
+    try:
+        assert client.connect()
+        assert not client.write_coils(0, bits, slave=1).isError()
+    finally:
+        client.close()
+    document = meter_model("bits")
+    document["properties"] = {}
+    document["modpoll:acquisition"] = []
+    rows = ["device,bits,1"]
+    cases = [
+        ("unsigned16", "uint16", 16, "integer"),
+        ("unsigned32", "uint32", 32, "integer"),
+        ("float32", "float32", 32, "number"),
+        ("label", "string3", 24, "string"),
+    ]
+    for name, dtype, count, type_ in cases:
+        document["properties"][name] = {"type": type_, "readOnly": True}
+        document["modpoll:acquisition"].append(
+            {
+                "modv:entity": "Coil",
+                "modv:address": 0,
+                "modv:quantity": count,
+                "modv:mostSignificantByte": True,
+                "modv:mostSignificantWord": word_big,
+                "modpoll:members": [
+                    {
+                        "modpoll:property": name,
+                        "modpoll:offset": 0,
+                        "modpoll:dataType": dtype,
+                    }
+                ],
+            }
+        )
+        rows += [
+            f"poll,coil,0,{count},BE_" + ("BE" if word_big else "LE"),
+            f"ref,{name},0,{dtype},r",
+        ]
+    csv = tmp_path / "bits.csv"
+    csv.write_text("\n".join(rows) + "\n")
+    model = tmp_path / "bits.tm.json"
+    model.write_text(json.dumps(document))
+    expected = {
+        "bits": {
+            "unsigned16": 0x4142,
+            "unsigned32": 0x41424300,
+            "float32": struct.unpack(">f", payload)[0],
+            "label": "ABC",
+        }
+    }
+    for label, executable, config in [
+        ("csv", str(Path(baseline) / ".venv/bin/python"), csv),
+        ("tm", sys.executable, model),
+    ]:
+        output = tmp_path / (label + ".json")
+        result = subprocess.run(
+            [
+                executable,
+                "-m",
+                "modpoll",
+                "--once",
+                "--daemon",
+                "--config",
+                str(config),
+                "--tcp",
+                "127.0.0.1",
+                "--tcp-port",
+                str(live_modsim),
+                "--interval",
+                "0",
+                "--delay",
+                "0",
+                "--export",
+                str(output),
+                "--loglevel",
+                "ERROR",
+            ],
+            cwd=Path(baseline) if label == "csv" else ROOT,
+            text=True,
+            capture_output=True,
+            timeout=15,
+        )
+        assert result.returncode == 0 and not result.stderr, result.stderr
+        assert json.loads(output.read_text()) == expected

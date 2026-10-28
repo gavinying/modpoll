@@ -47,6 +47,10 @@ class Member:
     def width(self):
         return type_width(self.data_type)
 
+    @property
+    def bit_group_width(self):
+        return type_width(self.data_type, bit_table=True)
+
 
 @dataclass(frozen=True)
 class Group:
@@ -57,11 +61,13 @@ class Group:
     members: tuple[Member, ...]
 
 
-def type_width(dtype):
+def type_width(dtype, *, bit_table=False):
     if dtype in WIDTHS:
-        return WIDTHS[dtype]
+        width = WIDTHS[dtype]
+        return width * 2 if bit_table and not dtype.startswith("bool") else width
     if re.fullmatch(r"string[1-9][0-9]{0,3}", dtype):
-        return (int(dtype[6:]) + 1) // 2
+        length = int(dtype[6:])
+        return length if bit_table else (length + 1) // 2
     raise AcquisitionError(f"unsupported data type: {dtype}")
 
 
@@ -118,7 +124,6 @@ def parse_acquisition(document) -> tuple[Group, ...]:
             + ("BE" if group["modv:mostSignificantWord"] else "LE")
         )
         members = []
-        locations = set()
         for j, member in enumerate(group["modpoll:members"]):
             mp = f"{path}/modpoll:members/{j}"
             name = member["modpoll:property"]
@@ -128,22 +133,17 @@ def parse_acquisition(document) -> tuple[Group, ...]:
             if not isinstance(prop, dict):
                 raise AcquisitionError(f"{mp}: expected property schema")
             dtype, offset = member["modpoll:dataType"], member["modpoll:offset"]
-            width = type_width(dtype)
+            width = type_width(dtype, bit_table=bits)
             # 1.x bit table references count eight-bit groups, not physical bits.
             limit = (count + 7) // 8 if bits else count
-            if offset + width > limit:
+            if offset + width > limit or (
+                bits and not dtype.startswith("bool") and (offset + width) * 8 > count
+            ):
                 raise AcquisitionError(f"{mp}: member outside group")
             bit = member.get("modpoll:bit")
-            if (offset, bit) in locations:
-                raise AcquisitionError(f"{mp}: duplicate backing address/bit in group")
-            locations.add((offset, bit))
             if bit is not None and (bits or dtype != "bool"):
                 raise AcquisitionError(
                     f"{mp}: register bit selector requires register bool"
-                )
-            if bits and (not dtype.startswith("bool")):
-                raise AcquisitionError(
-                    f"{mp}: bit tables support bool/bool8/bool16 only"
                 )
             for flag in ("readOnly", "writeOnly"):
                 if flag in prop and type(prop[flag]) is not bool:

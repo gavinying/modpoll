@@ -126,7 +126,7 @@ def validate_forms(document, groups, unit_id, kind):
                 bit_table = group.table in ("coil", "discrete_input")
                 expected_address = group.start + member.offset * (8 if bit_table else 1)
                 expected_quantity = (
-                    min(member.width * 8, group.quantity - member.offset * 8)
+                    min(member.bit_group_width * 8, group.quantity - member.offset * 8)
                     if bit_table
                     else member.width
                 )
