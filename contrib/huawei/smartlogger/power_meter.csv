@@ -2,7 +2,7 @@ device,SmartLogger01,1,,,,
 poll,holding_register,32260,33,BE_BE,,
 ref,1_PHASE_A_VOLTAGE,32260,uint32,r,V,100
 ref,2_PHASE_B_VOLTAGE,32262,uint32,r,V,100
-ref,3_PHASE_C_VOLTAGE,32264,unit32,r,V,100
+ref,3_PHASE_C_VOLTAGE,32264,uint32,r,V,100
 ref,4_AB_LINE_VOLTAGE,32266,uint32,r,V,100
 ref,5_BC_LINE_VOLTAGE,32268,uint32,r,V,100
 ref,6_CA_LINE_VOLTAGE,32270,uint32,r,V,100
