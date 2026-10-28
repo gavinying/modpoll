@@ -72,6 +72,9 @@ def main():
         print("%s:%s" % (image, tag))
     with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
         output.write("latest=%s\n" % str(is_latest).lower())
+        output.write(
+            "docs=%s\n" % str(str(parse_version(os.environ["TAG"])[0]) in tags).lower()
+        )
 
 
 if __name__ == "__main__":
