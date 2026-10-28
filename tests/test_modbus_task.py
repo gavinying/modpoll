@@ -78,14 +78,15 @@ def test_each_configuration_owns_its_client(monkeypatch, tmp_path):
 
     assert len(handlers) == 2
     assert handlers[0].modbus_client is clients[0]
-    assert handlers[1].modbus_client is clients[2]
+    assert len(clients) == 2  # Invalid files do not allocate a transport client.
+    assert handlers[1].modbus_client is clients[1]
     assert handlers[0].connect()
     handlers[0].close()
     assert clients[0].closed == 1
-    assert clients[2].closed == 0
+    assert clients[1].closed == 0
     assert handlers[1].connect()
     handlers[1].close()
-    assert clients[2].closed == 1
+    assert clients[1].closed == 1
 
 
 def test_setup_closes_previously_created_handlers_on_initialization_failure(
@@ -98,6 +99,7 @@ def test_setup_closes_previously_created_handlers_on_initialization_failure(
     class StubHandler:
         def __init__(self, client, config, *args, **kwargs):
             self.config = config
+            self.model = None
             self.closed = False
             handlers.append(self)
 

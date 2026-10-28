@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@node-wot/binding-modbus": "0.9.2",
+    "@node-wot/core": "0.9.2"
+  },
+  "name": "modpoll-wot-interop",
+  "private": true,
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=20"
+  }
+}

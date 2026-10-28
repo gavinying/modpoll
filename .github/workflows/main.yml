@@ -99,6 +99,26 @@ jobs:
           .interop/modsim/.venv/bin/pip install -r .interop/modsim/requirements.txt
           .interop/modsim/.venv/bin/pip install --no-deps ./.interop/modsim
           .interop/modsim/.venv/bin/pip install pyserial==3.5
+      - name: Set up pinned external WoT Consumer
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.16.0'
+          cache: npm
+          cache-dependency-path: tools/wot-interop/package-lock.json
+      - name: Install locked node-wot interop tools
+        run: npm ci --prefix tools/wot-interop --ignore-scripts --no-audit --no-fund
+      - name: Verify candidate contract and external TD read/write semantics
+        env:
+          PYTHONPATH: packages/modpoll-wot
+          MODSIM_PYTHON: ${{ github.workspace }}/.interop/modsim/.venv/bin/python
+          MODSIM_SOURCE: ${{ github.workspace }}/.interop/modsim
+        run: |
+          poetry run python -m modpoll_wot --config examples/modsim-standard.tm.json
+          poetry run pytest -q tests/test_profile_interop.py --junitxml=.interop/profile-results.xml
+      - name: Verify independently installed producer and consumer wheels
+        run: |
+          (cd packages/modpoll-wot && poetry build)
+          poetry run python tools/verify-wot-distribution.py --wheel packages/modpoll-wot/dist/*.whl --modsim .interop/modsim --report .interop/distribution-results.json
       - name: Compare CSV, TM and TD requests and outputs
         run: |
           poetry run python tools/verify_modsim_equivalence.py --modpoll-1x .interop/modpoll-1x --modsim .interop/modsim --report .interop/report.json
@@ -132,3 +152,5 @@ jobs:
             .interop/report.json
             .interop/mqtt-results.xml
             .interop/transport-results.xml
+            .interop/profile-results.xml
+            .interop/distribution-results.json

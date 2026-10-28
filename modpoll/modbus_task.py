@@ -1,4 +1,5 @@
 import json
+import copy
 import logging
 import math
 import os
@@ -86,6 +87,18 @@ class _PayloadDecoder:
         payload = self.data[self.offset : self.offset + count]
         self.offset += count
         return bytes(payload)
+
+    def decode_string_ordered(self, count):
+        span = ((count + 1) // 2) * 2
+        payload = self.data[self.offset : self.offset + span]
+        self.offset += span
+        if len(payload) != span:
+            raise ValueError("not enough string payload")
+        if self.byteorder == "little":
+            payload = b"".join(payload[i : i + 2][::-1] for i in range(0, span, 2))
+        if self.wordorder == "little":
+            payload = b"".join(payload[i : i + 2] for i in range(span - 2, -1, -2))
+        return bytes(payload[:count])
 
     def decode_bits(self):
         value = self.data[self.offset]
@@ -196,6 +209,33 @@ class Poller:
                     for ref in self.readableReferences:
                         offset = ref.address - self.start_address
                         span = ref.bit_group_width
+                        if getattr(ref, "physical_bits", False):
+                            try:
+                                count = ref.bit_count
+                                if (
+                                    offset < 0
+                                    or offset + count > self.size
+                                    or offset + count > len(data)
+                                ):
+                                    raise ValueError("short physical bit response")
+                                bits = data[offset : offset + count]
+                                if ref.dtype.startswith("bool"):
+                                    ref.update_value(
+                                        bool(bits[0]) if ref.scalar else list(bits)
+                                    )
+                                else:
+                                    decoder = self._get_decoder(bits, ref)
+                                    self._decode_and_update_reference(ref, decoder)
+                                if not ref.valid_this_poll:
+                                    decode_success = False
+                            except Exception:
+                                ref.update_value(None, valid=False)
+                                decode_success = False
+                                self.logger.exception(
+                                    "Failed to decode physical bit reference %s",
+                                    ref.name,
+                                )
+                            continue
                         if (
                             offset < 0
                             or offset + span > group_count
@@ -229,7 +269,7 @@ class Poller:
                                         "numeric/string bit span exceeds requested bits"
                                     )
                                 decoder = self._get_decoder(
-                                    data[: (self.size // 8) * 8]
+                                    data[: (self.size // 8) * 8], ref
                                 )
                                 decoder.skip_bytes(offset)
                                 self._decode_and_update_reference(ref, decoder)
@@ -249,7 +289,7 @@ class Poller:
                     )
                     for ref in sorted_refs:
                         # Create and position a new decoder for each reference for robustness
-                        decoder = self._get_decoder(data)
+                        decoder = self._get_decoder(data, ref)
                         offset_bytes = (ref.address - self.start_address) * 2
                         if offset_bytes < 0:
                             self.logger.warning(
@@ -288,9 +328,10 @@ class Poller:
             ref.update_value(None)
         return False
 
-    def _get_decoder(self, data):
-        byteorder = "little" if self.endian.upper().startswith("LE_") else "big"
-        wordorder = "little" if self.endian.upper().endswith("_LE") else "big"
+    def _get_decoder(self, data, ref=None):
+        endian = getattr(ref, "endian", None) or self.endian
+        byteorder = "little" if endian.upper().startswith("LE_") else "big"
+        wordorder = "little" if endian.upper().endswith("_LE") else "big"
         return _PayloadDecoder(
             data,
             byteorder=byteorder,
@@ -299,6 +340,9 @@ class Poller:
         )
 
     def _decode_and_update_reference(self, ref: "Reference", decoder: _PayloadDecoder):
+        if getattr(ref, "scalar", False) and ref.dtype == "uint16":
+            ref.update_value(bool(decoder.decode_16bit_uint()))
+            return
         if ref.dtype == "bool" and ref.bit is not None:
             # Bit references read a 16-bit register and extract one bit.
             register_value = decoder.decode_16bit_uint()
@@ -324,9 +368,14 @@ class Poller:
         if ref.dtype in decode_methods:
             ref.update_value(decode_methods[ref.dtype]())
         elif ref.dtype.startswith("string"):
-            ref.update_value(
-                decoder.decode_string(int(ref.dtype[6:])).decode("utf-8").rstrip("\x00")
+            count = int(ref.dtype[6:])
+            payload = (
+                decoder.decode_string_ordered(count)
+                if getattr(ref, "endian", None) is not None
+                and not getattr(ref, "physical_bits", False)
+                else decoder.decode_string(count)
             )
+            ref.update_value(payload.decode("utf-8").rstrip("\x00"))
 
     def add_readable_reference(self, ref: "Reference"):
         if not any(existing is ref for existing in self.readableReferences):
@@ -429,10 +478,17 @@ class ModbusHandler:
         mqtt_single_publish: bool = False,
         autoremove: bool = False,
         unit_id: Optional[int] = None,
+        instance_host: Optional[str] = None,
+        instance_port: Optional[int] = None,
+        instance_parameters=None,
     ):
         self.modbus_client = modbus_client
         self.config_file = config_file
         self.unit_id = unit_id
+        self.instance_host = instance_host
+        self.instance_port = instance_port
+        self.instance_parameters = instance_parameters
+        self.model = None
         self.mqtt_handler = mqtt_handler
         self.timeout = timeout
         self.interval = interval
@@ -453,9 +509,15 @@ class ModbusHandler:
         self.logger.info(f"Loading WoT config from: {self.config_file}")
         try:
             model = read_model(
-                self.config_file, timeout=self.timeout, unit_id=self.unit_id
+                self.config_file,
+                timeout=self.timeout,
+                unit_id=self.unit_id,
+                host=self.instance_host,
+                port=self.instance_port,
+                parameters=self.instance_parameters,
             )
             self.deviceList = create_devices(model)
+            self.model = model
         except (ValueError, OSError, requests.RequestException) as exc:
             self.logger.error("Invalid WoT configuration: %s", exc)
             return False
@@ -690,10 +752,17 @@ def setup_modbus_handlers(args, mqtt_handler: Optional[MqttHandler] = None):
     modbus_handlers = []
     current_handler = None
     device_names = set()
+    parameters = None
+    if args.param:
+        import modpoll_wot
+
+        if not hasattr(modpoll_wot, "parse_parameters"):
+            raise ValueError("TM parameters require the profile 0.2 interpreter")
+        parameters = modpoll_wot.parse_parameters(args.param)
     try:
         for config_file in args.config:
             current_handler = ModbusHandler(
-                _create_modbus_client(args),
+                None,
                 config_file,
                 mqtt_handler,
                 timeout=args.timeout,
@@ -704,8 +773,20 @@ def setup_modbus_handlers(args, mqtt_handler: Optional[MqttHandler] = None):
                 mqtt_single_publish=args.mqtt_single,
                 autoremove=args.autoremove,
                 unit_id=args.unit_id,
+                instance_host=args.tcp,
+                instance_port=args.tcp_port,
+                instance_parameters=parameters,
             )
             if current_handler.load_config():
+                effective_args = copy.copy(args)
+                endpoint = getattr(current_handler.model, "endpoint", None)
+                if endpoint is not None:
+                    if args.serial or args.udp:
+                        raise ValueError(
+                            "Use an unbound TM for serial/UDP; this configuration describes a TCP instance"
+                        )
+                    effective_args.tcp, effective_args.tcp_port = endpoint
+                current_handler.modbus_client = _create_modbus_client(effective_args)
                 names = {device.name for device in current_handler.get_device_list()}
                 duplicates = names & device_names
                 if duplicates:
@@ -774,7 +855,7 @@ def _create_serial_client(args, port, framer):
 def _create_tcp_client(args, framer):
     client_args = {
         "host": args.tcp,
-        "port": args.tcp_port,
+        "port": 502 if args.tcp_port is None else args.tcp_port,
         "timeout": args.timeout,
     }
     if framer:

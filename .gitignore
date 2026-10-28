@@ -253,3 +253,6 @@ $RECYCLE.BIN/
 
 # Generated from CHANGELOG.md by make docs
 /docs/changelog.rst
+
+# Isolated WoT interoperability dependencies
+node_modules/

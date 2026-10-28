@@ -24,10 +24,17 @@ def get_parser():
         nargs="+",
     )
     parser.add_argument(
+        "--param",
+        action="append",
+        default=[],
+        metavar="NAME=JSON",
+        help="Typed TM placeholder binding (requires the profile 0.2 interpreter)",
+    )
+    parser.add_argument(
         "--unit-id",
         type=int,
         default=None,
-        help="Override model Unit ID (1-254); otherwise use modv:unitID or 1",
+        help="Override instance Unit ID (1-254); otherwise use TD, legacy model default, or 1",
     )
     parser.add_argument(
         "-d",
@@ -52,10 +59,14 @@ def get_parser():
         help="The time interval in seconds between two polling, Defaults to 0.5",
     )
     parser.add_argument(
-        "--tcp", help="Act as a Modbus TCP master, connecting to host TCP"
+        "--tcp",
+        help="Explicit TCP host; a profile 0.2 TD uses its endpoint when omitted",
     )
     parser.add_argument(
-        "--tcp-port", type=int, default=502, help="Port for MODBUS TCP. Defaults to 502"
+        "--tcp-port",
+        type=int,
+        default=None,
+        help="Port for MODBUS TCP. Defaults to 502",
     )
     parser.add_argument(
         "--udp", help="Act as a Modbus UDP master, connecting to host UDP"

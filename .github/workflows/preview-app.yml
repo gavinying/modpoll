@@ -118,6 +118,8 @@ jobs:
           fi
           cp packages/modpoll-wot/modpoll_wot/schemas/acquisition-0.1.json vocab/wot-modbus/
           cp packages/modpoll-wot/CONTRACT.md vocab/wot-modbus/contract-0.1.txt
+          cp packages/modpoll-wot/modpoll_wot/schemas/acquisition-0.2.json vocab/wot-modbus/
+          cp packages/modpoll-wot/profile.md vocab/wot-modbus/contract-0.2.txt
           python .github/scripts/assemble-docs.py docs/_build/html .site v2 --vocab vocab
           printf '%s\n' "$GITHUB_SHA" > .site/v2/source-sha.txt
       - uses: peaceiris/actions-gh-pages@v4

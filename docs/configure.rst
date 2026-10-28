@@ -61,3 +61,14 @@ Standard schema validity alone does not establish device correctness or prove
 that a general WoT consumer will implement the project's acquisition/transform
 extensions. This change adds no HTTP/cache service. See :doc:`v1-compatibility` for intentional
 fixes and :doc:`csv-migration` for the reusable AI conversion prompt.
+
+Standard Form candidate
+-----------------------
+
+The shared source candidate ``0.2.0a1`` introduces profile ``0.2`` with standard
+Form mappings and explicit blocks. The released app still pins ``0.1.0a1``;
+publish and verify the producer before updating consumer pins. See
+``packages/modpoll-wot/profile.md`` for API details, parameter precedence,
+necessary extensions and external Consumer limits. The source example is
+``examples/modsim-standard.tm.json``. Generated TDs are instance artifacts;
+the unpublished ``0.2-pilot`` is retired.

@@ -1,10 +1,20 @@
 """Adapt validated WoT configuration to the existing Modpoll execution engine."""
 
+import modpoll_wot
 from modpoll_wot.loading import load_model, loads_model, MAX_BYTES
 import requests
 
 
-def read_model(location, *, timeout, unit_id):
+def read_model(location, *, timeout, unit_id, host=None, port=None, parameters=None):
+    # Released 0.1 consumers remain usable until the producer candidate is
+    # published and installed. Connection metadata is interpreted by 0.2 only.
+    if parameters and not hasattr(modpoll_wot, "instantiate"):
+        raise ValueError("TM parameters require the profile 0.2 interpreter")
+    instance = (
+        {"host": host, "port": port, "parameters": parameters}
+        if hasattr(modpoll_wot, "instantiate")
+        else {}
+    )
     if location.startswith(("http://", "https://")):
         with requests.get(location, timeout=timeout, stream=True) as response:
             response.raise_for_status()
@@ -14,8 +24,10 @@ def read_model(location, *, timeout, unit_id):
                 if size > MAX_BYTES:
                     raise ValueError(f"{location}: configuration exceeds 1 MiB")
                 chunks.append(chunk)
-        return loads_model(b"".join(chunks), source=location, unit_id=unit_id)
-    return load_model(location, unit_id=unit_id)
+        return loads_model(
+            b"".join(chunks), source=location, unit_id=unit_id, **instance
+        )
+    return load_model(location, unit_id=unit_id, **instance)
 
 
 def create_devices(model):
@@ -51,6 +63,10 @@ def create_devices(model):
                 member.unit,
                 None if member.multiplier is None else float(member.multiplier),
             )
+            reference.endian = getattr(member, "byte_order", None)
+            reference.physical_bits = getattr(member, "physical_bits", False)
+            reference.bit_count = getattr(member, "bit_count", None)
+            reference.scalar = getattr(member, "scalar", False)
             if member.readable:
                 poller.add_readable_reference(reference)
             device.add_reference_mapping(reference)
