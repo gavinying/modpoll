@@ -37,13 +37,12 @@ runs:
       uses: actions/cache@v4
       with:
         path: .venv
-        key: venv-${{ runner.os }}-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml', 'poetry.lock') }}
+        key: venv-${{ runner.os }}-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml', 'poetry.lock', 'packages/**/pyproject.toml') }}
         restore-keys: |
           venv-${{ runner.os }}-${{ inputs.python-version }}-
 
     - name: Install dependencies
-      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: |
         poetry config virtualenvs.in-project true
-        poetry install --no-interaction --no-root
+        poetry install --no-interaction
       shell: bash

@@ -13,6 +13,7 @@ RUN poetry config virtualenvs.create false
 WORKDIR /app
 COPY poetry.lock pyproject.toml README.md /app/
 COPY modpoll /app/modpoll
+COPY packages /app/packages
 
 # Project initialization:
 RUN poetry install --no-interaction --no-ansi --all-extras --without dev,docs

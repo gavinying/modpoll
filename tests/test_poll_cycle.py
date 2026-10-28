@@ -150,79 +150,6 @@ def test_export_merges_multiple_handlers_and_preserves_old_file_on_failure(
     assert list(tmp_path.glob(".snapshot.json.*.tmp")) == []
 
 
-def test_csv_parser_reports_line_and_keeps_valid_rows(caplog):
-    import csv
-    from io import StringIO
-
-    handler = ModbusHandler(FakeClient(), "unused.csv", daemon=True)
-    rows = csv.reader(
-        StringIO(
-            "device,meter,1,description\n"
-            "poll,holding_register,0,1,BE_BE\n"
-            "ref,value,0,uint16,r\n"
-            "poll,holding_register,not-an-address,1,BE_BE\n"
-            "device,backup,2,description\n"
-            "poll,holding_register,0,1,BE_BE\n"
-            "ref,value,0,uint16,r\n"
-        )
-    )
-
-    devices = handler._parse_config(rows)
-
-    assert [device.name for device in devices] == ["meter", "backup"]
-    assert "unused.csv" in caplog.text
-    assert "line 4" in caplog.text.lower()
-    assert "start address" in caplog.text.lower()
-
-
-def test_csv_parser_rejects_invalid_ranges_and_device_ids(caplog):
-    import csv
-    from io import StringIO
-
-    handler = ModbusHandler(FakeClient(), "unused.csv", daemon=True)
-    rows = csv.reader(
-        StringIO(
-            "device,meter,1,description\n"
-            "poll,holding_register,65535,2,BE_BE\n"
-            "poll,holding_register,0,0,BE_BE\n"
-            "poll,holding_register,0,1,BE_BE\n"
-            "ref,value,0,uint16,r,,not-a-number\n"
-            "device,backup,256,invalid-id\n"
-        )
-    )
-
-    devices = handler._parse_config(rows)
-
-    assert [device.name for device in devices] == ["meter"]
-    assert len(devices[0].pollerList) == 1
-    assert not devices[0].references
-    assert "address" in caplog.text.lower()
-    assert "size" in caplog.text.lower()
-    assert "device id" in caplog.text.lower()
-
-
-def test_csv_parser_rejects_unsupported_dtype_and_invalid_rw_mode(caplog):
-    import csv
-    from io import StringIO
-
-    handler = ModbusHandler(FakeClient(), "unused.csv", daemon=True)
-    rows = csv.reader(
-        StringIO(
-            "device,meter,1,description\n"
-            "poll,holding_register,0,2,BE_BE\n"
-            "ref,bad_type,0,decimal128,r\n"
-            "ref,bad_mode,1,uint16,readwrite\n"
-        )
-    )
-
-    devices = handler._parse_config(rows)
-
-    assert len(devices) == 1
-    assert not devices[0].references
-    assert "unsupported dtype" in caplog.text.lower()
-    assert "read/write mode" in caplog.text.lower()
-
-
 def test_autoremove_requires_three_consecutive_failures_and_restart(monkeypatch):
     from modpoll.modbus_task import Poller
 
@@ -320,56 +247,8 @@ def test_failure_and_recovery_never_publish_old_samples(monkeypatch, tmp_path):
     assert len(mqtt.messages) == before
 
 
-def test_csv_duplicate_device_names_fail_with_filename_and_line():
-    import csv
-    from io import StringIO
-    import pytest
-
-    handler = ModbusHandler(FakeClient(), "site.csv", daemon=True)
-    rows = csv.reader(
-        StringIO("device,meter,1,description\ndevice,meter,2,description\n")
-    )
-    with pytest.raises(ValueError, match=r"site.csv: meter \(line 2\)"):
-        handler._parse_config(rows)
-
-
-def test_documented_modsim_csv_preserves_device_and_reference_mappings(caplog):
-    import csv
-    from pathlib import Path
-
-    path = Path(__file__).resolve().parents[1] / "examples/modsim.csv"
-    handler = ModbusHandler(FakeClient(), str(path), daemon=True)
-    with path.open() as source:
-        devices = handler._parse_config(csv.reader(source))
-    assert len(devices) == 1
-    device = devices[0]
-    assert (device.name, device.devid) == ("modsim01", 1)
-    assert len(device.references) == 37
-    assert [poller.fc for poller in device.pollerList] == [1, 2, 4, 3]
-    assert (
-        device.references["coil01-08"].address,
-        device.references["coil01-08"].dtype,
-    ) == (0, "bool8")
-    assert (
-        device.references["coil09-16"].address,
-        device.references["coil09-16"].dtype,
-    ) == (1, "bool8")
-    assert not [record for record in caplog.records if record.levelno >= 30]
-
-
 def test_nonfinite_scale_is_rejected_and_nonfinite_sample_is_invalid(caplog):
-    import csv
-    from io import StringIO
-
-    handler = ModbusHandler(FakeClient(), "site.csv", daemon=True)
-    rows = csv.reader(
-        StringIO(
-            "device,meter,1,description\npoll,holding_register,0,1,BE_BE\nref,value,0,uint16,r,,nan\n"
-        )
-    )
-    device = handler._parse_config(rows)[0]
-    assert not device.references
-    assert "invalid scale" in caplog.text.lower()
+    device = Device("meter", 1)
     ref = Reference(device, "temperature", "0", "float32", "r", None, None)
     ref.update_value(float("inf"))
     assert ref.val is None and not ref.valid_this_poll
@@ -411,24 +290,6 @@ def test_snapshot_rejects_nonstandard_nan_without_damaging_existing_file(tmp_pat
     assert list(tmp_path.glob(".snapshot.json.*.tmp")) == []
 
 
-def test_register_read_limit_and_invalid_device_do_not_reuse_context():
-    import csv
-    from io import StringIO
-
-    handler = ModbusHandler(FakeClient(), "site.csv", daemon=True)
-    devices = handler._parse_config(
-        csv.reader(
-            StringIO(
-                "device,meter,1\npoll,holding_register,0,125,BE_BE\n"
-                "poll,holding_register,0,126,BE_BE\n"
-                "device,broken\nref,misplaced,0,uint16,r\n"
-            )
-        )
-    )
-    assert len(devices[0].pollerList) == 1
-    assert not devices[0].references
-
-
 def test_odd_length_string_does_not_include_padding_byte():
     from modpoll.modbus_task import Poller
 
@@ -447,16 +308,3 @@ def test_odd_length_string_does_not_include_padding_byte():
 
     assert poller.poll(Client())
     assert ref.val == "ABC"
-
-
-def test_bit_selector_is_rejected_for_coil_polls():
-    import csv
-    from io import StringIO
-
-    handler = ModbusHandler(FakeClient(), "site.csv", daemon=True)
-    devices = handler._parse_config(
-        csv.reader(
-            StringIO("device,meter,1\npoll,coil,0,16,BE_BE\nref,bit,0:1,bool,r\n")
-        )
-    )
-    assert not devices[0].references

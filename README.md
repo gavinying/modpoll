@@ -1,3 +1,5 @@
+> **2.x development branch.** This checkout accepts WoT TM/TD JSON. CSV remains supported on the 1.x `main` branch. A 2.x release has not been published yet. For development, run `mise install` and `mise exec -- poetry install`, then prefix the examples below with `mise exec -- poetry run`.
+
 # Modpoll - A New Command-line Tool for Modbus and MQTT
 
 [![Release](https://img.shields.io/github/v/release/top-maker/modpoll)](https://img.shields.io/github/v/release/top-maker/modpoll)
@@ -84,7 +86,7 @@ Use the public Modbus TCP simulator at `modsim.topmaker.net:502` for a quick tes
 ```bash
 modpoll --once \
   --tcp modsim.topmaker.net --tcp-port 502 \
-  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
+  --config examples/modsim.tm.json
 ```
 
 ### Run a local simulator
@@ -100,10 +102,10 @@ In another terminal, run:
 ```bash
 modpoll --once \
   --tcp 127.0.0.1 --tcp-port 5020 \
-  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
+  --config examples/modsim.tm.json
 ```
 
-You can download the configuration and pass a local file instead of the URL.
+The JSON examples are included in this checkout. A public URL containing the same JSON format is also accepted.
 
 <p align="center">
   <img src="docs/assets/screenshot-modpoll.png">
@@ -116,79 +118,19 @@ You can download the configuration and pass a local file instead of the URL.
 - Serial transports: use `--serial PORT --framer ascii` (alias: `--rtu` still accepted); pyserial URLs such as `socket://host:port` and `rfc2217://host:port` work for serial-over-TCP tunnels.
 - Serial supports framers `ascii` and `rtu` (pymodbus defaults to RTU if `--framer default`). Binary framer is no longer supported in pymodbus 3.9+.
 
-### Prepare Modbus configure file
+### Prepare a WoT configuration
 
-The [modsim configuration](https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv) maps the simulator's four tables as follows:
+Use [examples/modsim.tm.json](examples/modsim.tm.json) for the simulator model or
+[examples/modsim.td.json](examples/modsim.td.json) for a concrete TCP description.
+Both preserve the four original blocks and 37 output references. `--unit-id`
+overrides each model's optional root `modv:unitID` (fallback 1); a concrete TD's forms must agree with it.
+The existing transport, polling, output and MQTT arguments remain available.
 
-```CSV
-device,modsim01,1,,
-poll,coil,0,16,BE_BE
-ref,coil01-08,0,bool8,rw
-ref,coil09-16,1,bool8,rw
-poll,discrete_input,10000,16,BE_BE
-ref,di01-08,10000,bool8,rw
-ref,di09-16,10001,bool8,rw
-poll,input_register,30000,20,BE_BE
-ref,input_reg01,30000,uint16,rw
-ref,input_reg02,30001,uint16,rw
-ref,input_reg03,30002,uint16,rw
-ref,input_reg04,30003,uint16,rw
-ref,input_reg05,30004,int16,rw
-ref,input_reg06,30005,int16,rw
-ref,input_reg07,30006,int16,rw
-ref,input_reg08,30007,int16,rw
-ref,input_reg09,30008,uint32,rw
-ref,input_reg10,30010,uint32,rw
-ref,input_reg11,30012,int32,rw
-ref,input_reg12,30014,int32,rw
-ref,input_reg13,30016,float32,rw
-ref,input_reg14,30018,float32,rw
-poll,holding_register,40000,44,BE_BE
-ref,holding_reg01,40000,uint16,rw
-ref,holding_reg02,40001,uint16,rw
-ref,holding_reg03,40002,uint16,rw
-ref,holding_reg04,40003,uint16,rw
-ref,holding_reg05,40004,int16,rw
-ref,holding_reg06,40005,int16,rw
-ref,holding_reg07,40006,int16,rw
-ref,holding_reg08,40007,int16,rw
-ref,holding_reg09,40008,uint32,rw
-ref,holding_reg10,40010,uint32,rw
-ref,holding_reg11,40012,int32,rw
-ref,holding_reg12,40014,int32,rw
-ref,holding_reg13,40016,float32,rw
-ref,holding_reg14,40018,float32,rw
-ref,holding_reg15,40020,uint64,rw
-ref,holding_reg16,40024,int64,rw
-ref,holding_reg17,40028,float64,rw
-ref,holding_reg18,40032,float64,rw
-ref,holding_reg19,40036,string16,rw
-```
-
-This configuration tells *modpoll* to do the following for each poll,
-
-- Read `16` coils from the address starting from `0` and parse the response as two 8-bits boolean values;
-- Read `16` discrete inputs from the address starting from `10000` and parse the response as two 8-bits boolean values;
-- Read `20` input registers from the address starting from `30000` and parse data accordingly;
-- Read `44` holding registers from the address starting from `40000` and parse data accordingly;
-
-> Notice the holding registers contain a 16-byte long string, which counts as 8 registers in poll size, because Modbus protocol defines a holding register as 2-byte width.
-
-In practical, you usually need to customize a Modbus configuration file for your own device before running *modpoll* tool, which defines the optimal polling patterns and register mappings according to device vendor's documents.
-
-You can also take a look at [contrib](https://github.com/top-maker/modpoll/tree/main/contrib) folder, which collects a few types of device configuration shared by contributors.
-
-The configuration can be either a local file or a remote public URL resource.
-
-> *Refer to the [documentation](https://top-maker.github.io/modpoll/configure.html) site for more details.*
-
-CSV validation requires a unique device name, a device ID from 1 to 254, a positive poll size within the Modbus function-code limit, and an address range that stays within 0–65535. Reference data types, read/write modes, endian values, and scales must be valid; errors include the CSV line number. A scale of `0` is valid; non-finite scales are rejected. Non-finite floating-point samples are treated as invalid and omitted from MQTT output. Device names must also be unique across all configuration files; duplicate names stop startup. Rename conflicting devices and update their MQTT topics before upgrading.
-
-Read polls support up to 2000 bits or 125 registers. `stringN` reads exactly N bytes and occupies `(N + 1) // 2` registers. The `address:bit` syntax applies to `bool` references on register polls.
-
-When `--autoremove` is enabled, a poller is disabled after three consecutive failed polling attempts, including connection failures. A successful poll resets its failure count. Restart modpoll to retry a disabled poller; the default is to keep retrying without disabling pollers.
-
-For coil and discrete input polls, reference addresses identify consecutive eight-bit groups beginning at the poll start, as shown in the configuration example. Values follow Modbus bit order; a final partial group contains only the requested bits. Earlier versions could reverse bits or decode out-of-order references incorrectly, so consumers relying on those results should review the change.
+See [the executable contract](packages/modpoll-wot-modbus/CONTRACT.md) for field
+mapping, access flags, byte order, multiplier semantics and supported limits.
+The configuration loader rejects CSV and reports invalid model fields before
+polling. Each model describes one device; use multiple `--config` paths for
+multiple devices. Give each model a unique `title`, which is the output device name.
 
 ### Poll local device (modsim)
 
@@ -204,7 +146,7 @@ It will create a virtual Modbus TCP device running at `localhost:5020`, and you 
 modpoll \
   --tcp localhost \
   --tcp-port 5020 \
-  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
+  --config examples/modsim.tm.json
 ```
 
 > Use `sudo` before the docker command if you want to use the standard port `502`.
@@ -218,7 +160,7 @@ In a new terminal,
 ```
 modpoll \
   --tcp localhost \
-  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
+  --config examples/modsim.tm.json
 ```
 
 ### Publish data to MQTT broker
@@ -231,7 +173,7 @@ The following example uses a public MQTT broker `broker.emqx.io` for test purpos
 modpoll \
   --tcp 127.0.0.1 --tcp-port 5020 \
   --mqtt-host broker.emqx.io \
-  --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
+  --config examples/modsim.tm.json
 ```
 
 With successful data polling and publishing, you can subscribe the default data topic `modpoll/modsim01/data` on the same MQTT broker `broker.emqx.io` to view the collected data.
@@ -295,19 +237,19 @@ On Linux, use host networking to connect the container to a simulator on the hos
   docker run --rm --network host topmaker/modpoll \
     modpoll -d \
       --tcp 127.0.0.1 --tcp-port 5020 \
-      --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
+      --config examples/modsim.tm.json
   ```
 
 For host networking on other platforms, consult the Docker networking documentation.
 
 If you want to load a local configure file, you need to mount a local folder onto container volume,
-for example, if the child folder `examples` contains the config file `modsim.csv`, we can use it via the following command,
+for example, if the child folder `examples` contains the config file `modsim.tm.json`, we can use it via the following command,
 
   ```bash
   docker run --rm --network host -v $(pwd)/examples:/app/examples topmaker/modpoll \
     modpoll -d \
       --tcp 127.0.0.1 --tcp-port 5020 \
-      --config /app/examples/modsim.csv
+      --config /app/examples/modsim.tm.json
   ```
 
 
@@ -318,7 +260,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```bash
   modpoll \
     --tcp 192.168.1.10 \
-    --config examples/modsim.csv
+    --config examples/modsim.tm.json
   ```
 
 - Connect to Modbus serial device
@@ -327,7 +269,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   modpoll \
     --serial /dev/ttyUSB0 \
     --serial-baud 9600 \
-    --config contrib/eniwise/scpms6.csv
+    --config examples/modsim.tm.json
   ```
 
 - Connect to Modbus TCP device and publish data to MQTT broker
@@ -336,7 +278,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   modpoll \
     --tcp 127.0.0.1 --tcp-port 5020 \
     --mqtt-host broker.emqx.io \
-    --config examples/modsim.csv
+    --config examples/modsim.tm.json
   ```
 
 - Connect to Modbus TCP device and export a local JSON snapshot
@@ -345,7 +287,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   modpoll \
     --tcp 127.0.0.1 --tcp-port 5020 \
     --export data.json \
-    --config examples/modsim.csv
+    --config examples/modsim.tm.json
   ```
 
 - Connect to Modbus TCP devices using multiple config files
@@ -353,7 +295,7 @@ for example, if the child folder `examples` contains the config file `modsim.csv
   ```bash
   modpoll \
     --tcp 127.0.0.1 --tcp-port 5020 \
-    --config examples/modsim.csv examples/modsim2.csv
+    --config examples/modsim.tm.json examples/modsim2.tm.json
   ```
 
 

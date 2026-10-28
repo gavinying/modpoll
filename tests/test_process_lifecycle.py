@@ -1,3 +1,5 @@
+from tests.wot_helpers import write_meter
+
 """Process-level Modbus TCP lifecycle coverage without external services."""
 
 import signal
@@ -30,10 +32,7 @@ class Handler(socketserver.BaseRequestHandler):
 @pytest.mark.integration
 @pytest.mark.parametrize("sig", [signal.SIGINT, signal.SIGTERM])
 def test_process_exits_promptly_after_successful_poll(tmp_path, sig):
-    config = tmp_path / "meter.csv"
-    config.write_text(
-        "device,meter,1,description\npoll,holding_register,0,1,BE_BE\nref,value,0,uint16,r\n"
-    )
+    config = write_meter(tmp_path / "meter.tm.json")
     with FakeModbusServer(("127.0.0.1", 0), Handler) as server:
         server.polled = threading.Event()
         thread = threading.Thread(target=server.serve_forever, daemon=True)

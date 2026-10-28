@@ -15,30 +15,30 @@ Commandline Usage
 
   .. code-block:: shell
 
-    modpoll --tcp 192.168.1.10 --config examples/modsim.csv
+    modpoll --tcp 192.168.1.10 --config examples/modsim.tm.json
 
 - Connect to Modbus serial device
 
   .. code-block:: shell
 
-    modpoll --serial /dev/ttyUSB0 --serial-baud 9600 --config contrib/eniwise/scpms6.csv
+    modpoll --serial /dev/ttyUSB0 --serial-baud 9600 --config examples/modsim.tm.json
 
 - Connect to Modbus TCP device and publish data to remote MQTT broker
 
   .. code-block:: shell
 
-    modpoll --tcp 192.168.1.10 --config examples/modsim.csv --mqtt-host broker.emqx.io
+    modpoll --tcp 192.168.1.10 --config examples/modsim.tm.json --mqtt-host broker.emqx.io
 
 - Connect to Modbus TCP device and export a local JSON snapshot
 
   .. code-block:: shell
 
-    modpoll --tcp 127.0.0.1 --tcp-port 5020 --config examples/modsim.csv --export data.json
+    modpoll --tcp 127.0.0.1 --tcp-port 5020 --config examples/modsim.tm.json --export data.json
 
 Configuration File
 ------------------
 
-The configuration file (`--config`) is a CSV file that defines the devices, pollers, and references to be read.
+The configuration file (`--config`) is a WoT TM/TD JSON file that defines the devices, pollers, and references to be read.
 
 For register references (i.e., Holding or Input registers) with a ``dtype`` of ``bool``, you can specify a single bit to be extracted from the 16-bit register. This is done by appending ``:bit`` to the address, where ``bit`` is an integer from 0 to 15.
 
