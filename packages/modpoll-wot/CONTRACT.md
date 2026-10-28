@@ -1,4 +1,4 @@
-# Executable configuration contract 0.1 (development)
+# Executable configuration contract 0.1 (preview)
 
 This is Modpoll's supported WoT TM/TD 1.1 subset for replacing CSV configuration.
 It is not a general WoT runtime. The Modbus binding document remains a draft:
@@ -7,7 +7,7 @@ Its entity, address, quantity and byte/word-order vocabulary is reused. Ordered
 acquisition groups, offsets, precise decoding and multipliers are project extensions.
 They do not claim standard W3C acquisition or transformation semantics.
 
-Use `python -m modpoll_wot_modbus MODEL [--unit-id N]` to validate and inspect a
+Use `python -m modpoll_wot MODEL [--unit-id N]` to validate and inspect a
 model without opening a device connection. Schemas are bundled locally; the
 loader does not dereference contexts or remote schema dependencies. The official
 TD/TM schemas identify themselves as `1.1-12-March-2025` (Draft 7).
@@ -30,8 +30,8 @@ TD/TM schemas identify themselves as `1.1-12-March-2025` (Draft 7).
 The JSON root declares `modpoll:version: "0.1"` and `modpoll:acquisition`.
 Context aliases must match the supported project and draft Modbus namespaces;
 these are not arbitrary remotely resolved JSON-LD aliases. The project namespace
-is reserved for this development contract; its hosted documentation is not yet
-published. Concrete TD Forms use `modbus+tcp` URLs. The Form's entity, operations,
+documents contract 0.1 at https://top-maker.github.io/modpoll/vocab/wot-modbus.
+This is a project extension, not a W3C Modbus standard. Concrete TD Forms use `modbus+tcp` URLs. The Form's entity, operations,
 unit/address/quantity and declared payload/byte order must match the group/member.
 Explicit transport CLI options select the actual endpoint, allowing the same
 configuration to be tested through a proxy or alternate transport. Concrete TD
@@ -83,7 +83,7 @@ snapshots, rendered tables, and the exact four requests against modsim. Shared
 remote modsim state may have been written by others, so remote checks compare
 successive read-only snapshots rather than assuming fixed initial values.
 
-The shared package currently uses a local Poetry path dependency for development.
-Before publishing the application, publish the shared package and replace that
-path with its exact registry version. A development application wheel containing
-a local dependency URL is not a portable public release artifact.
+The shared interpreter is independently versioned and published as
+`modpoll-wot`. Application previews pin an exact registry version.
+Its schemas are bundled for offline use; new profile semantics require an
+explicit contract revision rather than silently changing contract 0.1.

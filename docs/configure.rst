@@ -44,7 +44,7 @@ Migration from CSV
   underscores. Unknown types or ambiguous fields require review.
 
 The executable contract and test vectors live under
-``packages/modpoll-wot-modbus``. Strings, bit selectors, four tables and all four
+``packages/modpoll-wot``. Strings, bit selectors, four tables and all four
 byte/word orders are represented by the contract. Model inheritance, optional members, URI templates, non-Modbus forms,
 and security schemes other than ``nosec`` are rejected in this preview subset.
 The interpreter records access flags; raw MQTT write commands retain the existing

@@ -13,8 +13,8 @@ output = subprocess.run(
 ).stdout
 lines = []
 for line in output.splitlines():
-    if "file://" in line and "/packages/modpoll-wot-modbus" in line:
-        line = "./packages/modpoll-wot-modbus"
+    if "file://" in line and "/packages/modpoll-wot" in line:
+        line = "./packages/modpoll-wot"
     lines.append(line)
 (root / "requirements.txt").write_text(
     "\n".join(sorted(lines, key=lambda line: line.split("==", 1)[0].lower())) + "\n"

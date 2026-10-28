@@ -7,7 +7,7 @@ import pytest
 
 from modpoll.modbus_task import Device, Poller, Reference, ModbusHandler
 from modpoll.wot_config import create_devices
-from modpoll_wot_modbus import AcquisitionError, parse_model
+from modpoll_wot import AcquisitionError, parse_model
 from tests.wot_helpers import meter_model
 
 

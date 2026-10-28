@@ -1,6 +1,6 @@
 """Adapt validated WoT configuration to the existing Modpoll execution engine."""
 
-from modpoll_wot_modbus.loading import load_model, loads_model, MAX_BYTES
+from modpoll_wot.loading import load_model, loads_model, MAX_BYTES
 import requests
 
 

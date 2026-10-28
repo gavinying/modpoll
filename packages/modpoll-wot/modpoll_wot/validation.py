@@ -28,7 +28,7 @@ def _validator(kind):
     if kind not in names:
         raise ValueError("kind must be 'tm' or 'td'")
     schema = json.loads(
-        files("modpoll_wot_modbus")
+        files("modpoll_wot")
         .joinpath("schemas", names[kind])
         .read_text(encoding="utf-8")
     )

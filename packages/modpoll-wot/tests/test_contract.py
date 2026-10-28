@@ -6,8 +6,8 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-from modpoll_wot_modbus import AcquisitionError
-from modpoll_wot_modbus.loading import load_model, loads_model, parse_model
+from modpoll_wot import AcquisitionError
+from modpoll_wot.loading import load_model, loads_model, parse_model
 
 ROOT = Path(__file__).resolve().parents[3]
 

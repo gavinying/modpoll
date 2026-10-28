@@ -1,6 +1,6 @@
 import unittest
 
-from modpoll_wot_modbus.validation import ModelValidationError, validate_standard
+from modpoll_wot.validation import ModelValidationError, validate_standard
 
 
 class StandardValidationTests(unittest.TestCase):

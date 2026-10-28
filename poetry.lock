@@ -517,7 +517,7 @@ files = [
 ]
 
 [[package]]
-name = "modpoll-wot-modbus"
+name = "modpoll-wot"
 version = "0.1.0a1"
 description = "WoT Modbus configuration interpreter for Modpoll"
 optional = false
@@ -531,7 +531,7 @@ referencing = ">=0.28.4,<1"
 
 [package.source]
 type = "directory"
-url = "packages/modpoll-wot-modbus"
+url = "packages/modpoll-wot"
 
 [[package]]
 name = "nodeenv"
@@ -1409,4 +1409,4 @@ serial = ["pyserial"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "46094ed5a66db8889216bf1b1fb9f625982c2bcbed7ededea1054e39804795e5"
+content-hash = "8fa630449ad2ee20e7ff8a4faf7c9a824f8f022a65b33fa6928c75f0f97e7eb7"

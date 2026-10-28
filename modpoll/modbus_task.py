@@ -9,7 +9,7 @@ from typing import List, Optional
 
 import requests
 from prettytable import PrettyTable
-from modpoll_wot_modbus.acquisition import type_width
+from modpoll_wot.acquisition import type_width
 from pymodbus.client import ModbusSerialClient, ModbusTcpClient, ModbusUdpClient
 from pymodbus.exceptions import ModbusException
 from pymodbus.framer import FramerType
@@ -302,9 +302,7 @@ class Poller:
             coils=self.fc in (1, 2),
         )
 
-    def _decode_and_update_reference(
-        self, ref: "Reference", decoder: _PayloadDecoder
-    ):
+    def _decode_and_update_reference(self, ref: "Reference", decoder: _PayloadDecoder):
         if ref.dtype == "bool" and ref.bit is not None:
             # Bit references read a 16-bit register and extract one bit.
             register_value = decoder.decode_16bit_uint()

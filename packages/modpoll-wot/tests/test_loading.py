@@ -3,8 +3,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from modpoll_wot_modbus import AcquisitionError
-from modpoll_wot_modbus.loading import load_model
+from modpoll_wot import AcquisitionError
+from modpoll_wot.loading import load_model
 
 FIXTURE = Path(__file__).resolve().parents[3] / "examples/modsim.tm.json"
 
@@ -89,7 +89,7 @@ class LoadingTests(unittest.TestCase):
 
 class ModelUnitDefaultsTests(unittest.TestCase):
     def test_model_default_and_explicit_override(self):
-        from modpoll_wot_modbus import parse_model
+        from modpoll_wot import parse_model
 
         document = json.loads(FIXTURE.read_text())
         document["modv:unitID"] = 7

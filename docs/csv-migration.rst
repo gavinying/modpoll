@@ -4,7 +4,7 @@ Migrating CSV configurations
 v1 remains available for existing CSV users. v2 accepts TM/TD JSON and provides
 an offline validator; it does not load CSV or invoke an AI service at runtime.
 The examples below use the profile described in
-``packages/modpoll-wot-modbus/CONTRACT.md`` and its bundled schemas.
+``packages/modpoll-wot/CONTRACT.md`` and its bundled schemas.
 
 Migration procedure
 -------------------
@@ -32,7 +32,7 @@ Migration procedure
 
 Commands from the development checkout::
 
-    mise exec -- poetry run python -m modpoll_wot_modbus meter.tm.json
+    mise exec -- poetry run python -m modpoll_wot meter.tm.json
     mise exec -- poetry run modpoll --once --config meter.tm.json --tcp HOST --tcp-port PORT --export data.json
     mise exec -- poetry run modpoll --config first.tm.json second.tm.json --tcp HOST
 

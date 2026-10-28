@@ -1,4 +1,4 @@
-./packages/modpoll-wot-modbus
+./packages/modpoll-wot
 attrs==26.1.0 ; python_version >= "3.10" and python_version < "4.0"
 certifi==2025.11.12 ; python_version >= "3.10" and python_version < "4.0"
 charset-normalizer==3.4.4 ; python_version >= "3.10" and python_version < "4.0"

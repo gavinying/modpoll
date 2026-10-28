@@ -14,7 +14,7 @@ pymodbus = "~3.9.0"
 paho-mqtt = "^2.1.0"
 prettytable = "^3.9.0"
 requests = "^2.32.5"
-modpoll-wot-modbus = { path = "packages/modpoll-wot-modbus", develop = true }
+modpoll-wot = { path = "packages/modpoll-wot", develop = true }
 pyserial = { version = "^3.5", optional = true }
 
 [tool.poetry.extras]
@@ -45,7 +45,7 @@ package_module_name_map = { pyserial = "serial" }
 DEP002 = ["pyserial"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "packages/modpoll-wot-modbus/tests"]
+testpaths = ["tests", "packages/modpoll-wot/tests"]
 markers = ["integration: marks tests as integration tests"]
 
 [tool.poetry.scripts]

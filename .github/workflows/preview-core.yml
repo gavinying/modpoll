@@ -1,0 +1,72 @@
+name: preview-core
+on:
+  push:
+    tags: ['modpoll-wot-v*']
+permissions:
+  contents: read
+concurrency:
+  group: preview-core-publish
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-poetry
+      - name: Require an accepted v2 candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/v2
+          python .github/scripts/preview-release.py guard "$TAG"
+      - name: Build independent interpreter artifacts
+        run: |
+          rm -rf packages/modpoll-wot/dist
+          cd packages/modpoll-wot
+          poetry build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: core-distributions
+          path: packages/modpoll-wot/dist/*
+      - name: Verify portable wheel and bundled schemas
+        run: |
+          python -m venv "$RUNNER_TEMP/core-check"
+          "$RUNNER_TEMP/core-check/bin/pip" install packages/modpoll-wot/dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/examples/modsim.tm.json"
+          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/examples/modsim.td.json"
+      - name: Check immutable version
+        id: pypi
+        env:
+          TAG: ${{ github.ref_name }}
+        run: python .github/scripts/preview-release.py pypi "$TAG"
+      - name: Publish interpreter to PyPI
+        if: steps.pypi.outputs.state == 'absent'
+        working-directory: packages/modpoll-wot
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
+        run: poetry publish --no-interaction
+      - name: Verify registry installation
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          python -m venv "$RUNNER_TEMP/core-registry"
+          "$RUNNER_TEMP/core-registry/bin/pip" install "modpoll-wot==${TAG#modpoll-wot-v}"
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/examples/modsim.tm.json"
+          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/examples/modsim.td.json"
+      - name: Record a separate prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --verify-tag --prerelease --latest=false --title "modpoll-wot ${TAG#modpoll-wot-v}" --notes "Experimental configuration contract 0.1 interpreter. Validates the bundled WoT TD/TM 1.1 schemas and Modpoll acquisition subset; does not execute device requests. See packages/modpoll-wot/CONTRACT.md at this tag."
+          fi
+          gh release upload "$TAG" packages/modpoll-wot/dist/*

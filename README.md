@@ -126,7 +126,7 @@ Both preserve the four original blocks and 37 output references. `--unit-id`
 overrides each model's optional root `modv:unitID` (fallback 1); a concrete TD's forms must agree with it.
 The existing transport, polling, output and MQTT arguments remain available.
 
-See [the executable contract](packages/modpoll-wot-modbus/CONTRACT.md) for field
+See [the executable contract](packages/modpoll-wot/CONTRACT.md) for field
 mapping, access flags, byte order, multiplier semantics and supported limits.
 The configuration loader rejects CSV and reports invalid model fields before
 polling. Each model describes one device; use multiple `--config` paths for

@@ -1,7 +1,7 @@
 import copy
 import unittest
 
-from modpoll_wot_modbus import AcquisitionError, parse_acquisition
+from modpoll_wot import AcquisitionError, parse_acquisition
 
 
 def model():
