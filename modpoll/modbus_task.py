@@ -174,13 +174,9 @@ class Poller:
             decode_success = True
 
             def _call_read(method):
-                # Prefer keyword-only signature (pymodbus 3.9+), fall back to positional for tests/fakes.
-                try:
-                    return method(
-                        self.start_address, count=self.size, slave=self.device.devid
-                    )
-                except TypeError:
-                    return method(self.start_address, self.size, self.device.devid)
+                return method(
+                    self.start_address, count=self.size, slave=self.device.devid
+                )
 
             if self.fc == 1:
                 result = _call_read(master.read_coils)
@@ -379,7 +375,7 @@ class Reference:
                 f"Bit index syntax (address:bit) can only be used with dtype 'bool', "
                 f"but reference {ref_name} has dtype '{self.dtype}'"
             )
-        self.ref_width = self._get_ref_width()
+        self.ref_width = type_width(self.dtype)
         self.rw = rw.lower()
         self.unit = unit
         self.scale = scale
@@ -387,29 +383,13 @@ class Reference:
         self.last_val = None
         self.valid_this_poll = False
 
-    def __eq__(self, other):
-        if isinstance(other, Reference):
-            return self.address == other.address and self.bit == other.bit
-        return False
-
-    def __hash__(self):
-        return hash((self.address, self.bit))
-
     def __repr__(self):
         addr = f"{self.address}:{self.bit}" if self.bit is not None else self.address
         return f"<Reference {self.name}@{addr}>"
 
-    def _get_ref_width(self) -> int:
-        return type_width(self.dtype)
-
     @property
     def bit_group_width(self):
         return type_width(self.dtype, bit_table=True)
-
-    def check_sanity(self, reference: int, size: int) -> bool:
-        return self.address in range(
-            reference, size + reference
-        ) and self.address + self.ref_width - 1 in range(reference, size + reference)
 
     def update_value(self, v, valid=True):
         if self.scale is not None and not isinstance(v, bool):

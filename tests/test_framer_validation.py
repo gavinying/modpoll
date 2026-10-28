@@ -21,7 +21,7 @@ def test_rtu_with_ascii_framer_supported(monkeypatch):
     args = _fake_args(
         [
             "--config",
-            "dummy.csv",
+            "dummy.tm.json",
             "--serial",
             "/dev/ttyUSB0",
             "--framer",
@@ -38,7 +38,7 @@ def test_tcp_with_ascii_framer_rejected():
     args = _fake_args(
         [
             "--config",
-            "dummy.csv",
+            "dummy.tm.json",
             "--tcp",
             "localhost",
             "--framer",
@@ -54,7 +54,7 @@ def test_multiple_transports_rejected():
     args = _fake_args(
         [
             "--config",
-            "dummy.csv",
+            "dummy.tm.json",
             "--serial",
             "/dev/ttyUSB0",
             "--tcp",
@@ -78,7 +78,7 @@ def test_tcp_socket_framer_is_applied(monkeypatch):
     args = _fake_args(
         [
             "--config",
-            "dummy.csv",
+            "dummy.tm.json",
             "--tcp",
             "localhost",
             "--framer",
@@ -104,7 +104,7 @@ def test_rtu_alias_still_parses(monkeypatch):
     args = _fake_args(
         [
             "--config",
-            "dummy.csv",
+            "dummy.tm.json",
             "--rtu",
             "/dev/ttyUSB0",
             "--framer",

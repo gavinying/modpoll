@@ -75,7 +75,7 @@ def test_invalid_configuration_exits_nonzero(tmp_path):
             "-m",
             "modpoll",
             "--config",
-            str(tmp_path / "missing.csv"),
+            str(tmp_path / "missing.tm.json"),
             "--tcp",
             "127.0.0.1",
         ],

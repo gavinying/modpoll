@@ -94,9 +94,13 @@ types and incomplete payload spans require review rather than silent conversion.
 Profile inheritance/templates/actions and new property-based writes are separate
 features, not requirements for preserving the old tool.
 
-Automated serial evidence uses POSIX virtual terminals, not RS485 electrical
-hardware. Windows/macOS serial devices, parity wiring and real device timing must
-be reported separately when tested. The CI support matrix remains Python
-3.10–3.12 on Linux. A passing development environment does not imply an application
-wheel with a local dependency path is ready for public distribution; release
-engineering is tracked separately.
+Automated serial acceptance uses POSIX virtual terminals. On 2026-10-28 the
+maintainer also confirmed successful polling of an Eastron meter over physical
+RS485. This manual result covers that tested setup; Windows/macOS serial hardware
+and other device setups retain their own validation scope. The automated CI
+matrix remains Python 3.10–3.12 on Linux.
+
+The functional preview ``2.0.0a1`` and independent ``modpoll-wot==0.1.0a1`` are
+published. Application dependencies use the exact registry version; wheel/sdist,
+Docker and registry-installed acceptance have passed. See :doc:`release-process`
+and :doc:`validation` for the release and hardware evidence.

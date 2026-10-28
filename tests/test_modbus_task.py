@@ -102,7 +102,7 @@ def test_setup_closes_previously_created_handlers_on_initialization_failure(
             handlers.append(self)
 
         def load_config(self):
-            if self.config == "broken.csv":
+            if self.config == "broken.tm.json":
                 raise RuntimeError("cannot load configuration")
             return True
 
@@ -115,7 +115,7 @@ def test_setup_closes_previously_created_handlers_on_initialization_failure(
     monkeypatch.setattr(modbus_task, "_create_modbus_client", lambda args: object())
     monkeypatch.setattr(modbus_task, "ModbusHandler", StubHandler)
     args = get_parser().parse_args(
-        ["--config", "valid.csv", "broken.csv", "--tcp", "localhost"]
+        ["--config", "valid.tm.json", "broken.tm.json", "--tcp", "localhost"]
     )
     with pytest.raises(RuntimeError, match="cannot load"):
         setup_modbus_handlers(args)

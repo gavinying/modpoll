@@ -2,11 +2,11 @@ PROJECT_NAME ?= modpoll
 
 .PHONY: install
 install: ## Install the poetry environment and install the pre-commit hooks
-	@echo "🚀 Creating virtual environment using pyenv and poetry"
-	@poetry self add poetry-plugin-export==1.8.0
-	@poetry install
-	@poetry run pre-commit install --allow-missing-config
-	@poetry shell
+	@echo "🚀 Installing the mise-managed project environment"
+	@mise install
+	@mise exec -- poetry self add poetry-plugin-export==1.8.0
+	@mise exec -- poetry install --all-extras
+	@mise exec -- poetry run pre-commit install --allow-missing-config
 
 .PHONY: check
 check: ## Run code quality tools.
@@ -56,7 +56,7 @@ docker-build-dev: ## Build docker for local dev
 .PHONY: docker-run-dev
 docker-run-dev: docker-build-dev ## Run docker compose for local dev
 	@echo "🚀 Docker compose run: ${PROJECT_NAME}:dev"
-	@docker-compose up --build
+	@docker compose up --build
 
 .PHONY: docs
 docs: ## Build docs into html files

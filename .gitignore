@@ -250,3 +250,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/python,dotenv,linux,macos,windows
+
+# Generated from CHANGELOG.md by make docs
+/docs/changelog.rst

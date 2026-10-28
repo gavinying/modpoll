@@ -31,7 +31,7 @@ class FakeResponse:
 
 def make_handler():
     client = FakeClient()
-    handler = ModbusHandler(client, "unused.csv")
+    handler = ModbusHandler(client, "unused.tm.json")
     handler.deviceList = [Device("meter", 7)]
     return handler, client
 

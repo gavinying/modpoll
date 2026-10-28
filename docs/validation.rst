@@ -64,7 +64,7 @@ These tests validate the reading/output contract and existing command paths.
 Serial hardware validation and release-ready packaging are separate from these
 software acceptance results.
 
-The complete local acceptance run on 2026-10-28 passed 109 tests with all
+The historical M2 acceptance run on 2026-10-28 passed 109 tests with all
 opt-in environments enabled, including the three local authentication/reconnect/queue
 tests. Public grouped JSON verification passed four cases: MQTT 3.1.1/5.0 with
 QoS 0/1. The six-case local CLI matrix also covered individual-topic output.
@@ -72,7 +72,7 @@ QoS 0/1. The six-case local CLI matrix also covered individual-topic output.
 M3 compatibility acceptance
 ---------------------------
 
-The complete local acceptance run on 2026-10-28 with Python 3.12.13 passed
+The historical M3 acceptance run on 2026-10-28 with Python 3.12.13 passed
 **143 tests with no skips**, including the earlier M2 coverage. The separate
 CSV/TM/TD equivalence command again matched all 37 values, terminal tables and
 four actual block requests. Four TLS tests emitted the existing
@@ -97,5 +97,36 @@ The TLS tests create temporary certificates using OpenSSL and own an isolated
 Docker broker. CI runs the transport and failure tests in its interoperability
 job and retains their JUnit report alongside the MQTT/equivalence reports.
 Virtual terminals prove framing and software behavior, not RS485 wiring or
-physical timing. The tested CI range is Python 3.10–3.12 on Linux; application
-packaging and preview publication remain M4 work.
+physical timing. The automated CI range is Python 3.10–3.12 on Linux. The release and manual
+hardware results below extend this software evidence.
+
+
+Published preview and hardware evidence
+---------------------------------------
+
+Modpoll 2.0.0a1 pins the published ``modpoll-wot==0.1.0a1`` interpreter. M4 local
+acceptance passed 153 tests with no skips. The
+`release workflow <https://github.com/top-maker/modpoll/actions/runs/40716440035>`_
+then installed the application from PyPI in a directory without application
+sources: 18 tests passed with no skips, covering MQTT, commands, TLS and
+transports. A separate CSV/TM/TD comparison matched 37 values, terminal tables
+and four actual block requests. Both amd64/arm64 images and the versioned Pages
+site were published; the stable latest pointers stayed unchanged.
+
+On 2026-10-28 the maintainer reported successful polling of an Eastron meter over
+physical RS485. This manual hardware result supplements the automated simulator
+and virtual-terminal tests. It is recorded from the maintainer's confirmation;
+this cleanup did not rerun that hardware test. It covers the tested Eastron setup,
+with other device/platform combinations validated separately. See the Eastron
+contributed TD and vendor documents under ``contrib/eastron/``.
+
+
+Post-preview cleanup verification
+---------------------------------
+
+On 2026-10-28 the cleanup retained all 153 automated tests, passing with no skips.
+The unified local Compose example was started in an isolated project and delivered
+37 valid simulator properties plus a timestamp through MQTT. The obsolete CSV
+template and duplicate Compose examples were removed; ``examples/modsim.csv``
+remains as the explicit migration-test fixture. See ``examples/README.md`` for
+the current runnable example.

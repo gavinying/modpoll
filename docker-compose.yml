@@ -1,14 +1,26 @@
-# version: '3'
-
 services:
   modpoll:
     build: .
-    container_name: modpoll
+    depends_on:
+      - modsim
+      - mosquitto
+    volumes:
+      - ./examples/modsim.tm.json:/app/config/modsim.tm.json:ro
     command: >
-      modpoll -d --tcp modsim.topmaker.net
-        --mqtt-host broker.emqx.io
-        --mqtt-publish-topic-pattern modpoll/{{device_name}}
-        --mqtt-qos 1
-        --rate 10
-        --timestamp
-        --config https://raw.githubusercontent.com/top-maker/modpoll/main/examples/modsim.csv
+      modpoll --daemon --tcp modsim --tcp-port 5020
+        --mqtt-host mosquitto
+        --mqtt-publish-topic-pattern modpoll/{{device_name}}/data
+        --mqtt-qos 1 --rate 10 --timestamp
+        --config /app/config/modsim.tm.json
+
+  modsim:
+    image: topmaker/modsim:latest
+    ports:
+      - "127.0.0.1:5020:5020"
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./examples/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+      - "127.0.0.1:18883:1883"

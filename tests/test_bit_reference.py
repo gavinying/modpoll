@@ -20,8 +20,8 @@ def test_poller_uses_discrete_inputs_for_fc2():
         def __init__(self):
             self.called = None
 
-        def read_discrete_inputs(self, start_address, size, slave=None):
-            self.called = ("di", start_address, size)
+        def read_discrete_inputs(self, start_address, *, count, slave=None):
+            self.called = ("di", start_address, count)
             return FakeResult(bits=[1, 0])
 
         def read_coils(self, *args, **kwargs):  # pragma: no cover - should not be used
@@ -47,8 +47,8 @@ def test_bit_reference_decodes_multiple_bits_same_register():
         def __init__(self):
             self.called = None
 
-        def read_input_registers(self, start_address, size, slave=None):
-            self.called = ("ir", start_address, size)
+        def read_input_registers(self, start_address, *, count, slave=None):
+            self.called = ("ir", start_address, count)
             return FakeResult(registers=[0x8001])  # 1000 0000 0000 0001
 
     master = FakeMaster()
@@ -71,8 +71,8 @@ def test_bit_reference_respects_endianness():
         def __init__(self):
             self.called = None
 
-        def read_input_registers(self, start_address, size, slave=None):
-            self.called = ("ir", start_address, size)
+        def read_input_registers(self, start_address, *, count, slave=None):
+            self.called = ("ir", start_address, count)
             return FakeResult(registers=[0x8001])  # raw register value
 
     master = FakeMaster()

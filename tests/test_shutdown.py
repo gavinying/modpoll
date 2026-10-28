@@ -56,7 +56,7 @@ def test_sigterm_is_registered_and_resources_close_after_poll_error(monkeypatch)
         [
             "modpoll",
             "--config",
-            "dummy.csv",
+            "dummy.tm.json",
             "--tcp",
             "127.0.0.1",
             "--mqtt-host",

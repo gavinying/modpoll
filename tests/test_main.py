@@ -68,7 +68,7 @@ def test_mqtt_tls_cli_options_forwarded(monkeypatch):
         [
             "modpoll",
             "--config",
-            "dummy.csv",
+            "dummy.tm.json",
             "--tcp",
             "127.0.0.1",
             "--mqtt-host",
@@ -119,7 +119,7 @@ def test_mqtt_setup_close_errors_are_suppressed(monkeypatch):
         [
             "modpoll",
             "--config",
-            "dummy.csv",
+            "dummy.tm.json",
             "--tcp",
             "127.0.0.1",
             "--mqtt-host",
@@ -154,7 +154,7 @@ def test_poll_schedule_uses_monotonic_clock_when_utc_changes(monkeypatch, utc_va
     monkeypatch.setattr(
         sys,
         "argv",
-        ["modpoll", "--config", "dummy.csv", "--tcp", "localhost", "--rate", "5"],
+        ["modpoll", "--config", "dummy.tm.json", "--tcp", "localhost", "--rate", "5"],
     )
 
     main.app()

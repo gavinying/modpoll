@@ -56,7 +56,7 @@ def test_failed_connection_invalidates_old_sample(monkeypatch):
     device = Device("meter", 1)
     ref = make_ref(device, "voltage", 230)
     device.add_reference_mapping(ref)
-    handler = ModbusHandler(FakeClient(connected=False), "unused.csv", daemon=True)
+    handler = ModbusHandler(FakeClient(connected=False), "unused.tm.json", daemon=True)
     handler.deviceList = [device]
 
     handler.poll()
@@ -73,7 +73,7 @@ def test_partial_poll_does_not_publish_a_stale_reference(monkeypatch):
     device.add_reference_mapping(fresh)
     device.add_reference_mapping(stale)
     device.pollerList = [FakePoller(True, [fresh]), FakePoller(False, [stale])]
-    handler = ModbusHandler(FakeClient(), "unused.csv", daemon=True)
+    handler = ModbusHandler(FakeClient(), "unused.tm.json", daemon=True)
     handler.deviceList = [device]
     mqtt = FakeMqtt()
     handler.mqtt_handler = mqtt
@@ -97,7 +97,7 @@ def test_snapshot_marks_invalid_sample_null_and_preserves_zero_timestamp(tmp_pat
     ref = make_ref(device, "voltage", 230)
     device.add_reference_mapping(ref)
     ref.valid_this_poll = False
-    handler = ModbusHandler(FakeClient(), "unused.csv")
+    handler = ModbusHandler(FakeClient(), "unused.tm.json")
     handler.deviceList = [device]
     path = tmp_path / "snapshot.json"
 
@@ -125,8 +125,8 @@ def test_export_merges_multiple_handlers_and_preserves_old_file_on_failure(
     first_device.add_reference_mapping(first_ref)
     second_device.add_reference_mapping(second_ref)
     handlers = [
-        ModbusHandler(FakeClient(), "first.csv"),
-        ModbusHandler(FakeClient(), "second.csv"),
+        ModbusHandler(FakeClient(), "first.tm.json"),
+        ModbusHandler(FakeClient(), "second.tm.json"),
     ]
     handlers[0].deviceList = [first_device]
     handlers[1].deviceList = [second_device]
@@ -160,7 +160,9 @@ def test_autoremove_requires_three_consecutive_failures_and_restart(monkeypatch)
     outcomes = iter([False, False, True, False, False, False])
     poller.poll = lambda client: next(outcomes)
     device.pollerList = [poller]
-    handler = ModbusHandler(FakeClient(), "unused.csv", daemon=True, autoremove=True)
+    handler = ModbusHandler(
+        FakeClient(), "unused.tm.json", daemon=True, autoremove=True
+    )
     handler.deviceList = [device]
 
     for expected in (1, 2, 0, 1, 2):
@@ -181,7 +183,7 @@ def test_connection_failures_count_for_autoremove():
     poller = Poller(device, 3, 0, 1, "BE_BE")
     device.pollerList = [poller]
     handler = ModbusHandler(
-        FakeClient(connected=False), "unused.csv", daemon=True, autoremove=True
+        FakeClient(connected=False), "unused.tm.json", daemon=True, autoremove=True
     )
     handler.deviceList = [device]
     for _ in range(3):
@@ -217,7 +219,7 @@ def test_failure_and_recovery_never_publish_old_samples(monkeypatch, tmp_path):
     mqtt = FakeMqtt()
     handler = ModbusHandler(
         client,
-        "unused.csv",
+        "unused.tm.json",
         mqtt,
         daemon=True,
         mqtt_publish_topic_pattern="data/{{device_name}}",
@@ -281,7 +283,7 @@ def test_snapshot_rejects_nonstandard_nan_without_damaging_existing_file(tmp_pat
     ref.val = float("nan")
     ref.valid_this_poll = True
     device.add_reference_mapping(ref)
-    handler = ModbusHandler(FakeClient(), "unused.csv")
+    handler = ModbusHandler(FakeClient(), "unused.tm.json")
     handler.deviceList = [device]
     path = tmp_path / "snapshot.json"
     path.write_text('{"previous": true}')

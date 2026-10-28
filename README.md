@@ -7,7 +7,6 @@
 [![License](https://img.shields.io/github/license/top-maker/modpoll)](https://img.shields.io/github/license/top-maker/modpoll)
 [![Downloads](https://static.pepy.tech/badge/modpoll/week)](https://pepy.tech/project/modpoll)
 
-> 📢 **Announcement:** Since the release of v1.3.0, our official dockerhub namespace has been changed to `topmaker`, you can pull the latest images from [topmaker/modpoll](https://hub.docker.com/repository/docker/topmaker/modpoll) at dockerhub.
 
 > Learn more about *modpoll* usage at [documentation](https://top-maker.github.io/modpoll) site.
 
@@ -48,19 +47,19 @@ This tool tested on Python 3.10+ (Ubuntu 22.04+ or equivalent), the package is a
 Install *modpoll* using the following command,
 
 ```bash
-pip install modpoll
+pip install "modpoll==2.0.0a1"
 ```
 
 Optionally, [pyserial](https://pyserial.readthedocs.io/) library can be installed for Modbus-RTU communication,
 
 ```bash
-pip install 'modpoll[serial]'
+pip install 'modpoll[serial]==2.0.0a1'
 ```
 
 Upgrade the tool via the following command,
 
 ```bash
-pip install -U modpoll
+pip install -U --pre "modpoll<3"
 ```
 
 ### On Windows
@@ -70,7 +69,7 @@ It is recommended to use `pipx` for installing *modpoll* on Windows, refer to [h
 Once `pipx` installed, you can run the following command in a Command Prompt terminal.
 
 ```PowerShell
-pipx install modpoll
+pipx install "modpoll==2.0.0a1"
 ```
 
 Upgrade the tool via the following command,
@@ -132,6 +131,13 @@ The configuration loader rejects CSV and reports invalid model fields before
 polling. Each model describes one device; use multiple `--config` paths for
 multiple devices. Give each model a unique `title`, which is the output device name.
 
+Physical RS485 polling has also been verified by the maintainer with an Eastron
+meter (2026-10-28). See [validation](docs/validation.rst) for the evidence scope and
+[contributed mappings](contrib/README.md) for vendor references.
+
+For a complete local simulator/MQTT demonstration, use the repository's
+[Docker Compose example](examples/README.md).
+
 ### Poll local device (modsim)
 
 To run the simulator locally, start the container:
@@ -184,7 +190,7 @@ The MQTT topics can be customized by providing the following arguments,
   - `mqtt-subscribe-topic-pattern`
   - `mqtt-diagnostics-topic-pattern`
 
-See [document](https://top-maker.github.io/modpoll/usage.html#Named%20Arguments) for details.
+See [document](https://top-maker.github.io/modpoll/v2/usage.html#Named%20Arguments) for details.
 
 
 <p align="center">
@@ -226,27 +232,19 @@ When a sample is invalid in a poll cycle, modpoll omits it from MQTT output and 
 A docker image has been provided for user to directly run the tool without local installation,
 
   ```bash
-  docker run --rm topmaker/modpoll
+  docker run --rm topmaker/modpoll:2.0.0a1
   ```
 
 It shows the version of the tool by default.
 
-On Linux, use host networking to connect the container to a simulator on the host. Add `--daemon` or `-d` to suppress the table output.
-
-  ```bash
-  docker run --rm --network host topmaker/modpoll \
-    modpoll -d \
-      --tcp 127.0.0.1 --tcp-port 5020 \
-      --config examples/modsim.tm.json
-  ```
-
-For host networking on other platforms, consult the Docker networking documentation.
+On Linux, host networking connects the container to a simulator on the host.
+Mount the JSON configuration into the container; ``--daemon`` suppresses tables.
 
 If you want to load a local configure file, you need to mount a local folder onto container volume,
 for example, if the child folder `examples` contains the config file `modsim.tm.json`, we can use it via the following command,
 
   ```bash
-  docker run --rm --network host -v $(pwd)/examples:/app/examples topmaker/modpoll \
+  docker run --rm --network host -v "$(pwd)/examples:/app/examples:ro" topmaker/modpoll:2.0.0a1 \
     modpoll -d \
       --tcp 127.0.0.1 --tcp-port 5020 \
       --config /app/examples/modsim.tm.json

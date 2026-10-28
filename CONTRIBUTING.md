@@ -42,12 +42,12 @@ If you are proposing a new feature:
 
 Ready to contribute? Here's how to set up `modpoll` for local development.
 
-Here we assume you already have `python`, `poetry`, and `Git` installed. Otherwise, you can use the [asdf](https://github.com/asdf-vm/asdf) tool to manage the required tools or install them manually according to the `.tool-versions` file.
+Install Git and mise, then use the versions in `.tool-versions`. `main` maintains the stable CSV release; select `v2` for WoT TM/TD work.
 
 1. Fork the `modpoll` repo on GitHub, and then clone your fork locally,
 
     ```bash
-    git clone https://github.com/your-username/modpoll.git
+    git clone --branch v2 https://github.com/your-username/modpoll.git
     cd modpoll
     ```
 
@@ -55,6 +55,7 @@ Here we assume you already have `python`, `poetry`, and `Git` installed. Otherwi
 
     ```bash
     make install
+    # Prefix subsequent project commands with mise exec --
     ```
 
 3. Create a branch for local development,
@@ -70,13 +71,13 @@ Here we assume you already have `python`, `poetry`, and `Git` installed. Otherwi
 5. When you're done making changes, check that your changes pass the formatting tests,
 
     ```bash
-    make check
+    mise exec -- make check
     ```
 
     Then, validate that all unit tests are passing:
 
     ```bash
-    make test
+    mise exec -- poetry run pytest -m "not integration"
     ```
 
 6. Commit your changes and push your branch to GitHub:
@@ -89,6 +90,8 @@ Here we assume you already have `python`, `poetry`, and `Git` installed. Otherwi
 
     Please note this project follows [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for git commits. Some of our CI/CD pipelines rely on such convention, for example, your commit message starting with `feat:` might bump the `MINOR` version.
 
-7. Submit a pull request through the GitHub website.
+7. Submit a pull request against the appropriate version branch. See
+   [validation](docs/validation.rst) for isolated integration tests and
+   [release process](docs/release-process.rst) for preview publishing.
 
 Happy Coding!
