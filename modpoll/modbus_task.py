@@ -2,6 +2,7 @@ import json
 import logging
 import math
 import os
+import struct
 import tempfile
 from pathlib import Path
 from typing import List, Optional
@@ -10,9 +11,7 @@ import requests
 from prettytable import PrettyTable
 from modpoll_wot_modbus.acquisition import type_width
 from pymodbus.client import ModbusSerialClient, ModbusTcpClient, ModbusUdpClient
-from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
-from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.framer import FramerType
 
 from .utils import on_threading_event, delay_thread
@@ -20,6 +19,77 @@ from .mqtt_task import MqttHandler
 
 
 FLOAT_TYPE_PRECISION = 3
+
+
+class _PayloadDecoder:
+    """Decode Modbus values without pymodbus's deprecated payload helpers."""
+
+    def __init__(self, data, *, byteorder="big", wordorder="big", coils=False):
+        self.wordorder = wordorder
+        if coils:
+            self.data = bytearray(
+                sum(
+                    bool(bit) << (7 - index)
+                    for index, bit in enumerate(data[i : i + 8])
+                )
+                for i in range(0, len(data), 8)
+            )
+        else:
+            self.data = bytearray()
+            for register in data:
+                self.data.extend(register.to_bytes(2, "big"))
+                if byteorder == "little":
+                    self.data[-2:] = self.data[-2:][::-1]
+        self.offset = 0
+
+    def skip_bytes(self, count):
+        self.offset += count
+
+    def _unpack(self, fmt, size):
+        payload = self.data[self.offset : self.offset + size]
+        self.offset += size
+        if len(payload) != size:
+            raise ValueError("not enough payload data")
+        if self.wordorder == "little" and size > 2:
+            payload = b"".join(payload[i : i + 2] for i in range(size - 2, -1, -2))
+        return struct.unpack(">" + fmt, payload)[0]
+
+    def decode_16bit_uint(self):
+        return self._unpack("H", 2)
+
+    def decode_16bit_int(self):
+        return self._unpack("h", 2)
+
+    def decode_32bit_uint(self):
+        return self._unpack("I", 4)
+
+    def decode_32bit_int(self):
+        return self._unpack("i", 4)
+
+    def decode_64bit_uint(self):
+        return self._unpack("Q", 8)
+
+    def decode_64bit_int(self):
+        return self._unpack("q", 8)
+
+    def decode_16bit_float(self):
+        return self._unpack("e", 2)
+
+    def decode_32bit_float(self):
+        return self._unpack("f", 4)
+
+    def decode_64bit_float(self):
+        return self._unpack("d", 8)
+
+    def decode_string(self, count):
+        payload = self.data[self.offset : self.offset + count]
+        self.offset += count
+        return bytes(payload)
+
+    def decode_bits(self):
+        value = self.data[self.offset]
+        self.offset += 1
+        return [bool(value & (1 << bit)) for bit in range(8)]
 
 
 def export_modbus_handlers(handlers, file, timestamp=None) -> bool:
@@ -222,41 +292,17 @@ class Poller:
         return False
 
     def _get_decoder(self, data):
-        if "BE_BE" == self.endian.upper():
-            return (
-                BinaryPayloadDecoder.fromRegisters(
-                    data, byteorder=Endian.BIG, wordorder=Endian.BIG
-                )
-                if self.fc not in (1, 2)
-                else BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.BIG)
-            )
-        elif "LE_BE" == self.endian.upper():
-            return (
-                BinaryPayloadDecoder.fromRegisters(
-                    data, byteorder=Endian.LITTLE, wordorder=Endian.BIG
-                )
-                if self.fc not in (1, 2)
-                else BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.LITTLE)
-            )
-        elif "LE_LE" == self.endian.upper():
-            return (
-                BinaryPayloadDecoder.fromRegisters(
-                    data, byteorder=Endian.LITTLE, wordorder=Endian.LITTLE
-                )
-                if self.fc not in (1, 2)
-                else BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.LITTLE)
-            )
-        else:
-            return (
-                BinaryPayloadDecoder.fromRegisters(
-                    data, byteorder=Endian.BIG, wordorder=Endian.LITTLE
-                )
-                if self.fc not in (1, 2)
-                else BinaryPayloadDecoder.fromCoils(data, byteorder=Endian.BIG)
-            )
+        byteorder = "little" if self.endian.upper().startswith("LE_") else "big"
+        wordorder = "little" if self.endian.upper().endswith("_LE") else "big"
+        return _PayloadDecoder(
+            data,
+            byteorder=byteorder,
+            wordorder=wordorder,
+            coils=self.fc in (1, 2),
+        )
 
     def _decode_and_update_reference(
-        self, ref: "Reference", decoder: BinaryPayloadDecoder
+        self, ref: "Reference", decoder: _PayloadDecoder
     ):
         if ref.dtype == "bool" and ref.bit is not None:
             # Bit references read a 16-bit register and extract one bit.
