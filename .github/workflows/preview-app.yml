@@ -1,0 +1,188 @@
+name: preview-app
+on:
+  push:
+    tags: ['v2.*']
+permissions:
+  contents: read
+concurrency:
+  group: preview-app-publish
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-poetry
+      - name: Require an accepted v2 preview candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/v2
+          python .github/scripts/preview-release.py guard "$TAG"
+      - name: Build portable distributions
+        run: poetry build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: application-distributions
+          path: dist/*
+      - name: Verify wheel dependencies and installation
+        run: |
+          python .github/scripts/check-portable-wheel.py dist/*.whl
+          python -m venv "$RUNNER_TEMP/wheel-check"
+          "$RUNNER_TEMP/wheel-check/bin/pip" install dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/wheel-check/bin/modpoll" --version
+      - name: Check immutable version
+        id: pypi
+        env:
+          TAG: ${{ github.ref_name }}
+        run: python .github/scripts/preview-release.py pypi "$TAG"
+      - name: Publish application to PyPI
+        if: steps.pypi.outputs.state == 'absent'
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
+        run: poetry publish --no-interaction
+      - name: Record functional prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --verify-tag --prerelease --latest=false --title "Modpoll ${TAG#v} — WoT configuration preview" --notes-file docs/preview-notes.md
+          fi
+          gh release upload "$TAG" dist/*
+  image:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.DOCKER_REGISTRY }}
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Publish explicit preview image only
+        env:
+          REGISTRY: ${{ vars.DOCKER_REGISTRY }}
+          OWNER: ${{ vars.DOCKER_USERNAME }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          python .github/scripts/check_release_version.py "$TAG"
+          docker buildx build --platform linux/amd64,linux/arm64 -t "$REGISTRY/$OWNER/modpoll:${TAG#v}" --push .
+  docs:
+    needs: publish
+    runs-on: ubuntu-latest
+    concurrency:
+      group: modpoll-pages
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: ./.github/actions/setup-poetry
+      - uses: ./.github/actions/setup-pandoc
+      - name: Build preview documentation
+        run: make docs
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: .pages
+      - uses: actions/checkout@v4
+        with:
+          ref: v1.6.1
+          path: .stable
+      - name: Build pinned stable documentation in isolation
+        run: |
+          cd .stable
+          poetry install --no-interaction --all-extras
+          poetry run pandoc --from=markdown --to=rst CHANGELOG.md -o docs/changelog.rst
+          poetry run sphinx-build -W docs/ docs/_build/html
+      - name: Assemble both versions while preserving the vocabulary
+        run: |
+          mkdir .site
+          rsync -a --exclude=.git .pages/ .site/
+          if [ ! -f .site/1.x/index.html ]; then
+            python .github/scripts/assemble-docs.py .stable/docs/_build/html .site 1.x --root
+          fi
+          cp packages/modpoll-wot/modpoll_wot/schemas/acquisition-0.1.json vocab/wot-modbus/
+          cp packages/modpoll-wot/CONTRACT.md vocab/wot-modbus/contract-0.1.txt
+          python .github/scripts/assemble-docs.py docs/_build/html .site v2 --vocab vocab
+          printf '%s\n' "$GITHUB_SHA" > .site/v2/source-sha.txt
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ github.token }}
+          publish_dir: .site
+  acceptance:
+    needs: [publish, image, docs]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/checkout@v4
+        with:
+          ref: 0b42099e8b22eaaa4788a9f91e8bf60b4870204c
+          path: .interop/modpoll-1x
+      - uses: actions/checkout@v4
+        with:
+          repository: top-maker/modsim
+          ref: 92fe5d4c417b2691693feb2b6bd93fd1f54439fe
+          path: .interop/modsim
+      - name: Install published application and isolated fixtures
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          python -m venv "$RUNNER_TEMP/acceptance/.venv"
+          "$RUNNER_TEMP/acceptance/.venv/bin/pip" install "modpoll[serial]==${TAG#v}" pytest
+          cp -r tests tools examples "$RUNNER_TEMP/acceptance/"
+          for fixture in .interop/modpoll-1x .interop/modsim; do
+            python -m venv "$fixture/.venv"
+            "$fixture/.venv/bin/pip" install -r "$fixture/requirements.txt"
+            "$fixture/.venv/bin/pip" install --no-deps "./$fixture"
+            "$fixture/.venv/bin/pip" install pyserial==3.5
+          done
+      - name: Start private acceptance broker
+        run: |
+          printf 'listener 1883\nallow_anonymous true\npersistence false\n' > "$RUNNER_TEMP/mqtt.conf"
+          docker run -d --name preview-acceptance -p 127.0.0.1:18883:1883 -v "$RUNNER_TEMP/mqtt.conf:/mosquitto/config/mosquitto.conf:ro" eclipse-mosquitto:2
+      - name: Verify the registry-installed application without application source
+        env:
+          MODSIM_SOURCE: ${{ github.workspace }}/.interop/modsim
+          MODSIM_PYTHON: ${{ github.workspace }}/.interop/modsim/.venv/bin/python
+          MODPOLL_1X_SOURCE: ${{ github.workspace }}/.interop/modpoll-1x
+          MODPOLL_MQTT_HOST: 127.0.0.1
+          MODPOLL_MQTT_PORT: '18883'
+          MODPOLL_MQTT_INTEGRATION: '1'
+          TAG: ${{ github.ref_name }}
+          REGISTRY: ${{ vars.DOCKER_REGISTRY }}
+          OWNER: ${{ vars.DOCKER_USERNAME }}
+        run: |
+          cd "$RUNNER_TEMP/acceptance"
+          .venv/bin/python tools/verify_modsim_equivalence.py --modpoll-1x "$MODPOLL_1X_SOURCE" --modsim "$MODSIM_SOURCE" --report equivalence.json
+          .venv/bin/python -m pytest -q tests/test_modsim_interop.py tests/test_mqtt_modsim_interop.py tests/test_mqtt_tls.py tests/test_transport_interop.py --junitxml=published-results.xml
+          docker run --rm "$REGISTRY/$OWNER/modpoll:${TAG#v}"
+      - name: Remove acceptance broker
+        if: always()
+        run: docker rm -f preview-acceptance || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: published-acceptance
+          path: |
+            ${{ runner.temp }}/acceptance/equivalence.json
+            ${{ runner.temp }}/acceptance/published-results.xml

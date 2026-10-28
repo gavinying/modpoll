@@ -1,0 +1,9 @@
+.git
+.venv
+.tox
+.pytest_cache
+**/__pycache__
+**/.venv
+**/dist
+docs/_build
+.interop

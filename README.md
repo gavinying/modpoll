@@ -1,4 +1,4 @@
-> **2.x development branch.** This checkout accepts WoT TM/TD JSON. CSV remains supported on the 1.x `main` branch. A 2.x release has not been published yet. For development, run `mise install` and `mise exec -- poetry install`, then prefix the examples below with `mise exec -- poetry run`.
+> **2.x development branch.** This checkout accepts WoT TM/TD JSON. CSV remains supported on the 1.x `main` branch. The first functional preview is `2.0.0a1`: install it explicitly with `pip install "modpoll[serial]==2.0.0a1"`. Stable 1.x remains available with `pip install "modpoll<2"`. For development, run `mise install` and `mise exec -- poetry install --all-extras`, then prefix the examples below with `mise exec -- poetry run`.
 
 # Modpoll - A New Command-line Tool for Modbus and MQTT
 

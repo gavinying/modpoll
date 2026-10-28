@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Modpoll WoT acquisition vocabulary 0.1</title>
+<body><h1>Modpoll WoT acquisition vocabulary 0.1</h1>
+<p>Namespace: <code>https://top-maker.github.io/modpoll/vocab/wot-modbus#</code>.
+This project extension describes ordered block reads and decoding. It is not a W3C standard.
+The <a href="https://w3c.github.io/wot-binding-templates/bindings/protocols/modbus/">W3C draft Modbus binding</a>
+provides <code>modv:</code> entity, address, quantity and byte/word-order terms.</p>
+<p>The independently versioned <code>modpoll-wot</code> package validates the executable profile.
+Its first preview supports Modbus only; it is not a general JSON-LD or WoT runtime.
+See the <a href="../../v2/configure.html">configuration documentation</a>,
+<a href="acquisition-0.1.json">extension schema 0.1</a> and
+<a href="contract-0.1.txt">complete contract 0.1</a>.</p>
+<dl>
+<dt id="version">modpoll:version</dt><dd>Root profile identifier, exactly the string <code>0.1</code>.</dd>
+<dt id="acquisition">modpoll:acquisition</dt><dd>Ordered array of physical block reads. Boundaries, gaps and order are preserved; no automatic coalescing.</dd>
+<dt id="members">modpoll:members</dt><dd>Ordered property mappings for a block. Every property has exactly one mapping; distinct aliases may share a backing address.</dd>
+<dt id="property">modpoll:property</dt><dd>Exact standard properties key, also used for output names.</dd>
+<dt id="offset">modpoll:offset</dt><dd>Non-negative offset from block start. Register blocks count 16-bit registers; bit blocks count eight-bit groups. The block quantity still counts physical bits.</dd>
+<dt id="dataType">modpoll:dataType</dt><dd>Exact decoder type: int/uint16/32/64, float16/32/64, bool/bool8/bool16, or stringN (1–9999 bytes). Strings and numeric bit-table spans require complete requested bytes.</dd>
+<dt id="bit">modpoll:bit</dt><dd>Optional register bit 0–15, allowed only with register bool; produces a scalar boolean.</dd>
+<dt id="multiplier">modpoll:multiplier</dt><dd>Optional finite numeric multiplier or decimal string; multiplication, not division. Numeric values execute using existing float semantics. No string scaling or inverse-write transform.</dd>
+</dl>
+<p>Unknown executable fields are rejected. Contract 0.1 semantics remain fixed;
+new incompatible semantics require an explicit revision. Hosted vocabulary paths
+are preserved independently of the stable and preview documentation trees.
+Model validity does not establish device-map correctness or stock-client support for these extensions.</p>
+</body></html>

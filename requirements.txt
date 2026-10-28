@@ -1,10 +1,10 @@
-./packages/modpoll-wot
 attrs==26.1.0 ; python_version >= "3.10" and python_version < "4.0"
 certifi==2025.11.12 ; python_version >= "3.10" and python_version < "4.0"
 charset-normalizer==3.4.4 ; python_version >= "3.10" and python_version < "4.0"
 idna==3.11 ; python_version >= "3.10" and python_version < "4.0"
 jsonschema==4.26.0 ; python_version >= "3.10" and python_version < "4.0"
 jsonschema-specifications==2025.9.1 ; python_version >= "3.10" and python_version < "4.0"
+modpoll-wot==0.1.0a1 ; python_version >= "3.10" and python_version < "4.0"
 paho-mqtt==2.1.0 ; python_version >= "3.10" and python_version < "4.0"
 prettytable==3.17.0 ; python_version >= "3.10" and python_version < "4.0"
 pymodbus==3.9.2 ; python_version >= "3.10" and python_version < "4.0"

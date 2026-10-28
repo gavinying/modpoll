@@ -1,4 +1,4 @@
-"""Export locked requirements with a portable local shared-package path."""
+"""Export deterministic registry requirements from the application lock."""
 
 from pathlib import Path
 import subprocess
@@ -11,11 +11,9 @@ output = subprocess.run(
     text=True,
     check=True,
 ).stdout
-lines = []
-for line in output.splitlines():
-    if "file://" in line and "/packages/modpoll-wot" in line:
-        line = "./packages/modpoll-wot"
-    lines.append(line)
+lines = output.splitlines()
+if any("file://" in line or line.startswith(("./", "../", "-e ")) for line in lines):
+    raise ValueError("release requirements must not contain local dependencies")
 (root / "requirements.txt").write_text(
     "\n".join(sorted(lines, key=lambda line: line.split("==", 1)[0].lower())) + "\n"
 )

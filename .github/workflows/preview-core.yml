@@ -25,6 +25,10 @@ jobs:
         run: |
           git merge-base --is-ancestor "$GITHUB_SHA" origin/v2
           python .github/scripts/preview-release.py guard "$TAG"
+      - name: Verify interpreter source
+        env:
+          PYTHONPATH: packages/modpoll-wot
+        run: poetry run pytest -q packages/modpoll-wot/tests
       - name: Build independent interpreter artifacts
         run: |
           rm -rf packages/modpoll-wot/dist
