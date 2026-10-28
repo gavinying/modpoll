@@ -2,6 +2,13 @@ WoT TM/TD configuration
 =======================
 
 The 2.x development branch accepts JSON configurations using WoT TM/TD 1.1.
+Use the same ``--config`` argument for either format. A top-level ``@type``
+containing ``tm:ThingModel`` (a string or an array entry) selects TM validation;
+otherwise the document is validated as TD. File extensions and URL suffixes do
+not select the format. An invalid document fails its selected validation; the
+loader does not retry it as the other format. This preview supports the fixed
+``tm:ThingModel`` spelling, without resolving alternate JSON-LD aliases.
+
 It rejects CSV input. The bundled ``examples/modsim.tm.json`` and
 ``examples/modsim.td.json`` describe the same four blocks and 37 output properties.
 

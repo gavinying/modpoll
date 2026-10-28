@@ -482,3 +482,43 @@ def test_numeric_bit_table_csv_parity_uses_complete_bytes(
         )
         assert result.returncode == 0 and not result.stderr, result.stderr
         assert json.loads(output.read_text()) == expected
+
+
+def test_standard_form_pilot_and_generated_td_keep_one_block_read(live_modsim):
+    from unittest.mock import patch
+    from modpoll_wot.pilot import compile_model
+    from modpoll.modbus_task import ModbusHandler
+    from modpoll.wot_config import create_devices
+
+    fixture = ROOT / "packages/modpoll-wot/tests/fixtures/numeric-pilot.tm.json"
+    model, td = compile_model(
+        json.loads(fixture.read_text()), host="127.0.0.1", port=live_modsim, unit_id=7
+    )
+    reread, _ = compile_model(td)
+    client = ModbusTcpClient("127.0.0.1", port=live_modsim)
+    try:
+        assert client.connect()
+        # Independently encoded values, with holes that must stay in the read span.
+        words = (
+            [42, 999, 0xFF85, 777]
+            + list(struct.unpack(">HH", struct.pack(">f", 12.5)))
+            + [555, 666]
+        )
+        assert not client.write_registers(40000, words, slave=7).isError()
+        for execution_model in (model, reread):
+            handler = ModbusHandler(client, "<pilot>", interval=0, daemon=True)
+            handler.deviceList = create_devices(execution_model)
+            with patch.object(
+                client, "read_holding_registers", wraps=client.read_holding_registers
+            ) as read:
+                handler.poll()
+                read.assert_called_once_with(40000, count=8, slave=7)
+            device = handler.deviceList[0]
+            assert device.pollSuccess
+            assert {name: ref.val for name, ref in device.references.items()} == {
+                "counter": 42,
+                "signed": -123,
+                "measurement": 12.5,
+            }
+    finally:
+        client.close()

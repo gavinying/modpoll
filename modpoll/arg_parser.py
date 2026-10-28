@@ -17,7 +17,10 @@ def get_parser():
         "-f",
         "--config",
         required=True,
-        help="Local path or URL of a WoT TM/TD JSON configuration. Required!",
+        help=(
+            "Local path or URL of a WoT TM/TD JSON configuration. "
+            "Type is detected from content, not the filename. Required!"
+        ),
         nargs="+",
     )
     parser.add_argument(

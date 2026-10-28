@@ -76,3 +76,53 @@ def test_unit_id_validation_fails_before_connect(tmp_path):
     config = write_meter(tmp_path / "meter.tm.json")
     handler = ModbusHandler(object(), str(config), unit_id=0)
     assert not handler.load_config()
+
+
+@pytest.mark.parametrize("kind", ["tm", "td"])
+@pytest.mark.parametrize("filename", ["device", "device.tm.json", "device.td.json"])
+def test_single_config_option_loads_content_regardless_of_filename(
+    tmp_path, kind, filename
+):
+    from modpoll.arg_parser import get_parser
+
+    source = Path(__file__).resolve().parents[1] / f"examples/modsim.{kind}.json"
+    path = tmp_path / filename
+    path.write_bytes(source.read_bytes())
+    args = get_parser().parse_args(["--config", str(path)])
+    model = read_model(args.config[0], timeout=1, unit_id=None)
+    assert model.kind == kind
+    handler = ModbusHandler(object(), args.config[0])
+    assert handler.load_config()
+    (device,) = handler.deviceList
+    assert len(device.references) == 37
+    assert [(p.fc, p.start_address, p.size) for p in device.pollerList] == [
+        (1, 0, 16),
+        (2, 10000, 16),
+        (4, 30000, 20),
+        (3, 40000, 44),
+    ]
+
+
+@pytest.mark.parametrize("kind", ["tm", "td"])
+def test_remote_config_detects_response_content_at_opaque_url(monkeypatch, kind):
+    from modpoll import wot_config
+
+    source = Path(__file__).resolve().parents[1] / f"examples/modsim.{kind}.json"
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, size):
+            yield source.read_bytes()
+
+    monkeypatch.setattr(wot_config.requests, "get", lambda *a, **kw: Response())
+    model = read_model("https://example.test/config/42", timeout=1, unit_id=None)
+    assert model.kind == kind
+    assert len(model.groups) == 4
