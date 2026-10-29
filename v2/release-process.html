@@ -83,19 +83,19 @@
 <h1>Preview release process<a class="headerlink" href="#preview-release-process" title="Link to this heading"></a></h1>
 <p>The application and <code class="docutils literal notranslate"><span class="pre">modpoll-wot</span></code> interpreter are independently versioned in
 this repository. The interpreter validates bundled WoT TD/TM 1.1 schemas and
-Modpoll acquisition contract 0.1; it is not a device execution service.</p>
+Modpoll profiles 0.1/0.2; it is not a device execution service.</p>
 <ol class="arabic simple">
 <li><p>On <code class="docutils literal notranslate"><span class="pre">v2</span></code>, select a candidate whose exact commit passes quality, Python
 3.10/3.11/3.12, documentation and simulator interoperability CI.</p></li>
 <li><p>Set the interpreter version and metadata, build wheel/sdist and verify bundled
 schemas offline in an independent environment. Push the unique tag
-<code class="docutils literal notranslate"><span class="pre">modpoll-wot-v0.1.0a1</span></code>. <code class="docutils literal notranslate"><span class="pre">preview-core.yml</span></code> requires the accepted SHA,
+<code class="docutils literal notranslate"><span class="pre">modpoll-wot-v0.2.0a1</span></code>. <code class="docutils literal notranslate"><span class="pre">preview-core.yml</span></code> requires the accepted SHA,
 publishes both artifacts, verifies a registry installation and records a
 separate prerelease without changing the stable latest release.</p></li>
 <li><p>After registry installation succeeds, pin the application to that exact
 version. Refresh lock/requirements. Build wheel/sdist and Docker; the wheel
 guard rejects source URLs and non-exact interpreter requirements.</p></li>
-<li><p>Verify the application candidate and push <code class="docutils literal notranslate"><span class="pre">v2.0.0a1</span></code> at that accepted SHA.
+<li><p>Verify the application candidate and push <code class="docutils literal notranslate"><span class="pre">v2.0.0a2</span></code> at that accepted SHA.
 <code class="docutils literal notranslate"><span class="pre">preview-app.yml</span></code> publishes the application, an explicit amd64/arm64 image,
 versioned documentation and runs registry-installed acceptance with no
 application source directory. Previews never move stable Docker aliases.</p></li>
@@ -114,7 +114,8 @@ continues serving stable documentation, and <code class="docutils literal notran
 The initial 1.x tree is built from the pinned v1.6.1 release. Subsequent stable
 releases update their line while preserving other directories; PRs only build.
 No preview is considered fully accepted until the published-package acceptance
-job succeeds. Physical serial hardware remains an explicitly stated limitation.</p>
+job succeeds. See <a class="reference internal" href="validation.html"><span class="doc">Configuration replacement verification</span></a> for the published preview acceptance and
+maintainer-confirmed Eastron physical RS485 result.</p>
 </section>
 
 

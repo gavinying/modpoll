@@ -3,11 +3,11 @@ Installation
 
 This documentation describes the 2.x functional preview. Install the exact version::
 
-    pip install "modpoll[serial]==2.0.0a1"
+    pip install "modpoll[serial]==2.0.0a2"
 
 For existing CSV installations use ``pip install "modpoll<2"`` and the
 `1.x documentation <https://top-maker.github.io/modpoll/1.x/>`_.
-The preview image is ``topmaker/modpoll:2.0.0a1``; stable ``latest`` stays on 1.x.
+The preview image is ``topmaker/modpoll:2.0.0a2``; stable ``latest`` stays on 1.x.
 See :doc:`v1-compatibility` for tested platforms and hardware limitations.
 
 This program is tested on python 3.10+ (Ubuntu 22.04+ or equivalent). Ubuntu 20.04 and python 3.8 are no longer supported.
@@ -19,13 +19,13 @@ The package is available in the `Python Package Index <https://pypi.org/>`_,
 
 .. code-block:: shell
 
-    pip install "modpoll==2.0.0a1"
+    pip install "modpoll==2.0.0a2"
 
 Optionally, pyserial library can be installed for Modbus-RTU communication,
 
 .. code-block:: shell
 
-    pip install 'modpoll[serial]==2.0.0a1'
+    pip install 'modpoll[serial]==2.0.0a2'
 
 Run the following command to check if there is new version available,
 
@@ -39,7 +39,7 @@ To install *modpoll*, open a Command Prompt terminal and run:
 
 .. code-block:: shell
 
-    pipx install "modpoll==2.0.0a1"
+    pipx install "modpoll==2.0.0a2"
 
 To upgrade *modpoll* to the latest version, use the following command:
 
@@ -72,6 +72,6 @@ without the local installation,
 
 .. code-block:: shell
 
-    docker run --rm topmaker/modpoll:2.0.0a1
+    docker run --rm topmaker/modpoll:2.0.0a2
 
 It shows the version of the tool by default.

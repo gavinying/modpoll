@@ -88,8 +88,9 @@
 <h1>Migrating CSV configurations<a class="headerlink" href="#migrating-csv-configurations" title="Link to this heading"></a></h1>
 <p>v1 remains available for existing CSV users. v2 accepts TM/TD JSON and provides
 an offline validator; it does not load CSV or invoke an AI service at runtime.
-The examples below use the profile described in
-<code class="docutils literal notranslate"><span class="pre">packages/modpoll-wot/CONTRACT.md</span></code> and its bundled schemas.</p>
+Convert new configurations to profile 0.2 as described in
+<code class="docutils literal notranslate"><span class="pre">packages/modpoll-wot/profile.md</span></code>; profile 0.1 remains supported for existing
+files. Check the executable profile and bundled schemas before using a conversion.</p>
 <section id="migration-procedure">
 <h2>Migration procedure<a class="headerlink" href="#migration-procedure" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
@@ -99,10 +100,10 @@ sections into separate JSON files; give each one its effective device name as
 <li><p>Copy every declared block, including holes. JSON addresses are literal PDU
 integers: convert a hexadecimal literal to its numeric value; never subtract
 30001/40001 or guess a zero/one-based correction.</p></li>
-<li><p>Translate references into properties and acquisition members. Preserve the
-effective v1 output key (ASCII spaces became underscores), case and punctuation.
-Register offsets are <code class="docutils literal notranslate"><span class="pre">reference</span> <span class="pre">address</span> <span class="pre">-</span> <span class="pre">poll</span> <span class="pre">start</span></code>. In bit tables this same
-difference counts eight-bit groups, not physical bits; quantity still counts bits.</p></li>
+<li><p>Translate references into standard property schemas and Modbus Forms. Preserve
+the effective v1 output key (ASCII spaces became underscores), case and
+punctuation. List each property in the matching <code class="docutils literal notranslate"><span class="pre">modpoll:acquisition</span></code> block
+to preserve request boundaries and poll order.</p></li>
 <li><p>Copy type, unit and scale. <code class="docutils literal notranslate"><span class="pre">modpoll:multiplier</span></code> multiplies the decoded value;
 it is not a divisor. Zero and negative values are valid. A numeric multiplier
 uses the existing float behavior even if its literal is stored as a decimal
@@ -128,10 +129,10 @@ HTTP or Modbus endpoints merely to produce a TD.</p>
 </section>
 <section id="reusable-ai-prompt">
 <h2>Reusable AI prompt<a class="headerlink" href="#reusable-ai-prompt" title="Link to this heading"></a></h2>
-<p>Provide the source CSV, current CONTRACT.md and extension schema alongside this
+<p>Provide the source CSV, current profile.md and extension schema alongside this
 prompt. The AI may prepare files, but an operator still verifies the result:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Convert</span> <span class="n">the</span> <span class="n">supplied</span> <span class="n">v1</span> <span class="n">modpoll</span> <span class="n">CSV</span> <span class="n">into</span> <span class="n">the</span> <span class="n">current</span> <span class="n">executable</span> <span class="n">WoT</span> <span class="n">TM</span> <span class="mf">1.1</span>
-<span class="n">profile</span><span class="o">.</span> <span class="n">Read</span> <span class="n">the</span> <span class="n">supplied</span> <span class="n">CONTRACT</span><span class="o">.</span><span class="n">md</span> <span class="ow">and</span> <span class="n">acquisition</span> <span class="n">schema</span> <span class="n">first</span><span class="o">.</span> <span class="n">This</span>
+<span class="n">profile</span> <span class="mf">0.2</span><span class="o">.</span> <span class="n">Read</span> <span class="n">the</span> <span class="n">supplied</span> <span class="n">profile</span><span class="o">.</span><span class="n">md</span> <span class="ow">and</span> <span class="n">acquisition</span> <span class="n">schema</span> <span class="n">first</span><span class="o">.</span> <span class="n">This</span>
 <span class="n">task</span> <span class="n">changes</span> <span class="n">configuration</span> <span class="nb">format</span><span class="p">;</span> <span class="n">do</span> <span class="ow">not</span> <span class="n">redesign</span> <span class="n">addresses</span> <span class="ow">or</span> <span class="n">sampling</span><span class="o">.</span>
 
 <span class="n">Output</span><span class="p">:</span>
@@ -144,12 +145,16 @@ prompt. The AI may prepare files, but an operator still verifies the result:</p>
 
 <span class="n">Preserve</span> <span class="n">every</span> <span class="n">poll</span> <span class="n">block</span><span class="s1">&#39;s order, table, literal start, quantity and holes.</span>
 <span class="n">Map</span> <span class="n">coil</span><span class="o">/</span><span class="n">discrete_input</span><span class="o">/</span><span class="n">input_register</span><span class="o">/</span><span class="n">holding_register</span> <span class="n">to</span> <span class="n">the</span> <span class="n">documented</span>
-<span class="n">modv</span><span class="p">:</span><span class="n">entity</span> <span class="n">terms</span><span class="o">.</span> <span class="n">BE_BE</span><span class="o">/</span><span class="n">BE_LE</span><span class="o">/</span><span class="n">LE_BE</span><span class="o">/</span><span class="n">LE_LE</span> <span class="nb">map</span> <span class="n">respectively</span> <span class="n">to</span> <span class="n">byte</span><span class="o">/</span><span class="n">word</span>
-<span class="n">flags</span> <span class="n">true</span><span class="o">/</span><span class="n">true</span><span class="p">,</span> <span class="n">true</span><span class="o">/</span><span class="n">false</span><span class="p">,</span> <span class="n">false</span><span class="o">/</span><span class="n">true</span><span class="p">,</span> <span class="n">false</span><span class="o">/</span><span class="n">false</span><span class="o">.</span>
+<span class="n">modv</span><span class="p">:</span><span class="n">entity</span> <span class="n">terms</span><span class="o">.</span> <span class="n">Put</span> <span class="n">raw</span> <span class="nb">type</span> <span class="ow">and</span> <span class="n">literal</span> <span class="n">address</span><span class="o">/</span><span class="n">quantity</span> <span class="n">on</span> <span class="n">each</span> <span class="n">Modbus</span>
+<span class="n">Form</span><span class="p">,</span> <span class="ow">and</span> <span class="nb">list</span> <span class="n">the</span> <span class="n">original</span> <span class="n">polling</span> <span class="n">groups</span> <span class="n">under</span> <span class="n">modpoll</span><span class="p">:</span><span class="n">acquisition</span><span class="o">.</span>
+<span class="n">BE_BE</span><span class="o">/</span><span class="n">BE_LE</span><span class="o">/</span><span class="n">LE_BE</span><span class="o">/</span><span class="n">LE_LE</span> <span class="nb">map</span> <span class="n">respectively</span> <span class="n">to</span> <span class="n">byte</span><span class="o">/</span><span class="n">word</span> <span class="n">flags</span> <span class="n">true</span><span class="o">/</span><span class="n">true</span><span class="p">,</span>
+<span class="n">true</span><span class="o">/</span><span class="n">false</span><span class="p">,</span> <span class="n">false</span><span class="o">/</span><span class="n">true</span><span class="p">,</span> <span class="n">false</span><span class="o">/</span><span class="n">false</span><span class="o">.</span>
 
 <span class="n">Preserve</span> <span class="n">each</span> <span class="n">effective</span> <span class="n">ref</span> <span class="n">key</span><span class="p">:</span> <span class="n">v1</span> <span class="n">replaced</span> <span class="n">ASCII</span> <span class="n">spaces</span> <span class="k">with</span> <span class="n">underscores</span><span class="p">;</span>
-<span class="n">do</span> <span class="ow">not</span> <span class="n">change</span> <span class="n">case</span><span class="p">,</span> <span class="n">punctuation</span> <span class="ow">or</span> <span class="n">hyphens</span><span class="o">.</span> <span class="n">Map</span> <span class="n">offsets</span> <span class="n">relative</span> <span class="n">to</span> <span class="n">the</span> <span class="n">block</span><span class="o">.</span>
-<span class="n">Bit</span><span class="o">-</span><span class="n">table</span> <span class="n">offsets</span> <span class="n">count</span> <span class="n">eight</span><span class="o">-</span><span class="n">bit</span> <span class="n">groups</span><span class="p">;</span> <span class="n">register</span> <span class="n">offsets</span> <span class="n">count</span> <span class="n">registers</span><span class="o">.</span>
+<span class="n">do</span> <span class="ow">not</span> <span class="n">change</span> <span class="n">case</span><span class="p">,</span> <span class="n">punctuation</span> <span class="ow">or</span> <span class="n">hyphens</span><span class="o">.</span> <span class="n">Preserve</span> <span class="n">every</span> <span class="n">block</span><span class="s1">&#39;s order,</span>
+<span class="n">start</span> <span class="ow">and</span> <span class="n">quantity</span> <span class="n">without</span> <span class="n">converting</span> <span class="n">to</span> <span class="n">per</span><span class="o">-</span><span class="nb">property</span> <span class="n">polling</span><span class="o">.</span>
+<span class="n">Bit</span><span class="o">-</span><span class="n">table</span> <span class="n">offsets</span> <span class="n">count</span> <span class="n">eight</span><span class="o">-</span><span class="n">bit</span> <span class="n">groups</span><span class="p">;</span> <span class="n">register</span> <span class="n">offsets</span> <span class="n">count</span> <span class="n">registers</span>
+<span class="n">only</span> <span class="n">when</span> <span class="n">the</span> <span class="n">selected</span> <span class="n">profile</span> <span class="n">uses</span> <span class="n">member</span> <span class="n">offsets</span><span class="o">.</span>
 <span class="n">address</span><span class="p">:</span><span class="n">bit</span> <span class="ow">is</span> <span class="n">allowed</span> <span class="n">only</span> <span class="k">for</span> <span class="n">a</span> <span class="n">register</span> <span class="nb">bool</span> <span class="n">bit</span> <span class="mf">0..15</span><span class="o">.</span> <span class="n">Strings</span> <span class="n">count</span> <span class="nb">bytes</span><span class="o">.</span>
 <span class="n">Numeric</span><span class="o">/</span><span class="n">string</span> <span class="n">bit</span><span class="o">-</span><span class="n">table</span> <span class="n">members</span> <span class="n">must</span> <span class="n">fit</span> <span class="n">complete</span> <span class="n">requested</span> <span class="n">payload</span> <span class="nb">bytes</span><span class="p">;</span>
 <span class="n">do</span> <span class="ow">not</span> <span class="n">rely</span> <span class="n">on</span> <span class="n">padded</span> <span class="n">response</span> <span class="n">bits</span><span class="o">.</span> <span class="n">Preserve</span> <span class="n">the</span> <span class="n">documented</span> <span class="n">legacy</span> <span class="n">bit</span><span class="o">-</span><span class="n">table</span>
@@ -191,7 +196,7 @@ prompt. The AI may prepare files, but an operator still verifies the result:</p>
 output comparisons pass. Unknown vendor facts remain unresolved, not guessed.</p></li>
 <li><p>No runtime CSV fallback, AI calls or device-library dependency is introduced.</p></li>
 </ul>
-<p>The authored <code class="docutils literal notranslate"><span class="pre">examples/modsim.tm.json</span></code> / <code class="docutils literal notranslate"><span class="pre">modsim.td.json</span></code> pair and the
+<p>The authored <code class="docutils literal notranslate"><span class="pre">examples/modsim.tm.json</span></code> / <code class="docutils literal notranslate"><span class="pre">modsim.generated.td.json</span></code> pair and the
 independent vectors in the tests demonstrate the process. Migrating the entire
 <code class="docutils literal notranslate"><span class="pre">contrib</span></code> tree is not a release condition.</p>
 </section>

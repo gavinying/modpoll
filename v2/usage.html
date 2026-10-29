@@ -87,14 +87,14 @@
              
   <section id="basic-usage">
 <h1>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h1>
-<p><p>Modpoll v2.0.0a1 - A New Command-line Tool for Modbus and MQTT</p>
+<p><p>Modpoll v2.0.0a2 - A New Command-line Tool for Modbus and MQTT</p>
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">modpoll</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="n">CONFIG</span> <span class="p">[</span><span class="n">CONFIG</span> <span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unit</span><span class="o">-</span><span class="nb">id</span> <span class="n">UNIT_ID</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="p">]</span>
-               <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">RATE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">interval</span> <span class="n">INTERVAL</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">tcp</span> <span class="n">TCP</span><span class="p">]</span>
-               <span class="p">[</span><span class="o">--</span><span class="n">tcp</span><span class="o">-</span><span class="n">port</span> <span class="n">TCP_PORT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">udp</span> <span class="n">UDP</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">udp</span><span class="o">-</span><span class="n">port</span> <span class="n">UDP_PORT</span><span class="p">]</span>
-               <span class="p">[</span><span class="o">--</span><span class="n">serial</span> <span class="n">SERIAL</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">serial</span><span class="o">-</span><span class="n">baud</span> <span class="n">SERIAL_BAUD</span><span class="p">]</span>
-               <span class="p">[</span><span class="o">--</span><span class="n">serial</span><span class="o">-</span><span class="n">parity</span> <span class="p">{</span><span class="n">none</span><span class="p">,</span><span class="n">odd</span><span class="p">,</span><span class="n">even</span><span class="p">}]</span> <span class="p">[</span><span class="o">--</span><span class="n">timeout</span> <span class="n">TIMEOUT</span><span class="p">]</span>
-               <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">EXPORT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">version</span> <span class="p">{</span><span class="mf">3.1.1</span><span class="p">,</span><span class="mf">5.0</span><span class="p">}]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">modpoll</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="n">CONFIG</span> <span class="p">[</span><span class="n">CONFIG</span> <span class="o">...</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">param</span> <span class="n">NAME</span><span class="o">=</span><span class="n">JSON</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">unit</span><span class="o">-</span><span class="nb">id</span> <span class="n">UNIT_ID</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">RATE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">interval</span> <span class="n">INTERVAL</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">tcp</span> <span class="n">TCP</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">tcp</span><span class="o">-</span><span class="n">port</span> <span class="n">TCP_PORT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">udp</span> <span class="n">UDP</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">udp</span><span class="o">-</span><span class="n">port</span> <span class="n">UDP_PORT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">serial</span> <span class="n">SERIAL</span><span class="p">]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">serial</span><span class="o">-</span><span class="n">baud</span> <span class="n">SERIAL_BAUD</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">serial</span><span class="o">-</span><span class="n">parity</span> <span class="p">{</span><span class="n">none</span><span class="p">,</span><span class="n">odd</span><span class="p">,</span><span class="n">even</span><span class="p">}]</span>
+               <span class="p">[</span><span class="o">--</span><span class="n">timeout</span> <span class="n">TIMEOUT</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">o</span> <span class="n">EXPORT</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">version</span> <span class="p">{</span><span class="mf">3.1.1</span><span class="p">,</span><span class="mf">5.0</span><span class="p">}]</span>
                <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">host</span> <span class="n">MQTT_HOST</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">port</span> <span class="n">MQTT_PORT</span><span class="p">]</span>
                <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">clientid</span> <span class="n">MQTT_CLIENTID</span><span class="p">]</span>
                <span class="p">[</span><span class="o">--</span><span class="n">mqtt</span><span class="o">-</span><span class="n">publish</span><span class="o">-</span><span class="n">topic</span><span class="o">-</span><span class="n">pattern</span> <span class="n">MQTT_PUBLISH_TOPIC_PATTERN</span><span class="p">]</span>
@@ -116,10 +116,14 @@
 <dd><p>show program’s version number and exit</p>
 </dd>
 <dt><kbd>-f, --config</kbd></dt>
-<dd><p>Local path or URL of a WoT TM/TD JSON configuration. Required!</p>
+<dd><p>Local path or URL of a WoT TM/TD JSON configuration. Type is detected from content, not the filename. Required!</p>
+</dd>
+<dt><kbd>--param</kbd></dt>
+<dd><p>Typed TM placeholder binding (requires the profile 0.2 interpreter)</p>
+<p>Default: []</p>
 </dd>
 <dt><kbd>--unit-id</kbd></dt>
-<dd><p>Override model Unit ID (1-254); otherwise use modv:unitID or 1</p>
+<dd><p>Override instance Unit ID (1-254); otherwise use TD, legacy model default, or 1</p>
 </dd>
 <dt><kbd>-d, --daemon</kbd></dt>
 <dd><p>Run in daemon mode without printing result. Recommended to use with docker</p>
@@ -138,11 +142,10 @@
 <p>Default: 0.5</p>
 </dd>
 <dt><kbd>--tcp</kbd></dt>
-<dd><p>Act as a Modbus TCP master, connecting to host TCP</p>
+<dd><p>Explicit TCP host; a profile 0.2 TD uses its endpoint when omitted</p>
 </dd>
 <dt><kbd>--tcp-port</kbd></dt>
 <dd><p>Port for MODBUS TCP. Defaults to 502</p>
-<p>Default: 502</p>
 </dd>
 <dt><kbd>--udp</kbd></dt>
 <dd><p>Act as a Modbus UDP master, connecting to host UDP</p>

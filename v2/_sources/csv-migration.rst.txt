@@ -3,8 +3,9 @@ Migrating CSV configurations
 
 v1 remains available for existing CSV users. v2 accepts TM/TD JSON and provides
 an offline validator; it does not load CSV or invoke an AI service at runtime.
-The examples below use the profile described in
-``packages/modpoll-wot/CONTRACT.md`` and its bundled schemas.
+Convert new configurations to profile 0.2 as described in
+``packages/modpoll-wot/profile.md``; profile 0.1 remains supported for existing
+files. Check the executable profile and bundled schemas before using a conversion.
 
 Migration procedure
 -------------------
@@ -15,10 +16,10 @@ Migration procedure
 2. Copy every declared block, including holes. JSON addresses are literal PDU
    integers: convert a hexadecimal literal to its numeric value; never subtract
    30001/40001 or guess a zero/one-based correction.
-3. Translate references into properties and acquisition members. Preserve the
-   effective v1 output key (ASCII spaces became underscores), case and punctuation.
-   Register offsets are ``reference address - poll start``. In bit tables this same
-   difference counts eight-bit groups, not physical bits; quantity still counts bits.
+3. Translate references into standard property schemas and Modbus Forms. Preserve
+   the effective v1 output key (ASCII spaces became underscores), case and
+   punctuation. List each property in the matching ``modpoll:acquisition`` block
+   to preserve request boundaries and poll order.
 4. Copy type, unit and scale. ``modpoll:multiplier`` multiplies the decoded value;
    it is not a divisor. Zero and negative values are valid. A numeric multiplier
    uses the existing float behavior even if its literal is stored as a decimal
@@ -45,11 +46,11 @@ HTTP or Modbus endpoints merely to produce a TD.
 Reusable AI prompt
 ------------------
 
-Provide the source CSV, current CONTRACT.md and extension schema alongside this
+Provide the source CSV, current profile.md and extension schema alongside this
 prompt. The AI may prepare files, but an operator still verifies the result::
 
     Convert the supplied v1 modpoll CSV into the current executable WoT TM 1.1
-    profile. Read the supplied CONTRACT.md and acquisition schema first. This
+    profile 0.2. Read the supplied profile.md and acquisition schema first. This
     task changes configuration format; do not redesign addresses or sampling.
 
     Output:
@@ -62,12 +63,16 @@ prompt. The AI may prepare files, but an operator still verifies the result::
 
     Preserve every poll block's order, table, literal start, quantity and holes.
     Map coil/discrete_input/input_register/holding_register to the documented
-    modv:entity terms. BE_BE/BE_LE/LE_BE/LE_LE map respectively to byte/word
-    flags true/true, true/false, false/true, false/false.
+    modv:entity terms. Put raw type and literal address/quantity on each Modbus
+    Form, and list the original polling groups under modpoll:acquisition.
+    BE_BE/BE_LE/LE_BE/LE_LE map respectively to byte/word flags true/true,
+    true/false, false/true, false/false.
 
     Preserve each effective ref key: v1 replaced ASCII spaces with underscores;
-    do not change case, punctuation or hyphens. Map offsets relative to the block.
-    Bit-table offsets count eight-bit groups; register offsets count registers.
+    do not change case, punctuation or hyphens. Preserve every block's order,
+    start and quantity without converting to per-property polling.
+    Bit-table offsets count eight-bit groups; register offsets count registers
+    only when the selected profile uses member offsets.
     address:bit is allowed only for a register bool bit 0..15. Strings count bytes.
     Numeric/string bit-table members must fit complete requested payload bytes;
     do not rely on padded response bits. Preserve the documented legacy bit-table
@@ -107,6 +112,6 @@ Review checklist
   output comparisons pass. Unknown vendor facts remain unresolved, not guessed.
 * No runtime CSV fallback, AI calls or device-library dependency is introduced.
 
-The authored ``examples/modsim.tm.json`` / ``modsim.td.json`` pair and the
+The authored ``examples/modsim.tm.json`` / ``modsim.generated.td.json`` pair and the
 independent vectors in the tests demonstrate the process. Migrating the entire
 ``contrib`` tree is not a release condition.
