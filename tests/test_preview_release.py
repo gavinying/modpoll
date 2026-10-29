@@ -58,8 +58,15 @@ def test_registry_retries_require_exact_original_filenames_and_hashes(
             for p in files
         ]
     }
-    monkeypatch.setattr(release, "get_json", lambda url: data)
+    requests = []
+
+    def get_json(url):
+        requests.append(url)
+        return data
+
+    monkeypatch.setattr(release, "get_json", get_json)
     assert release.pypi_state("package", "0.1a1", files) == "identical"
+    assert "cache_bust=" in requests[-1]
     wheel.write_bytes(b"different build")
     with pytest.raises(ValueError, match="differs"):
         release.pypi_state("package", "0.1a1", files)

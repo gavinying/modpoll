@@ -79,7 +79,9 @@ def pypi_state(name, version, artifacts):
     ):
         raise ValueError("exactly one wheel and one sdist are required")
     try:
-        data = get_json(f"https://pypi.org/pypi/{name}/{version}/json")
+        data = get_json(
+            f"https://pypi.org/pypi/{name}/{version}/json?cache_bust={time.time_ns()}"
+        )
     except urllib.error.HTTPError as exc:
         if exc.code == 404:
             return "absent"
@@ -94,7 +96,7 @@ def pypi_state(name, version, artifacts):
 
 def download_published_wheel(name, version, directory):
     """Download the exact registry wheel, bypassing stale simple-index caches."""
-    url = f"https://pypi.org/pypi/{name}/{version}/json"
+    url = f"https://pypi.org/pypi/{name}/{version}/json" f"?cache_bust={time.time_ns()}"
     for attempt in range(6):
         try:
             data = get_json(url)
