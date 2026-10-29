@@ -64,8 +64,8 @@ def test_adapter_preserves_all_modsim_reference_addresses():
         (3, 40000, 44),
     ]
     assert len(device.references) == 37
-    assert device.references["coil09-16"].address == 1
-    assert device.references["di09-16"].address == 10001
+    assert device.references["coil09-16"].address == 8
+    assert device.references["di09-16"].address == 10008
     assert device.references["holding_reg19"].dtype == "string16"
     assert device.references["holding_reg10"].scale == 0.001
     assert device.references["input_reg01"].rw == "r"
@@ -85,7 +85,11 @@ def test_single_config_option_loads_content_regardless_of_filename(
 ):
     from modpoll.arg_parser import get_parser
 
-    source = Path(__file__).resolve().parents[1] / f"examples/modsim.{kind}.json"
+    source_name = {
+        "tm": "modsim.tm.json",
+        "td": "modsim.generated.td.json",
+    }[kind]
+    source = Path(__file__).resolve().parents[1] / "examples" / source_name
     path = tmp_path / filename
     path.write_bytes(source.read_bytes())
     args = get_parser().parse_args(["--config", str(path)])
@@ -107,7 +111,11 @@ def test_single_config_option_loads_content_regardless_of_filename(
 def test_remote_config_detects_response_content_at_opaque_url(monkeypatch, kind):
     from modpoll import wot_config
 
-    source = Path(__file__).resolve().parents[1] / f"examples/modsim.{kind}.json"
+    source_name = {
+        "tm": "modsim.tm.json",
+        "td": "modsim.generated.td.json",
+    }[kind]
+    source = Path(__file__).resolve().parents[1] / "examples" / source_name
 
     class Response:
         def __enter__(self):

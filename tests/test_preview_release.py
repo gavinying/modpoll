@@ -1,6 +1,7 @@
 """Release gates must reject wrong routes, stale CI and differing registry bytes."""
 
 import hashlib
+import io
 import importlib.util
 from pathlib import Path
 import urllib.error
@@ -16,10 +17,10 @@ spec.loader.exec_module(release)
 
 
 def test_release_routes_do_not_accept_stable_tags_or_other_packages():
-    assert release.release_target("v2.0.0a1")[:2] == ("modpoll", "2.0.0a1")
-    assert release.release_target("modpoll-wot-v0.1.0a1")[:2] == (
+    assert release.release_target("v2.0.0a2")[:2] == ("modpoll", "2.0.0a2")
+    assert release.release_target("modpoll-wot-v0.2.0a1")[:2] == (
         "modpoll-wot",
-        "0.1.0a1",
+        "0.2.0a1",
     )
     for tag in ("v1.6.2", "v2.0.0", "v2.0.0a1-extra", "other-v0.1.0a1"):
         with pytest.raises(ValueError):
@@ -82,3 +83,28 @@ def test_registry_outage_is_not_treated_as_an_unused_version(monkeypatch, tmp_pa
     monkeypatch.setattr(release, "get_json", error(503))
     with pytest.raises(urllib.error.HTTPError):
         release.pypi_state("package", "0.1a1", files)
+
+
+def test_downloaded_wheel_matches_pypi_metadata(monkeypatch, tmp_path):
+    content = b"published wheel"
+    data = {
+        "urls": [
+            {
+                "filename": "package-0.2-py3-none-any.whl",
+                "url": "https://files.pythonhosted.org/package.whl",
+                "digests": {"sha256": hashlib.sha256(content).hexdigest()},
+            }
+        ]
+    }
+    monkeypatch.setattr(release, "get_json", lambda url: data)
+    monkeypatch.setattr(
+        release.urllib.request,
+        "urlopen",
+        lambda url, timeout: io.BytesIO(content),
+    )
+    wheel = release.download_published_wheel("package", "0.2", tmp_path)
+    assert wheel.read_bytes() == content
+
+    data["urls"][0]["digests"]["sha256"] = "wrong"
+    with pytest.raises(ValueError, match="SHA-256"):
+        release.download_published_wheel("package", "0.2", tmp_path)

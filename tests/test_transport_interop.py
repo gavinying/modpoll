@@ -200,7 +200,7 @@ def test_udp_preserves_csv_tm_td_results(tmp_path):
         for label, source, config in [
             ("csv", baseline, baseline / "examples/modsim.csv"),
             ("tm", ROOT, ROOT / "examples/modsim.tm.json"),
-            ("td", ROOT, ROOT / "examples/modsim.td.json"),
+            ("td", ROOT, ROOT / "examples/modsim.generated.td.json"),
         ]:
             results.append(
                 run_client(
@@ -269,7 +269,11 @@ def test_serial_actual_frames_and_values(tmp_path, framer):
                 bridge.reset()
                 result = run_client(
                     ROOT,
-                    ROOT / f"examples/modsim.{kind}.json",
+                    ROOT
+                    / "examples"
+                    / (
+                        "modsim.tm.json" if kind == "tm" else "modsim.generated.td.json"
+                    ),
                     [
                         "--rtu" if framer == "rtu" else "--serial",
                         bridge.client_path,

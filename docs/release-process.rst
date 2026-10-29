@@ -3,19 +3,19 @@ Preview release process
 
 The application and ``modpoll-wot`` interpreter are independently versioned in
 this repository. The interpreter validates bundled WoT TD/TM 1.1 schemas and
-Modpoll acquisition contract 0.1; it is not a device execution service.
+Modpoll profiles 0.1/0.2; it is not a device execution service.
 
 1. On ``v2``, select a candidate whose exact commit passes quality, Python
    3.10/3.11/3.12, documentation and simulator interoperability CI.
 2. Set the interpreter version and metadata, build wheel/sdist and verify bundled
    schemas offline in an independent environment. Push the unique tag
-   ``modpoll-wot-v0.1.0a1``. ``preview-core.yml`` requires the accepted SHA,
+   ``modpoll-wot-v0.2.0a1``. ``preview-core.yml`` requires the accepted SHA,
    publishes both artifacts, verifies a registry installation and records a
    separate prerelease without changing the stable latest release.
 3. After registry installation succeeds, pin the application to that exact
    version. Refresh lock/requirements. Build wheel/sdist and Docker; the wheel
    guard rejects source URLs and non-exact interpreter requirements.
-4. Verify the application candidate and push ``v2.0.0a1`` at that accepted SHA.
+4. Verify the application candidate and push ``v2.0.0a2`` at that accepted SHA.
    ``preview-app.yml`` publishes the application, an explicit amd64/arm64 image,
    versioned documentation and runs registry-installed acceptance with no
    application source directory. Previews never move stable Docker aliases.

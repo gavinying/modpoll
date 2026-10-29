@@ -518,13 +518,13 @@ files = [
 
 [[package]]
 name = "modpoll-wot"
-version = "0.1.0a1"
-description = "WoT Modbus configuration interpreter for Modpoll"
+version = "0.2.0a1"
+description = "Shared WoT Modbus configuration interpreter"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "modpoll_wot-0.1.0a1-py3-none-any.whl", hash = "sha256:657ed44234ee7de3ba2c1d459be9ccc4bad22447a1e7320b04d792eff4bd78fd"},
-    {file = "modpoll_wot-0.1.0a1.tar.gz", hash = "sha256:59546054b28ace761b270cb3717fcc4ca7d4b529289ed40dad181f4173e9629f"},
+    {file = "modpoll_wot-0.2.0a1-py3-none-any.whl", hash = "sha256:3e52e6aec0700ccea55b8d07905777244b39ab60610c7151e9618fc570b4d886"},
+    {file = "modpoll_wot-0.2.0a1.tar.gz", hash = "sha256:d352d65ffcf7e382abd393c2126a555e72543d17969b189563204ace99412d68"},
 ]
 
 [package.dependencies]
@@ -1407,4 +1407,4 @@ serial = ["pyserial"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "e27b94ecce5c4055bb28f7452b12c8504e5a80ddcc84f9936236fe09fa5eee02"
+content-hash = "7eded4401bab274e016cf1006fa1a02b130283e9de2d705d51b80eb9bf06ffe7"

@@ -168,7 +168,7 @@ def test_csv_tm_td_mqtt_equivalence_and_local_write_commands(
     runs = [
         ("csv", baseline, baseline / "examples/modsim.csv"),
         ("tm", ROOT, ROOT / "examples/modsim.tm.json"),
-        ("td", ROOT, ROOT / "examples/modsim.td.json"),
+        ("td", ROOT, ROOT / "examples/modsim.generated.td.json"),
     ]
     expected = None
     retained_topics = []

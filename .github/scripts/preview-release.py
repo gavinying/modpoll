@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import re
+import time
 import urllib.error
 import urllib.request
 
@@ -91,10 +92,43 @@ def pypi_state(name, version, artifacts):
     return "identical"
 
 
+def download_published_wheel(name, version, directory):
+    """Download the exact registry wheel, bypassing stale simple-index caches."""
+    url = f"https://pypi.org/pypi/{name}/{version}/json"
+    for attempt in range(6):
+        try:
+            data = get_json(url)
+            break
+        except urllib.error.HTTPError as exc:
+            if exc.code != 404 or attempt == 5:
+                raise
+            time.sleep(10)
+    wheels = [item for item in data["urls"] if item["filename"].endswith(".whl")]
+    if len(wheels) != 1:
+        raise ValueError("expected exactly one published wheel")
+    item = wheels[0]
+    destination = Path(directory) / item["filename"]
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(item["url"], timeout=60) as response:
+                content = response.read()
+            break
+        except urllib.error.HTTPError as exc:
+            if exc.code != 404 or attempt == 5:
+                raise
+            time.sleep(10)
+    if hashlib.sha256(content).hexdigest() != item["digests"]["sha256"]:
+        raise ValueError("downloaded wheel does not match PyPI's SHA-256")
+    destination.write_bytes(content)
+    return destination
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("operation", choices=("guard", "pypi"))
+    parser.add_argument("operation", choices=("guard", "pypi", "download"))
     parser.add_argument("tag")
+    parser.add_argument("--directory")
     args = parser.parse_args()
     name, version, path = release_target(args.tag)
     if package_version(path / "pyproject.toml") != version:
@@ -111,11 +145,15 @@ def main():
             raise ValueError("too many check runs; inspect the candidate explicitly")
         require_checks(checks["check_runs"], sha)
         print(f"Validated {name} {version} at {sha}")
-    else:
+    elif args.operation == "pypi":
         state = pypi_state(name, version, list((path / "dist").iterdir()))
         with open(os.environ["GITHUB_OUTPUT"], "a") as output:
             output.write(f"state={state}\n")
         print("PyPI artifacts: " + state)
+    else:
+        if not args.directory:
+            parser.error("download requires --directory")
+        print(download_published_wheel(name, version, args.directory))
 
 
 if __name__ == "__main__":

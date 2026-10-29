@@ -1,8 +1,8 @@
-Modpoll 2.0.0a1 is a functional preview replacing runtime CSV configuration with WoT TM/TD JSON. Existing polling blocks, CLI/JSON/MQTT output and raw address commands are retained. No platform service or device library is required.
+Modpoll 2.0.0a2 is a functional preview using WoT TM/TD 1.1 profile 0.2 as its canonical configuration model. Existing polling blocks, CLI/JSON/MQTT output and raw address commands are retained. No platform service or device library is required.
 
-Install explicitly: `pip install "modpoll[serial]==2.0.0a1"`. The application pins `modpoll-wot==0.1.0a1`. Docker: `topmaker/modpoll:2.0.0a1` (amd64/arm64); stable `latest` remains unchanged. Existing CSV users can keep `modpoll<2`.
+Install explicitly: `pip install "modpoll[serial]==2.0.0a2"`. The application pins `modpoll-wot==0.2.0a1`. Docker: `topmaker/modpoll:2.0.0a2` (amd64/arm64); stable `latest` remains unchanged. Existing CSV users can keep `modpoll<2`.
 
-Documentation: [1.x](https://top-maker.github.io/modpoll/1.x/), [2.x preview](https://top-maker.github.io/modpoll/v2/), [CSV migration and AI prompt](https://top-maker.github.io/modpoll/v2/csv-migration.html), [compatibility matrix](https://top-maker.github.io/modpoll/v2/v1-compatibility.html). Contract 0.1 is a project extension over the W3C draft Modbus vocabulary, not a new W3C standard.
+Documentation: [1.x](https://top-maker.github.io/modpoll/1.x/), [2.x preview](https://top-maker.github.io/modpoll/v2/), [CSV migration and AI prompt](https://top-maker.github.io/modpoll/v2/csv-migration.html), [compatibility matrix](https://top-maker.github.io/modpoll/v2/v1-compatibility.html). Profile 0.2 is a project extension over the W3C draft Modbus vocabulary, not a new W3C standard. Profile 0.1 remains readable for existing configurations.
 
 Acceptance includes 37 known simulator properties, exact block requests, independent byte/word vectors, UDP, POSIX virtual RTU/ASCII, MQTT 3.1.1/5.0, QoS0/1/2, TLS, command readback and failure recovery. Release acceptance additionally installs the published package in an environment without application sources.
 

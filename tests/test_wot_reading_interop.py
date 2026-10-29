@@ -176,7 +176,8 @@ class QuietHttpHandler(http.server.SimpleHTTPRequestHandler):
 
 @pytest.mark.parametrize("kind", ["tm", "td"])
 def test_url_and_local_multi_device_cli_json_and_timestamp(live_modsim, tmp_path, kind):
-    source = json.loads((ROOT / f"examples/modsim.{kind}.json").read_text())
+    source_name = "modsim.tm.json" if kind == "tm" else "modsim.generated.td.json"
+    source = json.loads((ROOT / "examples" / source_name).read_text())
     source["title"] = "http-device"
     (tmp_path / f"meter.{kind}.json").write_text(json.dumps(source))
     source["title"] = "local-device"

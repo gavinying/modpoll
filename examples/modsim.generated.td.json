@@ -7,7 +7,6 @@
       "xsd": "http://www.w3.org/2001/XMLSchema#"
     }
   ],
-  "@type": "tm:ThingModel",
   "title": "modsim01",
   "modpoll:version": "0.2",
   "properties": {
@@ -26,7 +25,8 @@
           "modv:entity": "Coil",
           "modv:address": 0,
           "modv:quantity": 8,
-          "modv:type": "xsd:boolean"
+          "modv:type": "xsd:boolean",
+          "href": "modbus+tcp://127.0.0.1:5020/1/0?quantity=8"
         }
       ]
     },
@@ -45,7 +45,8 @@
           "modv:entity": "Coil",
           "modv:address": 8,
           "modv:quantity": 8,
-          "modv:type": "xsd:boolean"
+          "modv:type": "xsd:boolean",
+          "href": "modbus+tcp://127.0.0.1:5020/1/8?quantity=8"
         }
       ]
     },
@@ -57,14 +58,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "DiscreteInput",
           "modv:address": 10000,
           "modv:quantity": 8,
-          "modv:type": "xsd:boolean"
+          "modv:type": "xsd:boolean",
+          "href": "modbus+tcp://127.0.0.1:5020/1/10000?quantity=8"
         }
       ]
     },
@@ -76,14 +76,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "DiscreteInput",
           "modv:address": 10008,
           "modv:quantity": 8,
-          "modv:type": "xsd:boolean"
+          "modv:type": "xsd:boolean",
+          "href": "modbus+tcp://127.0.0.1:5020/1/10008?quantity=8"
         }
       ]
     },
@@ -92,14 +91,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30000,
           "modv:quantity": 1,
-          "modv:type": "xsd:unsignedShort"
+          "modv:type": "xsd:unsignedShort",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30000?quantity=1"
         }
       ]
     },
@@ -108,14 +106,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30001,
           "modv:quantity": 1,
-          "modv:type": "xsd:unsignedShort"
+          "modv:type": "xsd:unsignedShort",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30001?quantity=1"
         }
       ]
     },
@@ -124,14 +121,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30002,
           "modv:quantity": 1,
-          "modv:type": "xsd:unsignedShort"
+          "modv:type": "xsd:unsignedShort",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30002?quantity=1"
         }
       ]
     },
@@ -140,14 +136,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30003,
           "modv:quantity": 1,
-          "modv:type": "xsd:unsignedShort"
+          "modv:type": "xsd:unsignedShort",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30003?quantity=1"
         }
       ]
     },
@@ -156,14 +151,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30004,
           "modv:quantity": 1,
-          "modv:type": "xsd:short"
+          "modv:type": "xsd:short",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30004?quantity=1"
         }
       ]
     },
@@ -172,14 +166,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30005,
           "modv:quantity": 1,
-          "modv:type": "xsd:short"
+          "modv:type": "xsd:short",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30005?quantity=1"
         }
       ]
     },
@@ -188,14 +181,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30006,
           "modv:quantity": 1,
-          "modv:type": "xsd:short"
+          "modv:type": "xsd:short",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30006?quantity=1"
         }
       ]
     },
@@ -204,14 +196,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30007,
           "modv:quantity": 1,
-          "modv:type": "xsd:short"
+          "modv:type": "xsd:short",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30007?quantity=1"
         }
       ]
     },
@@ -220,14 +211,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30008,
           "modv:quantity": 2,
-          "modv:type": "xsd:unsignedInt"
+          "modv:type": "xsd:unsignedInt",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30008?quantity=2"
         }
       ]
     },
@@ -236,15 +226,14 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30010,
           "modv:quantity": 2,
           "modv:type": "xsd:unsignedInt",
-          "modpoll:multiplier": "0.001"
+          "modpoll:multiplier": "0.001",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30010?quantity=2"
         }
       ]
     },
@@ -253,14 +242,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30012,
           "modv:quantity": 2,
-          "modv:type": "xsd:int"
+          "modv:type": "xsd:int",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30012?quantity=2"
         }
       ]
     },
@@ -269,15 +257,14 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30014,
           "modv:quantity": 2,
           "modv:type": "xsd:int",
-          "modpoll:multiplier": "1000"
+          "modpoll:multiplier": "1000",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30014?quantity=2"
         }
       ]
     },
@@ -286,14 +273,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30016,
           "modv:quantity": 2,
-          "modv:type": "xsd:float"
+          "modv:type": "xsd:float",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30016?quantity=2"
         }
       ]
     },
@@ -302,14 +288,13 @@
       "readOnly": true,
       "forms": [
         {
-          "op": [
-            "readproperty"
-          ],
+          "op": "readproperty",
           "contentType": "application/octet-stream",
           "modv:entity": "InputRegister",
           "modv:address": 30018,
           "modv:quantity": 2,
-          "modv:type": "xsd:float"
+          "modv:type": "xsd:float",
+          "href": "modbus+tcp://127.0.0.1:5020/1/30018?quantity=2"
         }
       ]
     },
@@ -325,7 +310,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40000,
           "modv:quantity": 1,
-          "modv:type": "xsd:unsignedShort"
+          "modv:type": "xsd:unsignedShort",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40000?quantity=1"
         }
       ]
     },
@@ -341,7 +327,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40001,
           "modv:quantity": 1,
-          "modv:type": "xsd:unsignedShort"
+          "modv:type": "xsd:unsignedShort",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40001?quantity=1"
         }
       ]
     },
@@ -357,7 +344,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40002,
           "modv:quantity": 1,
-          "modv:type": "xsd:unsignedShort"
+          "modv:type": "xsd:unsignedShort",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40002?quantity=1"
         }
       ]
     },
@@ -373,7 +361,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40003,
           "modv:quantity": 1,
-          "modv:type": "xsd:unsignedShort"
+          "modv:type": "xsd:unsignedShort",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40003?quantity=1"
         }
       ]
     },
@@ -389,7 +378,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40004,
           "modv:quantity": 1,
-          "modv:type": "xsd:short"
+          "modv:type": "xsd:short",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40004?quantity=1"
         }
       ]
     },
@@ -405,7 +395,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40005,
           "modv:quantity": 1,
-          "modv:type": "xsd:short"
+          "modv:type": "xsd:short",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40005?quantity=1"
         }
       ]
     },
@@ -421,7 +412,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40006,
           "modv:quantity": 1,
-          "modv:type": "xsd:short"
+          "modv:type": "xsd:short",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40006?quantity=1"
         }
       ]
     },
@@ -437,7 +429,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40007,
           "modv:quantity": 1,
-          "modv:type": "xsd:short"
+          "modv:type": "xsd:short",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40007?quantity=1"
         }
       ]
     },
@@ -453,7 +446,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40008,
           "modv:quantity": 2,
-          "modv:type": "xsd:unsignedInt"
+          "modv:type": "xsd:unsignedInt",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40008?quantity=2"
         }
       ]
     },
@@ -470,7 +464,8 @@
           "modv:address": 40010,
           "modv:quantity": 2,
           "modv:type": "xsd:unsignedInt",
-          "modpoll:multiplier": "0.001"
+          "modpoll:multiplier": "0.001",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40010?quantity=2"
         }
       ]
     },
@@ -486,7 +481,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40012,
           "modv:quantity": 2,
-          "modv:type": "xsd:int"
+          "modv:type": "xsd:int",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40012?quantity=2"
         }
       ]
     },
@@ -503,7 +499,8 @@
           "modv:address": 40014,
           "modv:quantity": 2,
           "modv:type": "xsd:int",
-          "modpoll:multiplier": "1000"
+          "modpoll:multiplier": "1000",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40014?quantity=2"
         }
       ]
     },
@@ -519,7 +516,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40016,
           "modv:quantity": 2,
-          "modv:type": "xsd:float"
+          "modv:type": "xsd:float",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40016?quantity=2"
         }
       ]
     },
@@ -535,7 +533,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40018,
           "modv:quantity": 2,
-          "modv:type": "xsd:float"
+          "modv:type": "xsd:float",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40018?quantity=2"
         }
       ]
     },
@@ -551,7 +550,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40020,
           "modv:quantity": 4,
-          "modv:type": "xsd:unsignedLong"
+          "modv:type": "xsd:unsignedLong",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40020?quantity=4"
         }
       ]
     },
@@ -567,7 +567,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40024,
           "modv:quantity": 4,
-          "modv:type": "xsd:long"
+          "modv:type": "xsd:long",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40024?quantity=4"
         }
       ]
     },
@@ -583,7 +584,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40028,
           "modv:quantity": 4,
-          "modv:type": "xsd:double"
+          "modv:type": "xsd:double",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40028?quantity=4"
         }
       ]
     },
@@ -599,7 +601,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40032,
           "modv:quantity": 4,
-          "modv:type": "xsd:double"
+          "modv:type": "xsd:double",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40032?quantity=4"
         }
       ]
     },
@@ -615,7 +618,8 @@
           "modv:entity": "HoldingRegister",
           "modv:address": 40036,
           "modv:quantity": 8,
-          "modv:type": "xsd:string"
+          "modv:type": "xsd:string",
+          "href": "modbus+tcp://127.0.0.1:5020/1/40036?quantity=8"
         }
       ]
     }
@@ -686,5 +690,11 @@
       "modv:address": 40000,
       "modv:quantity": 44
     }
-  ]
+  ],
+  "securityDefinitions": {
+    "nosec_sc": {
+      "scheme": "nosec"
+    }
+  },
+  "security": "nosec_sc"
 }

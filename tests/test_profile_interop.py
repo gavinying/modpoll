@@ -33,7 +33,7 @@ def run_model(model, port):
 
 
 def test_all_four_blocks_and_37_values_match_legacy(live_modsim):
-    document = json.loads((ROOT / "examples/modsim-standard.tm.json").read_text())
+    document = json.loads((ROOT / "examples/modsim.tm.json").read_text())
     model, td = profile.instantiate(document, host="127.0.0.1", port=live_modsim)
     reread, _ = profile.instantiate(td)
     for execution in (model, reread):

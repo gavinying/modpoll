@@ -157,7 +157,7 @@ def main():
             for label, root, config in (
                 ("1.x CSV", old, old / "examples/modsim.csv"),
                 ("2.x TM", ROOT, ROOT / "examples/modsim.tm.json"),
-                ("2.x TD", ROOT, ROOT / "examples/modsim.td.json"),
+                ("2.x TD", ROOT, ROOT / "examples/modsim.generated.td.json"),
             ):
                 with Proxy(("127.0.0.1", 0), Handler) as proxy:
                     proxy.upstream = (host, port)

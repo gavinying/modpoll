@@ -1,4 +1,4 @@
-> **2.x development branch.** This checkout accepts WoT TM/TD JSON. CSV remains supported on the 1.x `main` branch. The first functional preview is `2.0.0a1`: install it explicitly with `pip install "modpoll[serial]==2.0.0a1"`. Stable 1.x remains available with `pip install "modpoll<2"`. For development, run `mise install` and `mise exec -- poetry install --all-extras`, then prefix the examples below with `mise exec -- poetry run`.
+> **2.x development branch.** This checkout accepts WoT TM/TD JSON using profile 0.2. CSV remains supported on the 1.x `main` branch. Install the current preview with `pip install "modpoll[serial]==2.0.0a2"`. Stable 1.x remains available with `pip install "modpoll<2"`. For development, run `mise install` and `mise exec -- poetry install --all-extras`, then prefix the examples below with `mise exec -- poetry run`.
 
 # Modpoll - A New Command-line Tool for Modbus and MQTT
 
@@ -47,13 +47,13 @@ This tool tested on Python 3.10+ (Ubuntu 22.04+ or equivalent), the package is a
 Install *modpoll* using the following command,
 
 ```bash
-pip install "modpoll==2.0.0a1"
+pip install "modpoll==2.0.0a2"
 ```
 
 Optionally, [pyserial](https://pyserial.readthedocs.io/) library can be installed for Modbus-RTU communication,
 
 ```bash
-pip install 'modpoll[serial]==2.0.0a1'
+pip install 'modpoll[serial]==2.0.0a2'
 ```
 
 Upgrade the tool via the following command,
@@ -69,7 +69,7 @@ It is recommended to use `pipx` for installing *modpoll* on Windows, refer to [h
 Once `pipx` installed, you can run the following command in a Command Prompt terminal.
 
 ```PowerShell
-pipx install "modpoll==2.0.0a1"
+pipx install "modpoll==2.0.0a2"
 ```
 
 Upgrade the tool via the following command,
@@ -120,13 +120,15 @@ The JSON examples are included in this checkout. A public URL containing the sam
 ### Prepare a WoT configuration
 
 Use [examples/modsim.tm.json](examples/modsim.tm.json) for the simulator model or
-[examples/modsim.td.json](examples/modsim.td.json) for a concrete TCP description.
+[examples/modsim.generated.td.json](examples/modsim.generated.td.json) for its
+generated local TCP instance.
 Both preserve the four original blocks and 37 output references. `--unit-id`
 overrides each model's optional root `modv:unitID` (fallback 1); a concrete TD's forms must agree with it.
 The existing transport, polling, output and MQTT arguments remain available.
 
-See [the executable contract](packages/modpoll-wot/CONTRACT.md) for field
-mapping, access flags, byte order, multiplier semantics and supported limits.
+See the [current profile](packages/modpoll-wot/profile.md) for field mapping,
+access flags, byte order, multiplier semantics and supported limits; the
+[0.1 contract](packages/modpoll-wot/CONTRACT.md) documents compatibility.
 The configuration loader rejects CSV and reports invalid model fields before
 polling. Each model describes one device; use multiple `--config` paths for
 multiple devices. Give each model a unique `title`, which is the output device name.
@@ -232,7 +234,7 @@ When a sample is invalid in a poll cycle, modpoll omits it from MQTT output and 
 A docker image has been provided for user to directly run the tool without local installation,
 
   ```bash
-  docker run --rm topmaker/modpoll:2.0.0a1
+  docker run --rm topmaker/modpoll:2.0.0a2
   ```
 
 It shows the version of the tool by default.
@@ -244,7 +246,7 @@ If you want to load a local configure file, you need to mount a local folder ont
 for example, if the child folder `examples` contains the config file `modsim.tm.json`, we can use it via the following command,
 
   ```bash
-  docker run --rm --network host -v "$(pwd)/examples:/app/examples:ro" topmaker/modpoll:2.0.0a1 \
+  docker run --rm --network host -v "$(pwd)/examples:/app/examples:ro" topmaker/modpoll:2.0.0a2 \
     modpoll -d \
       --tcp 127.0.0.1 --tcp-port 5020 \
       --config /app/examples/modsim.tm.json

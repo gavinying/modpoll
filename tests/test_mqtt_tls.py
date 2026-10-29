@@ -169,7 +169,11 @@ def test_tls_qos2_cli_output_and_command_round_trip(
             "modpoll",
             "--daemon",
             "--config",
-            str(ROOT / f"examples/modsim.{kind}.json"),
+            str(
+                ROOT
+                / "examples"
+                / ("modsim.tm.json" if kind == "tm" else "modsim.generated.td.json")
+            ),
             "--tcp",
             "127.0.0.1",
             "--tcp-port",

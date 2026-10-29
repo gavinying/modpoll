@@ -43,9 +43,9 @@ jobs:
           python -m venv "$RUNNER_TEMP/core-check"
           "$RUNNER_TEMP/core-check/bin/pip" install packages/modpoll-wot/dist/*.whl
           cd "$RUNNER_TEMP"
-          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/examples/modsim.tm.json"
-          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/examples/modsim.td.json"
-          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot --config "$GITHUB_WORKSPACE/examples/modsim-standard.tm.json" --host 127.0.0.1 --port 5020 --output "$RUNNER_TEMP/core-check-instance.json"
+          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.tm.json"
+          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.td.json"
+          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot --config "$GITHUB_WORKSPACE/examples/modsim.tm.json" --host 127.0.0.1 --port 5020 --output "$RUNNER_TEMP/core-check-instance.json"
           "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot --config "$RUNNER_TEMP/core-check-instance.json"
       - name: Check immutable version
         id: pypi
@@ -63,11 +63,12 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           python -m venv "$RUNNER_TEMP/core-registry"
-          "$RUNNER_TEMP/core-registry/bin/pip" install "modpoll-wot==${TAG#modpoll-wot-v}"
+          python .github/scripts/preview-release.py download "$TAG" --directory "$RUNNER_TEMP/core-registry-artifacts"
+          "$RUNNER_TEMP/core-registry/bin/pip" install "$RUNNER_TEMP/core-registry-artifacts/modpoll_wot-${TAG#modpoll-wot-v}-py3-none-any.whl"
           cd "$RUNNER_TEMP"
-          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/examples/modsim.tm.json"
-          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/examples/modsim.td.json"
-          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot --config "$GITHUB_WORKSPACE/examples/modsim-standard.tm.json" --host 127.0.0.1 --output "$RUNNER_TEMP/core-registry-instance.json"
+          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.tm.json"
+          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.td.json"
+          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot --config "$GITHUB_WORKSPACE/examples/modsim.tm.json" --host 127.0.0.1 --output "$RUNNER_TEMP/core-registry-instance.json"
           "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot --config "$RUNNER_TEMP/core-registry-instance.json"
       - name: Record a separate prerelease
         env:

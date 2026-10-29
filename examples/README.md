@@ -1,11 +1,9 @@
 # Examples
 
-- `modsim.tm.json`: the runnable 0.1 model used by the CLI examples; four blocks,
-  37 properties.
-- `modsim.td.json`: the same mapping with concrete local TCP Forms.
-- `modsim-standard.tm.json`: the shared package's 0.2 profile candidate, kept
-  separate because it demonstrates standard property Forms and is not yet the
-  CLI's default model.
+- `modsim.tm.json`: the canonical 0.2 Thing Model used by CLI examples; four
+  explicit blocks and 37 properties.
+- `modsim.generated.td.json`: its generated local TCP instance for the same
+  blocks and properties.
 - `modsim.csv`: v1 migration and compatibility-test input. v2 does not load it.
 
 From the repository root, run the self-contained TCP/MQTT demonstration:

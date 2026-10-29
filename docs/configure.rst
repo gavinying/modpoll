@@ -9,8 +9,11 @@ not select the format. An invalid document fails its selected validation; the
 loader does not retry it as the other format. This preview supports the fixed
 ``tm:ThingModel`` spelling, without resolving alternate JSON-LD aliases.
 
-It rejects CSV input. The bundled ``examples/modsim.tm.json`` and
-``examples/modsim.td.json`` describe the same four blocks and 37 output properties.
+It rejects CSV input. The canonical ``examples/modsim.tm.json`` uses profile
+0.2 standard property Forms and explicit acquisition blocks. The generated
+``examples/modsim.generated.td.json`` binds that same 37-property model to local
+TCP at port 5020. The interpreter retains profile 0.1 compatibility for existing
+configurations; profile details are in ``packages/modpoll-wot/profile.md``.
 
 Each file describes one device. Its ``title`` is the output device name;
 ``--unit-id`` overrides the instance Unit ID (range 1–254). Without it, each file
@@ -25,22 +28,22 @@ the project extension schema and cross-field acquisition semantics. It does not
 fetch context files or schemas. The local/URL input limit is 1 MiB and the JSON
 nesting limit is 64. Duplicate JSON keys and non-finite numbers are rejected.
 
-A model uses ``modpoll:version`` equal to ``0.1`` and an ordered
-``modpoll:acquisition`` array. Groups reuse the Modbus draft's ``modv:entity``,
-``modv:address``, ``modv:quantity``, ``modv:mostSignificantByte`` and
-``modv:mostSignificantWord`` vocabulary. ``modpoll:members`` describes decoded
-properties, offsets, precise types, optional register bit selectors and optional
-multipliers. These acquisition semantics are a project extension, not a W3C
-standard. The selected subset does not execute arbitrary TD protocol bindings.
+Profile 0.2 places standard types, access flags and units on properties, and
+standard Modbus Forms carry each property's raw mapping. ``modpoll:acquisition``
+preserves declared block boundaries, order and holes. Profile 0.1 configurations
+remain readable; new examples and converted configurations should use 0.2.
+These acquisition semantics are a project extension, not a W3C standard. The
+selected subset does not execute arbitrary TD protocol bindings.
 
 Migration from CSV
 ------------------
 
 * Copy the device name to ``title`` and pass its Unit ID through ``--unit-id``.
 * Preserve every poll's table, literal start address, quantity and byte/word order.
-* Map references to property keys and group members. Register member offsets are
-  relative register offsets. Bit-table offsets count eight-bit groups, matching
-  the old CSV behavior; counts still specify physical bits.
+* Map each property to a Modbus Form with its raw table, literal address,
+  quantity, type and byte/word order. List properties in the matching acquisition
+  group to preserve the original block boundaries and polling order. Profile 0.1
+  compatibility models retain their documented member-offset rules.
 * Express read-only and write-only references through ``readOnly`` and
   ``writeOnly``. Neither flag means read/write. DI and IR are read-only tables;
   their historical ``rw`` sample flags must become ``readOnly: true``.
@@ -62,13 +65,12 @@ that a general WoT consumer will implement the project's acquisition/transform
 extensions. This change adds no HTTP/cache service. See :doc:`v1-compatibility` for intentional
 fixes and :doc:`csv-migration` for the reusable AI conversion prompt.
 
-Standard Form candidate
------------------------
+Standard Form profile 0.2
+-------------------------
 
-The shared source candidate ``0.2.0a1`` introduces profile ``0.2`` with standard
-Form mappings and explicit blocks. The released app still pins ``0.1.0a1``;
-publish and verify the producer before updating consumer pins. See
+The shared package ``0.2.0a1`` introduces profile ``0.2`` with standard Form
+mappings and explicit blocks. The application uses the exact published package
+version. See
 ``packages/modpoll-wot/profile.md`` for API details, parameter precedence,
 necessary extensions and external Consumer limits. The source example is
-``examples/modsim-standard.tm.json``. Generated TDs are instance artifacts;
-the unpublished ``0.2-pilot`` is retired.
+``examples/modsim.tm.json``. Generated TDs are instance artifacts.

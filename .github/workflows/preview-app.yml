@@ -150,7 +150,8 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           python -m venv "$RUNNER_TEMP/acceptance/.venv"
-          "$RUNNER_TEMP/acceptance/.venv/bin/pip" install "modpoll[serial]==${TAG#v}" pytest
+          python .github/scripts/preview-release.py download "$TAG" --directory "$RUNNER_TEMP/acceptance/distributions"
+          "$RUNNER_TEMP/acceptance/.venv/bin/pip" install "$RUNNER_TEMP/acceptance/distributions/modpoll-${TAG#v}-py3-none-any.whl" pytest pyserial==3.5
           cp -r tests tools examples "$RUNNER_TEMP/acceptance/"
           for fixture in .interop/modpoll-1x .interop/modsim; do
             python -m venv "$fixture/.venv"
