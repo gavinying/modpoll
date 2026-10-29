@@ -288,15 +288,6 @@ for example, if the child folder `examples` contains the config file `modsim.tm.
     --config examples/modsim.tm.json
   ```
 
-- Connect to Modbus TCP devices using multiple config files
-
-  ```bash
-  modpoll \
-    --tcp 127.0.0.1 --tcp-port 5020 \
-    --config examples/modsim.tm.json examples/modsim2.tm.json
-  ```
-
-
 > Refer to the [documentation](https://top-maker.github.io/modpoll) site for more details about the configuration and examples.
 
 > *If you find this tool useful, please support us by starring 🌟 our repository to encourage further improvements.*

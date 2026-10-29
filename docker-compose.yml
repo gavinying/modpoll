@@ -21,6 +21,6 @@ services:
   mosquitto:
     image: eclipse-mosquitto:2
     volumes:
-      - ./examples/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
     ports:
       - "127.0.0.1:18883:1883"

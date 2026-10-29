@@ -5,22 +5,6 @@ from modpoll.modbus_task import setup_modbus_handlers
 
 
 @pytest.mark.integration
-def test_modbus_task_modbus_setup():
-    parser = get_parser()
-    args = parser.parse_args(
-        [
-            "--config",
-            "examples/modsim.tm.json",
-            "examples/modsim2.tm.json",
-            "--tcp",
-            "modsim.topmaker.net",
-        ]
-    )
-    modbus_handlers = setup_modbus_handlers(args)
-    assert len(modbus_handlers) == 2
-
-
-@pytest.mark.integration
 def test_modbus_task_poll_modsim():
     parser = get_parser()
     args = parser.parse_args(
