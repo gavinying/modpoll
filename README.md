@@ -88,29 +88,80 @@ modpoll --once \
   --config examples/modsim.tm.json
 ```
 
-### Run a local simulator
+### Test modpoll against modsim
 
-Start a local [modsim](https://github.com/top-maker/modsim) server, then use the provided configuration to read its sample data:
+This example uses the [modsim v2 development source](https://github.com/top-maker/modsim/tree/v2) and modpoll v2 with
+profile 0.2 (`modpoll==2.0.0a2` or a compatible v2 checkout). The published
+modsim `2.0.0a1` image predates the managed commands used here. Run these
+commands from the modsim repository root; install modpoll separately. The
+simulator and broker run locally, and no physical device is needed.
+
+Start the simulator and check its status:
 
 ```bash
-docker run --rm -p 5020:5020 topmaker/modsim:latest
+docker compose up -d --build
+docker compose exec -T modsim python -m modsim ps
 ```
 
-In another terminal, run:
+Wait until `ps` reports `"running": true` before exporting the TD of the
+running ADAM-6024 instance:
 
 ```bash
-modpoll --once \
-  --tcp 127.0.0.1 --tcp-port 5020 \
-  --config examples/modsim.tm.json
+docker compose exec -T modsim python -m modsim export --running \
+  --device io-loopback -o /tmp/adam-6024.td.json
+docker compose cp modsim:/tmp/adam-6024.td.json ./adam-6024.td.json
 ```
 
-The JSON examples are included in this checkout. A public URL containing the same JSON format is also accepted.
+In another terminal, still in the modsim directory, poll the TD and save a
+snapshot using the modpoll executable from your v2 installation:
 
-<p align="center">
-  <img src="docs/assets/screenshot-modpoll.png">
-</p>
+```bash
+modpoll --once --interval 0 --tcp 127.0.0.1 --tcp-port 5020 \
+  --config ./adam-6024.td.json --export ./adam-6024-snapshot.json
+```
 
-> the modsim code is also available [here](https://github.com/top-maker/modsim)
+On a fresh deployment the snapshot contains `adam6024_raw` with `AO0_RAW: 100`
+and `AI0_RAW: 100`; previously written values may differ. The exported TD
+contains Unit ID 2, so the command targets the second device. The TD preserves
+the actual Modbus Forms and project profile 0.2 acquisition metadata.
+
+#### Optional: write via a local MQTT broker
+
+Start a temporary local broker and a continuously running modpoll process:
+
+```bash
+docker run --rm -d --name modpoll-demo-mqtt -p 127.0.0.1:1883:1883 \
+  eclipse-mosquitto:2 mosquitto -c /mosquitto-no-auth.conf
+modpoll --interval 0 --rate 1 --tcp 127.0.0.1 --tcp-port 5020 \
+  --config ./adam-6024.td.json --mqtt-host 127.0.0.1 --mqtt-port 1883
+```
+
+After modpoll reports its MQTT connection, open another terminal and send a
+non-retained write command to the topic named for the TD's `title`:
+
+```bash
+docker exec modpoll-demo-mqtt mosquitto_pub -h 127.0.0.1 \
+  -t modpoll/adam6024_raw/set \
+  -m '{"object_type":"holding_register","address":10,"value":432}'
+```
+
+Run the one-shot polling command again. `AO0_RAW` and the simulated loopback
+`AI0_RAW` should both read `432`. This is a raw Modbus value in a synthetic
+scenario, not a verified electrical range or behavior of a physical ADAM device.
+The broker example has no authentication and is published only on host loopback.
+
+Stop the continuous modpoll process with Ctrl+C, then clean up the processes
+started for this example:
+
+```bash
+docker stop modpoll-demo-mqtt
+docker compose down
+```
+
+The TD and JSON snapshot remain in the current directory for inspection. The
+modsim v2 source and modpoll v2 use the independently published
+`modpoll-wot==0.2.0a1`; their application versions are not required to match.
+The two repositories have separate release and test lifecycles.
 
 ### Modbus ASCII and framers
 
@@ -140,93 +191,24 @@ meter (2026-10-28). See [validation](docs/validation.rst) for the evidence scope
 For a complete local simulator/MQTT demonstration, use the repository's
 [Docker Compose example](examples/README.md).
 
-### Poll local device (modsim)
+### MQTT data and write behavior
 
-To run the simulator locally, start the container:
+The local example above uses the `adam6024_raw` TD title for its default topics:
+`modpoll/adam6024_raw/data` for samples and `modpoll/adam6024_raw/set` for
+write commands. The publish, subscribe and diagnostics topic patterns are
+configurable; see the [MQTT documentation](docs/usage.rst).
 
-```bash
-docker run --rm -p 5020:5020 topmaker/modsim
-```
+Writes use literal Modbus PDU addresses and raw values. Holding-register arrays
+use FC16 and must contain 1–123 unsigned 16-bit values within the address range.
+Invalid, oversized, malformed, ambiguous or retained write messages are ignored
+and logged. Brokers can clear the retained flag on live forwarding, so configure
+the broker not to retain commands on the set topic; QoS does not make a write
+exactly once.
 
-It will create a virtual Modbus TCP device running at `localhost:5020`, and you can open a new terminal, poll the virtual device using *modpoll* tool,
-
-```bash
-modpoll \
-  --tcp localhost \
-  --tcp-port 5020 \
-  --config examples/modsim.tm.json
-```
-
-> Use `sudo` before the docker command if you want to use the standard port `502`.
-
-```bash
-sudo docker run --rm -p 502:5020 topmaker/modsim
-```
-
-In a new terminal,
-
-```
-modpoll \
-  --tcp localhost \
-  --config examples/modsim.tm.json
-```
-
-### Publish data to MQTT broker
-
-This is a useful function of this new *modpoll* tool, which provides a simple way to publish collected Modbus data to MQTT broker, so users can view data from a smart phone via a MQTT client.
-
-The following example uses a public MQTT broker `broker.emqx.io` for test purpose. You can also set up your own MQTT broker locally using [mosquitto](https://mosquitto.org/download/).
-
-```bash
-modpoll \
-  --tcp 127.0.0.1 --tcp-port 5020 \
-  --mqtt-host broker.emqx.io \
-  --config examples/modsim.tm.json
-```
-
-With successful data polling and publishing, you can subscribe the default data topic `modpoll/modsim01/data` on the same MQTT broker `broker.emqx.io` to view the collected data.
-
-The MQTT topics can be customized by providing the following arguments,
-
-  - `mqtt-publish-topic-pattern`
-  - `mqtt-subscribe-topic-pattern`
-  - `mqtt-diagnostics-topic-pattern`
-
-See [document](https://top-maker.github.io/modpoll/v2/usage.html#Named%20Arguments) for details.
-
-
-<p align="center">
-  <img src="docs/assets/screencast-modpoll-mqtt.gif">
-</p>
-
-
-### Write registers via MQTT publish
-
-The *modpoll* tool will subscribe to the topic `modpoll/{{device_name}}/set` by default once it successfully connected to MQTT broker, user can write device register(s) via MQTT publish,
-
-- To write a single holding register (address at `40001`)
-
-  ```json
-  {
-    "object_type": "holding_register",
-    "address": 40001,
-    "value": 12
-  }
-  ```
-
-- To write multiple holding registers (address starting from `40001`)
-
-  ```json
-  {
-    "object_type": "holding_register",
-    "address": 40001,
-    "value": [12, 13, 14, 15]
-  }
-  ```
-
-A register array is written with FC16 and must contain 1–123 unsigned 16-bit values within the address range. Invalid, oversized, malformed, ambiguous, or retained write messages are ignored and logged. Brokers may clear the retained flag on live forwarding, so configure the broker not to retain commands on the `set` topic; QoS does not make a write exactly-once.
-
-When a sample is invalid in a poll cycle, modpoll omits it from MQTT output and writes `null` for that reference in the JSON snapshot. JSON snapshots from multiple configuration files are combined and replaced atomically. When `--timestamp` is enabled, the timestamp is the start time of the poll cycle in Unix seconds, not the time each individual value was read.
+When a sample is invalid in a poll cycle, modpoll omits it from MQTT output and
+writes `null` for that reference in the JSON snapshot. Snapshots from multiple
+configuration files are combined and replaced atomically. When `--timestamp` is
+enabled, the timestamp is the start time of the poll cycle in Unix seconds.
 
 
 ## Run with docker
