@@ -51,12 +51,13 @@ all WoT documents or every operating system has been validated.
        authorization or engineering-value inverse transforms.
    * - UDP
      - Existing socket transport retained; explicit socket framer fixed.
-     - Real simulator comparison of v1 CSV, TM and TD output.
+     - Real simulator comparison of v1 CSV and the unbound 0.2 TM output.
    * - Serial RTU / ASCII
      - Serial and ``--rtu`` alias retained, explicit framer uses the actual
        PyModbus enum API instead of rejected class arguments.
-     - POSIX PTY tests verify the full outputs and independently computed CRC/LRC
-       request bytes. Default RTU matches v1. The pinned v1 explicit ASCII path
+     - POSIX PTY tests use the unbound 0.2 TM and verify full outputs and
+       independently computed CRC/LRC request bytes. Default RTU matches v1.
+       The pinned v1 explicit ASCII path
        fails construction, so ASCII is checked against independent wire/data
        expectations rather than claiming false v1 equivalence.
    * - MQTT protocol/output/commands

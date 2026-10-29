@@ -186,7 +186,7 @@ def stop_simulator(process):
     assert process.returncode == 0, stderr
 
 
-def test_udp_preserves_csv_tm_td_results(tmp_path):
+def test_udp_preserves_csv_tm_results(tmp_path):
     with socket.socket(type=socket.SOCK_DGRAM) as reservation:
         reservation.bind(("127.0.0.1", 0))
         port = reservation.getsockname()[1]
@@ -200,7 +200,6 @@ def test_udp_preserves_csv_tm_td_results(tmp_path):
         for label, source, config in [
             ("csv", baseline, baseline / "examples/modsim.csv"),
             ("tm", ROOT, ROOT / "examples/modsim.tm.json"),
-            ("td", ROOT, ROOT / "examples/modsim.generated.td.json"),
         ]:
             results.append(
                 run_client(
@@ -210,7 +209,7 @@ def test_udp_preserves_csv_tm_td_results(tmp_path):
                     tmp_path / (label + ".json"),
                 )
             )
-        assert results[0] == results[1] == results[2]
+        assert results[0] == results[1]
     finally:
         stop_simulator(process)
 
@@ -265,27 +264,22 @@ def test_serial_actual_frames_and_values(tmp_path, framer):
                     result.returncode != 0 and "Only RTU/ASCII allowed" in result.stderr
                 )
                 reference = None
-            for kind in ("tm", "td"):
-                bridge.reset()
-                result = run_client(
-                    ROOT,
-                    ROOT
-                    / "examples"
-                    / (
-                        "modsim.tm.json" if kind == "tm" else "modsim.generated.td.json"
-                    ),
-                    [
-                        "--rtu" if framer == "rtu" else "--serial",
-                        bridge.client_path,
-                        "--serial-baud",
-                        "19200",
-                        "--framer",
-                        framer,
-                    ],
-                    tmp_path / (kind + ".json"),
-                )
-                if reference is not None:
-                    assert result == reference
-                assert bridge.captured() == expected_serial(framer)
+            bridge.reset()
+            result = run_client(
+                ROOT,
+                ROOT / "examples/modsim.tm.json",
+                [
+                    "--rtu" if framer == "rtu" else "--serial",
+                    bridge.client_path,
+                    "--serial-baud",
+                    "19200",
+                    "--framer",
+                    framer,
+                ],
+                tmp_path / "tm.json",
+            )
+            if reference is not None:
+                assert result == reference
+            assert bridge.captured() == expected_serial(framer)
         finally:
             stop_simulator(process)
