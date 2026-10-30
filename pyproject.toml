@@ -14,7 +14,7 @@ pymodbus = "~3.16.1"
 paho-mqtt = "^2.1.0"
 prettytable = "^3.9.0"
 requests = "^2.32.5"
-modpoll-wot = "==0.2.0a1"
+modpoll-wot = "==0.2.0a2"
 pyserial = { version = "^3.5", optional = true }
 
 [tool.poetry.extras]
