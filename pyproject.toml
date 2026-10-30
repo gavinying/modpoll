@@ -50,3 +50,4 @@ markers = ["integration: marks tests as integration tests"]
 
 [tool.poetry.scripts]
 modpoll = "modpoll.main:app"
+modpoll-wot = "modpoll_wot.__main__:main"
