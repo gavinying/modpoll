@@ -113,7 +113,7 @@ jobs:
           MODSIM_PYTHON: ${{ github.workspace }}/.interop/modsim/.venv/bin/python
           MODSIM_SOURCE: ${{ github.workspace }}/.interop/modsim
         run: |
-          poetry run python -m modpoll_wot --config examples/modsim.tm.json
+          poetry run python -m modpoll_wot validate examples/modsim.tm.json --profile
           poetry run pytest -q tests/test_profile_interop.py --junitxml=.interop/profile-results.xml
       - name: Verify independently installed producer and consumer wheels
         run: |
