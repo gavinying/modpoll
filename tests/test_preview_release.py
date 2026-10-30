@@ -115,3 +115,61 @@ def test_downloaded_wheel_matches_pypi_metadata(monkeypatch, tmp_path):
     data["urls"][0]["digests"]["sha256"] = "wrong"
     with pytest.raises(ValueError, match="SHA-256"):
         release.download_published_wheel("package", "0.2", tmp_path)
+
+
+def test_pypi_propagation_retries_metadata_and_wheel(monkeypatch, tmp_path, capsys):
+    content = b"published wheel"
+    item = {
+        "filename": "package.whl",
+        "url": "https://files.pythonhosted.org/package.whl",
+        "digests": {"sha256": hashlib.sha256(content).hexdigest()},
+    }
+    clock = [0]
+    urls = []
+    downloads = []
+    monkeypatch.setattr(release.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(
+        release.time, "sleep", lambda seconds: clock.__setitem__(0, clock[0] + seconds)
+    )
+    monkeypatch.setattr(release.time, "time_ns", lambda: clock[0])
+
+    def metadata(url):
+        urls.append(url)
+        if len(urls) <= 8:
+            raise urllib.error.HTTPError(url, 404, "not yet visible", {}, None)
+        return {"urls": [] if len(urls) == 9 else [item]}
+
+    def download(url, timeout):
+        downloads.append(url)
+        if len(downloads) == 1:
+            raise urllib.error.HTTPError(url, 404, "not yet visible", {}, None)
+        return io.BytesIO(content)
+
+    monkeypatch.setattr(release, "get_json", metadata)
+    monkeypatch.setattr(release.urllib.request, "urlopen", download)
+    assert (
+        release.download_published_wheel("package", "0.2", tmp_path).read_bytes()
+        == content
+    )
+    assert len(urls) == 10 and len(set(urls)) == 10
+    assert len(downloads) == 2 and len(set(downloads)) == 2
+    assert clock[0] == 200
+    assert "retrying" in capsys.readouterr().err
+
+
+def test_pypi_retry_timeout_and_other_errors(monkeypatch):
+    clock = [0]
+    monkeypatch.setattr(release.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(
+        release.time, "sleep", lambda seconds: clock.__setitem__(0, clock[0] + seconds)
+    )
+    with pytest.raises(TimeoutError, match="metadata still unavailable"):
+        release._wait_for_pypi(lambda: None, "metadata", 45)
+    assert clock[0] == 45
+
+    def forbidden():
+        raise urllib.error.HTTPError("https://example.org", 403, "forbidden", {}, None)
+
+    with pytest.raises(urllib.error.HTTPError, match="403"):
+        release._wait_for_pypi(forbidden, "metadata", 600)
+    assert clock[0] == 45

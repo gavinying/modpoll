@@ -59,6 +59,7 @@ jobs:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
         run: poetry publish --no-interaction
       - name: Verify registry installation
+        timeout-minutes: 15
         env:
           TAG: ${{ github.ref_name }}
         run: |

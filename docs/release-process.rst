@@ -30,6 +30,12 @@ Retries compare artifact filenames and SHA-256 against PyPI; different bytes
 require the original artifacts or a new version, not an overwrite. Retain workflow
 artifacts if a later publishing stage fails and rerun only failed jobs.
 
+After publication, registry acceptance waits up to ten minutes in total for
+the version metadata and wheel to become visible, retrying HTTP 404 and missing
+wheel metadata with fresh cache-busting URLs. Other HTTP errors and SHA-256
+mismatches fail immediately. A timeout remains a failure; retain the original
+build artifacts for recovery rather than replacing the tag or release.
+
 Pages uses serialized complete snapshots. ``1.x/`` and ``v2/`` coexist, root
 continues serving stable documentation, and ``vocab/`` is preserved independently.
 The initial 1.x tree is built from the pinned v1.6.1 release. Subsequent stable

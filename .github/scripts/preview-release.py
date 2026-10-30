@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import re
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -93,34 +94,59 @@ def pypi_state(name, version, artifacts):
     return "identical"
 
 
+def _wait_for_pypi(fetch, label, deadline):
+    """Wait for a newly published resource, without masking other failures."""
+    attempts = 0
+    while True:
+        attempts += 1
+        try:
+            value = fetch()
+        except urllib.error.HTTPError as exc:
+            if exc.code != 404:
+                raise
+            value = None
+        if value is not None:
+            return value
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError(
+                f"PyPI {label} still unavailable after {attempts} attempts"
+            )
+        delay = min(20, remaining)
+        print(
+            f"PyPI {label} not yet available (attempt {attempts}); retrying in {delay:.0f}s",
+            file=sys.stderr,
+            flush=True,
+        )
+        time.sleep(delay)
+
+
 def download_published_wheel(name, version, directory):
-    """Download the exact registry wheel, bypassing stale simple-index caches."""
-    url = f"https://pypi.org/pypi/{name}/{version}/json" f"?cache_bust={time.time_ns()}"
-    for attempt in range(6):
-        try:
-            data = get_json(url)
-            break
-        except urllib.error.HTTPError as exc:
-            if exc.code != 404 or attempt == 5:
-                raise
-            time.sleep(10)
-    wheels = [item for item in data["urls"] if item["filename"].endswith(".whl")]
-    if len(wheels) != 1:
-        raise ValueError("expected exactly one published wheel")
-    item = wheels[0]
-    destination = Path(directory) / item["filename"]
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    for attempt in range(6):
-        try:
-            with urllib.request.urlopen(item["url"], timeout=60) as response:
-                content = response.read()
-            break
-        except urllib.error.HTTPError as exc:
-            if exc.code != 404 or attempt == 5:
-                raise
-            time.sleep(10)
+    """Wait up to ten minutes for the published wheel and verify its digest."""
+    deadline = time.monotonic() + 600
+
+    def find_wheel():
+        # A fresh URL on every request avoids cached negative responses.
+        url = f"https://pypi.org/pypi/{name}/{version}/json?cache_bust={time.time_ns()}"
+        data = get_json(url)
+        wheels = [item for item in data["urls"] if item["filename"].endswith(".whl")]
+        if len(wheels) > 1:
+            raise ValueError("expected exactly one published wheel")
+        return wheels[0] if wheels else None
+
+    item = _wait_for_pypi(find_wheel, "wheel metadata", deadline)
+
+    def fetch_wheel():
+        separator = "&" if "?" in item["url"] else "?"
+        url = f"{item['url']}{separator}cache_bust={time.time_ns()}"
+        with urllib.request.urlopen(url, timeout=60) as response:
+            return response.read()
+
+    content = _wait_for_pypi(fetch_wheel, "wheel file", deadline)
     if hashlib.sha256(content).hexdigest() != item["digests"]["sha256"]:
         raise ValueError("downloaded wheel does not match PyPI's SHA-256")
+    destination = Path(directory) / item["filename"]
+    destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_bytes(content)
     return destination
 
