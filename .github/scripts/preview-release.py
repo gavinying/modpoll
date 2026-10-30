@@ -126,7 +126,7 @@ def download_published_wheel(name, version, directory):
     deadline = time.monotonic() + 600
 
     def find_wheel():
-        # A fresh URL on every request avoids cached negative responses.
+        # Change the query on each retry; a cache bypass is not guaranteed.
         url = f"https://pypi.org/pypi/{name}/{version}/json?cache_bust={time.time_ns()}"
         data = get_json(url)
         wheels = [item for item in data["urls"] if item["filename"].endswith(".whl")]
