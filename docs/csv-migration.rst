@@ -34,9 +34,9 @@ Migration procedure
 Commands from the development checkout (the validation command uses the
 candidate shared package; version 0.2.0a1 does not provide this subcommand)::
 
-    PYTHONPATH=packages/modpoll-wot mise exec -- poetry run python -m modpoll_wot validate meter.tm.json --profile
-    mise exec -- poetry run modpoll --once --config meter.tm.json --tcp HOST --tcp-port PORT --export data.json
-    mise exec -- poetry run modpoll --config first.tm.json second.tm.json --tcp HOST
+    PYTHONPATH=packages/modpoll-wot uv run python -m modpoll_wot validate meter.tm.json --profile
+    uv run modpoll --once --config meter.tm.json --tcp HOST --tcp-port PORT --export data.json
+    uv run modpoll --config first.tm.json second.tm.json --tcp HOST
 
 The last command uses each file's Unit ID unless ``--unit-id`` is explicitly given.
 Each file creates its own client connection; connection pooling is not added.

@@ -15,8 +15,8 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Set up poetry
-        uses: ./.github/actions/setup-poetry
+      - name: Set up uv
+        uses: ./.github/actions/setup-uv
 
       - name: Run checks
         run: make check
@@ -24,7 +24,7 @@ jobs:
       - name: Verify interpreter source independently of the registry pin
         env:
           PYTHONPATH: packages/modpoll-wot
-        run: poetry run pytest -q packages/modpoll-wot/tests
+        run: uv run --locked --no-sync pytest -q packages/modpoll-wot/tests
 
   tox:
     runs-on: ubuntu-latest
@@ -32,26 +32,23 @@ jobs:
       contents: read
     strategy:
       matrix:
-        python-version: ["3.10", "3.14"]
+        include:
+          - python-version: "3.10"
+            tox-env: py310
+          - python-version: "3.14"
+            tox-env: py314
       fail-fast: false
     steps:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Set up poetry
-        uses: ./.github/actions/setup-poetry
+      - name: Set up uv
+        uses: ./.github/actions/setup-uv
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install tox
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox tox-gh-actions
-
       - name: Test with tox
-        run: tox
-        env:
-          PYTHON_VERSION: ${{ matrix.python-version }}
+        run: uv run --locked --no-sync tox -e ${{ matrix.tox-env }}
 
   docs:
     runs-on: ubuntu-latest
@@ -61,8 +58,8 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Set up poetry
-        uses: ./.github/actions/setup-poetry
+      - name: Set up uv
+        uses: ./.github/actions/setup-uv
 
       - name: Set up pandoc
         uses: ./.github/actions/setup-pandoc
@@ -76,7 +73,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-poetry
+      - uses: ./.github/actions/setup-uv
       - name: Check out the 1.x baseline
         uses: actions/checkout@v4
         with:
@@ -91,14 +88,14 @@ jobs:
           path: .interop/modsim
       - name: Install isolated baseline and simulator environments
         run: |
-          python -m venv .interop/modpoll-1x/.venv
-          .interop/modpoll-1x/.venv/bin/pip install -r .interop/modpoll-1x/requirements.txt
-          .interop/modpoll-1x/.venv/bin/pip install --no-deps ./.interop/modpoll-1x
-          .interop/modpoll-1x/.venv/bin/pip install pyserial==3.5
-          python -m venv .interop/modsim/.venv
-          .interop/modsim/.venv/bin/pip install -r .interop/modsim/requirements.txt
-          .interop/modsim/.venv/bin/pip install --no-deps ./.interop/modsim
-          .interop/modsim/.venv/bin/pip install pyserial==3.5
+          uv venv .interop/modpoll-1x/.venv
+          uv pip install --python .interop/modpoll-1x/.venv/bin/python -r .interop/modpoll-1x/requirements.txt
+          uv pip install --python .interop/modpoll-1x/.venv/bin/python --no-deps ./.interop/modpoll-1x
+          uv pip install --python .interop/modpoll-1x/.venv/bin/python pyserial==3.5
+          uv venv .interop/modsim/.venv
+          uv pip install --python .interop/modsim/.venv/bin/python -r .interop/modsim/requirements.txt
+          uv pip install --python .interop/modsim/.venv/bin/python --no-deps ./.interop/modsim
+          uv pip install --python .interop/modsim/.venv/bin/python pyserial==3.5
       - name: Set up pinned external WoT Consumer
         uses: actions/setup-node@v4
         with:
@@ -113,21 +110,21 @@ jobs:
           MODSIM_PYTHON: ${{ github.workspace }}/.interop/modsim/.venv/bin/python
           MODSIM_SOURCE: ${{ github.workspace }}/.interop/modsim
         run: |
-          poetry run python -m modpoll_wot validate examples/modsim.tm.json --profile
-          poetry run pytest -q tests/test_profile_interop.py --junitxml=.interop/profile-results.xml
+          uv run --locked --no-sync python -m modpoll_wot validate examples/modsim.tm.json --profile
+          uv run --locked --no-sync pytest -q tests/test_profile_interop.py --junitxml=.interop/profile-results.xml
       - name: Verify independently installed producer and consumer wheels
         run: |
-          (cd packages/modpoll-wot && poetry build)
-          poetry run python tools/verify-wot-distribution.py --wheel packages/modpoll-wot/dist/*.whl --modsim .interop/modsim --report .interop/distribution-results.json
+          uv build --no-sources --clear packages/modpoll-wot --out-dir packages/modpoll-wot/dist
+          uv run --locked --no-sync python tools/verify-wot-distribution.py --wheel packages/modpoll-wot/dist/*.whl --modsim .interop/modsim --report .interop/distribution-results.json
       - name: Compare CSV, TM and TD requests and outputs
         run: |
-          poetry run python tools/verify_modsim_equivalence.py --modpoll-1x .interop/modpoll-1x --modsim .interop/modsim --report .interop/report.json
+          uv run --locked --no-sync python tools/verify_modsim_equivalence.py --modpoll-1x .interop/modpoll-1x --modsim .interop/modsim --report .interop/report.json
       - name: Verify lifecycle, transports and existing write commands
         env:
           MODSIM_PYTHON: ${{ github.workspace }}/.interop/modsim/.venv/bin/python
           MODSIM_SOURCE: ${{ github.workspace }}/.interop/modsim
           MODPOLL_1X_SOURCE: ${{ github.workspace }}/.interop/modpoll-1x
-        run: poetry run pytest -q tests/test_process_lifecycle.py tests/test_modsim_interop.py tests/test_wot_reading_interop.py tests/test_transport_interop.py tests/test_failure_interop.py --junitxml=.interop/transport-results.xml
+        run: uv run --locked --no-sync pytest -q tests/test_process_lifecycle.py tests/test_modsim_interop.py tests/test_wot_reading_interop.py tests/test_transport_interop.py tests/test_failure_interop.py --junitxml=.interop/transport-results.xml
       - name: Start private MQTT acceptance broker
         run: |
           printf 'listener 1883\nallow_anonymous true\npersistence false\n' > "$RUNNER_TEMP/modpoll-mqtt.conf"
@@ -140,7 +137,7 @@ jobs:
           MODPOLL_MQTT_HOST: 127.0.0.1
           MODPOLL_MQTT_PORT: '18883'
           MODPOLL_MQTT_INTEGRATION: '1'
-        run: poetry run pytest -q tests/test_mqtt_modsim_interop.py tests/test_local_mqtt_broker.py tests/test_mqtt_tls.py --junitxml=.interop/mqtt-results.xml
+        run: uv run --locked --no-sync pytest -q tests/test_mqtt_modsim_interop.py tests/test_local_mqtt_broker.py tests/test_mqtt_tls.py --junitxml=.interop/mqtt-results.xml
       - name: Remove private acceptance broker
         if: always()
         run: docker rm -f modpoll-mqtt-${{ github.run_id }}-${{ github.run_attempt }} || true

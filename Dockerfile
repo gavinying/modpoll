@@ -3,18 +3,14 @@
 # FROM python:3.12-alpine
 FROM python:3.12-slim-bookworm
 
-ENV POETRY_VERSION=1.8.3
+COPY --from=ghcr.io/astral-sh/uv:0.11.19 /uv /uvx /bin/
 
-# Install poetry and disable virtualenv creation
-RUN pip install "poetry==$POETRY_VERSION"
-RUN poetry config virtualenvs.create false
-
-# Copy only requirements to cache them in docker layer
+# Copy dependency metadata first to cache the install layer.
 WORKDIR /app
-COPY poetry.lock pyproject.toml README.md /app/
+COPY uv.lock pyproject.toml README.md /app/
 COPY modpoll /app/modpoll
 
 # Project initialization:
-RUN poetry install --no-interaction --no-ansi --all-extras --without dev,docs
+RUN uv sync --locked --no-dev --all-extras --no-install-project
 
 CMD ["modpoll", "--version"]

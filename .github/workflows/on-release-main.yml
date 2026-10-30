@@ -20,8 +20,8 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
-      - name: Set up poetry
-        uses: ./.github/actions/setup-poetry
+      - name: Set up uv
+        uses: ./.github/actions/setup-uv
 
       - name: Export tag
         id: vars
@@ -38,7 +38,6 @@ jobs:
 
       - name: Build and publish to PyPI
         run: |
-          source .venv/bin/activate
           python .github/scripts/check_release_version.py "$RELEASE_VERSION"
           make build-and-publish
         env:
@@ -115,8 +114,8 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
-      - name: Set up poetry
-        uses: ./.github/actions/setup-poetry
+      - name: Set up uv
+        uses: ./.github/actions/setup-uv
 
       - name: Set up pandoc
         uses: ./.github/actions/setup-pandoc

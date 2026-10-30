@@ -42,7 +42,7 @@ If you are proposing a new feature:
 
 Ready to contribute? Here's how to set up `modpoll` for local development.
 
-Install Git and mise, then use the versions in `.tool-versions`. `main` maintains the stable CSV release; select `v2` for WoT TM/TD work.
+Install Git and uv. `main` maintains the stable CSV release; select `v2` for WoT TM/TD work.
 
 1. Fork the `modpoll` repo on GitHub, and then clone your fork locally,
 
@@ -55,7 +55,6 @@ Install Git and mise, then use the versions in `.tool-versions`. `main` maintain
 
     ```bash
     make install
-    # Prefix subsequent project commands with mise exec --
     ```
 
 3. Create a branch for local development,
@@ -71,13 +70,13 @@ Install Git and mise, then use the versions in `.tool-versions`. `main` maintain
 5. When you're done making changes, check that your changes pass the formatting tests,
 
     ```bash
-    mise exec -- make check
+    make check
     ```
 
     Then, validate that all unit tests are passing:
 
     ```bash
-    mise exec -- poetry run pytest -m "not integration"
+    uv run pytest -m "not integration"
     ```
 
 6. Commit your changes and push your branch to GitHub:

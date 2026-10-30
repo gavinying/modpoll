@@ -1,41 +1,52 @@
-[tool.poetry]
+[project]
 name = "modpoll"
 version = "2.0.0a2"
 description = "A New Command-line Tool for Modbus and MQTT"
-authors = ["Ying Shaodong <helloysd@gmail.com>"]
-repository = "https://github.com/top-maker/modpoll"
-documentation = "https://top-maker.github.io/modpoll"
+authors = [{ name = "Ying Shaodong", email = "helloysd@gmail.com" }]
 readme = "README.md"
-packages = [{ include = "modpoll" }]
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "pymodbus~=3.16.1",
+    "paho-mqtt>=2.1.0,<3.0.0",
+    "prettytable>=3.9.0,<4.0.0",
+    "requests>=2.32.5,<3.0.0",
+    "modpoll-wot==0.2.0a2",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10,<4.0"
-pymodbus = "~3.16.1"
-paho-mqtt = "^2.1.0"
-prettytable = "^3.9.0"
-requests = "^2.32.5"
-modpoll-wot = "==0.2.0a2"
-pyserial = { version = "^3.5", optional = true }
+[project.optional-dependencies]
+serial = ["pyserial>=3.5,<4.0"]
 
-[tool.poetry.extras]
-serial = ["pyserial"]
-
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.5.0"
-pytest = "^8.2.2"
-deptry = "^0.16.1"
-tox = "^4.16.0"
-
-[tool.poetry.group.docs.dependencies]
-sphinx = ">=6,<8"
-sphinx-argparse = "^0.3.1"
-sphinx-rtd-theme = "^1.0.0"
-sphinx-autobuild = "2021.3.14"
-pandoc = "^2.3"
+[dependency-groups]
+dev = [
+    "pre-commit>=3.5.0,<4.0.0",
+    "pytest>=8.2.2,<9.0.0",
+    "deptry>=0.16.1,<0.17.0",
+    "tox>=4.16.0,<5.0.0",
+    "tomli>=2,<3; python_version < '3.11'",
+]
+docs = [
+    "sphinx>=6,<8",
+    "sphinx-argparse>=0.3.1,<0.4.0",
+    "sphinx-rtd-theme>=1.0.0,<2.0.0",
+    "sphinx-autobuild==2021.3.14",
+    "pandoc>=2.3,<3.0.0",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.11.19,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "modpoll"
+module-root = ""
+
+[tool.uv]
+# The CI matrix currently covers Python 3.10 through 3.14.
+environments = ["python_version < '3.15'"]
+
+[project.urls]
+Repository = "https://github.com/top-maker/modpoll"
+Documentation = "https://top-maker.github.io/modpoll"
 
 [tool.deptry]
 extend_exclude = ["packages"]
@@ -48,6 +59,6 @@ DEP002 = ["pyserial"]
 testpaths = ["tests", "packages/modpoll-wot/tests"]
 markers = ["integration: marks tests as integration tests"]
 
-[tool.poetry.scripts]
+[project.scripts]
 modpoll = "modpoll.main:app"
 modpoll-wot = "modpoll_wot.__main__:main"

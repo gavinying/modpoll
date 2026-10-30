@@ -15,7 +15,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import venv
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,7 +44,9 @@ def verify(wheel, modsim, report):
             shutil.copy2(ROOT / name, consumer / name)
         project = (ROOT / "pyproject.toml").read_text()
         project, count = re.subn(
-            r'(?m)^modpoll-wot = "==[^"]+"', f'modpoll-wot = "=={version}"', project
+            r'(?m)^([ \t]*)"modpoll-wot==[^"]+",$',
+            rf'\1"modpoll-wot=={version}",',
+            project,
         )
         if count != 1:
             raise ValueError("expected exactly one consumer registry pin")
@@ -56,27 +57,8 @@ def verify(wheel, modsim, report):
             count=1,
         )
         (consumer / "pyproject.toml").write_text(project)
-        subprocess.run(["poetry", "build"], cwd=consumer, check=True)
+        subprocess.run(["uv", "build", "--no-sources"], cwd=consumer, check=True)
         consumer_wheel = next((consumer / "dist").glob("*.whl"))
-        environment = work / "installed"
-        venv.EnvBuilder(with_pip=True).create(environment)
-        python = environment / (
-            "Scripts/python.exe" if os.name == "nt" else "bin/python"
-        )
-        subprocess.run(
-            [
-                str(python),
-                "-m",
-                "pip",
-                "install",
-                "--disable-pip-version-check",
-                str(wheel),
-                str(consumer_wheel) + "[serial]",
-                "pytest>=8.2.2,<9",
-            ],
-            check=True,
-        )
-        subprocess.run([str(python), "-m", "pip", "check"], check=True)
         # Expose test tools, never either package's source directory.
         helpers = work / "helpers"
         helpers.mkdir()
@@ -91,17 +73,38 @@ def verify(wheel, modsim, report):
             MODSIM_SOURCE=str(modsim),
             MODSIM_PYTHON=str(modsim / ".venv/bin/python"),
         )
+        env.pop("VIRTUAL_ENV", None)
         junit = work / "distribution-tests.xml"
         runner = f"""import importlib.metadata, pathlib, modpoll, modpoll_wot, pytest
-base = pathlib.Path({str(environment)!r}).resolve()
-assert pathlib.Path(modpoll.__file__).resolve().is_relative_to(base)
-assert pathlib.Path(modpoll_wot.__file__).resolve().is_relative_to(base)
+root = pathlib.Path({str(ROOT)!r}).resolve()
+for module in (modpoll, modpoll_wot):
+    path = pathlib.Path(module.__file__).resolve()
+    assert "site-packages" in path.parts, path
+    assert not path.is_relative_to(root), path
 assert importlib.metadata.version("modpoll-wot") == {version!r}
 print("Installed consumer:", modpoll.__file__)
 print("Installed producer:", modpoll_wot.__file__)
 raise SystemExit(pytest.main(["--import-mode=importlib", "-q", "--junitxml={junit}", {str(ROOT / 'tests/test_profile_interop.py')!r}]))
 """
-        subprocess.run([str(python), "-c", runner], cwd=work, env=env, check=True)
+        subprocess.run(
+            [
+                "uv",
+                "run",
+                "--isolated",
+                "--with",
+                str(wheel),
+                "--with",
+                str(consumer_wheel) + "[serial]",
+                "--with",
+                "pytest>=8.2.2,<9",
+                "python",
+                "-c",
+                runner,
+            ],
+            cwd=work,
+            env=env,
+            check=True,
+        )
         from xml.etree import ElementTree
 
         suites = ElementTree.parse(junit).getroot().findall("testsuite")

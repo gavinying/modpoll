@@ -17,7 +17,7 @@ jobs:
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
-      - uses: ./.github/actions/setup-poetry
+      - uses: ./.github/actions/setup-uv
       - name: Require an accepted v2 candidate
         env:
           GH_TOKEN: ${{ github.token }}
@@ -28,25 +28,20 @@ jobs:
       - name: Verify interpreter source
         env:
           PYTHONPATH: packages/modpoll-wot
-        run: poetry run pytest -q packages/modpoll-wot/tests
+        run: uv run --locked --no-sync pytest -q packages/modpoll-wot/tests
       - name: Build independent interpreter artifacts
-        run: |
-          rm -rf packages/modpoll-wot/dist
-          cd packages/modpoll-wot
-          poetry build
+        run: uv build --no-sources --clear packages/modpoll-wot --out-dir packages/modpoll-wot/dist
       - uses: actions/upload-artifact@v4
         with:
           name: core-distributions
           path: packages/modpoll-wot/dist/*
       - name: Verify portable wheel and bundled schemas
         run: |
-          python -m venv "$RUNNER_TEMP/core-check"
-          "$RUNNER_TEMP/core-check/bin/pip" install packages/modpoll-wot/dist/*.whl
           cd "$RUNNER_TEMP"
-          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot validate "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.tm.json" --profile
-          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot validate "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.td.json" --profile
-          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot export "$GITHUB_WORKSPACE/examples/modsim.tm.json" --host 127.0.0.1 --port 5020 --output "$RUNNER_TEMP/core-check-instance.json"
-          "$RUNNER_TEMP/core-check/bin/python" -m modpoll_wot validate "$RUNNER_TEMP/core-check-instance.json" --profile
+          uv run --isolated --with "$GITHUB_WORKSPACE"/packages/modpoll-wot/dist/*.whl modpoll-wot validate "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.tm.json" --profile
+          uv run --isolated --with "$GITHUB_WORKSPACE"/packages/modpoll-wot/dist/*.whl modpoll-wot validate "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.td.json" --profile
+          uv run --isolated --with "$GITHUB_WORKSPACE"/packages/modpoll-wot/dist/*.whl modpoll-wot export "$GITHUB_WORKSPACE/examples/modsim.tm.json" --host 127.0.0.1 --port 5020 --output "$RUNNER_TEMP/core-check-instance.json"
+          uv run --isolated --with "$GITHUB_WORKSPACE"/packages/modpoll-wot/dist/*.whl modpoll-wot validate "$RUNNER_TEMP/core-check-instance.json" --profile
       - name: Check immutable version
         id: pypi
         env:
@@ -56,21 +51,19 @@ jobs:
         if: steps.pypi.outputs.state == 'absent'
         working-directory: packages/modpoll-wot
         env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
-        run: poetry publish --no-interaction
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish --no-progress
       - name: Verify registry installation
         timeout-minutes: 15
         env:
           TAG: ${{ github.ref_name }}
         run: |
-          python -m venv "$RUNNER_TEMP/core-registry"
           python .github/scripts/preview-release.py download "$TAG" --directory "$RUNNER_TEMP/core-registry-artifacts"
-          "$RUNNER_TEMP/core-registry/bin/pip" install "$RUNNER_TEMP/core-registry-artifacts/modpoll_wot-${TAG#modpoll-wot-v}-py3-none-any.whl"
           cd "$RUNNER_TEMP"
-          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot validate "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.tm.json" --profile
-          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot validate "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.td.json" --profile
-          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot export "$GITHUB_WORKSPACE/examples/modsim.tm.json" --host 127.0.0.1 --output "$RUNNER_TEMP/core-registry-instance.json"
-          "$RUNNER_TEMP/core-registry/bin/python" -m modpoll_wot validate "$RUNNER_TEMP/core-registry-instance.json" --profile
+          uv run --isolated --with "$RUNNER_TEMP/core-registry-artifacts/modpoll_wot-${TAG#modpoll-wot-v}-py3-none-any.whl" modpoll-wot validate "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.tm.json" --profile
+          uv run --isolated --with "$RUNNER_TEMP/core-registry-artifacts/modpoll_wot-${TAG#modpoll-wot-v}-py3-none-any.whl" modpoll-wot validate "$GITHUB_WORKSPACE/packages/modpoll-wot/tests/fixtures/modsim-0.1.td.json" --profile
+          uv run --isolated --with "$RUNNER_TEMP/core-registry-artifacts/modpoll_wot-${TAG#modpoll-wot-v}-py3-none-any.whl" modpoll-wot export "$GITHUB_WORKSPACE/examples/modsim.tm.json" --host 127.0.0.1 --output "$RUNNER_TEMP/core-registry-instance.json"
+          uv run --isolated --with "$RUNNER_TEMP/core-registry-artifacts/modpoll_wot-${TAG#modpoll-wot-v}-py3-none-any.whl" modpoll-wot validate "$RUNNER_TEMP/core-registry-instance.json" --profile
       - name: Record a separate prerelease
         env:
           GH_TOKEN: ${{ github.token }}

@@ -1,33 +1,28 @@
 PROJECT_NAME ?= modpoll
 
 .PHONY: install
-install: ## Install the poetry environment and install the pre-commit hooks
-	@echo "🚀 Installing the mise-managed project environment"
-	@mise install
-	@mise exec -- poetry self add poetry-plugin-export==1.8.0
-	@mise exec -- poetry install --all-extras
-	@mise exec -- poetry run pre-commit install --allow-missing-config
+install: ## Install the uv environment and pre-commit hooks
+	@uv sync --all-extras --all-groups
+	@uv run pre-commit install --allow-missing-config
 
 .PHONY: check
 check: ## Run code quality tools.
-	@echo "🚀 Checking Poetry lock file consistency with 'pyproject.toml': Running poetry check --lock"
-	@poetry check --lock
-	@echo "🚀 Exporting 'requirements.txt' file: Running poetry export"
-	@poetry run python tools/export_requirements.py
+	@echo "🚀 Checking uv lock file consistency with 'pyproject.toml'"
+	@uv lock --check
 	@echo "🚀 Linting code: Running pre-commit"
-	@poetry run pre-commit run -a
+	@uv run pre-commit run -a
 	@echo "🚀 Checking for obsolete dependencies: Running deptry"
-	@poetry run deptry .
+	@uv run deptry .
 
 .PHONY: test
 test: ## Test the code with pytest
 	@echo "🚀 Testing code: Running pytest"
-	@poetry run pytest --doctest-modules
+	@uv run pytest --doctest-modules
 
 .PHONY: build
-build: clean-build ## Build wheel file using poetry
+build: clean-build ## Build wheel file using uv
 	@echo "🚀 Creating wheel file"
-	@poetry build
+	@uv build --no-sources
 
 .PHONY: clean-build
 clean-build: ## clean build artifacts
@@ -36,10 +31,9 @@ clean-build: ## clean build artifacts
 .PHONY: publish
 publish: ## Publish a release to PyPI.
 	@echo "🚀 Publishing: Dry run."
-	@poetry config pypi-token.pypi ${PYPI_TOKEN}
-	@if poetry publish --dry-run; then \
+	@if uv publish --dry-run --token ${PYPI_TOKEN}; then \
 		echo "Dry run successful. Proceeding with publishing..."; \
-		poetry publish; \
+		uv publish --token ${PYPI_TOKEN}; \
 	else \
 		echo "Dry run failed. Version might already exist or other error occurred."; \
 		exit 1; \
@@ -60,13 +54,13 @@ docker-run-dev: docker-build-dev ## Run docker compose for local dev
 
 .PHONY: docs
 docs: ## Build docs into html files
-	@poetry run pandoc --from=markdown --to=rst CHANGELOG.md -o docs/changelog.rst
-	@poetry run sphinx-build docs/ docs/_build/html
+	@uv run --group docs pandoc --from=markdown --to=rst CHANGELOG.md -o docs/changelog.rst
+	@uv run --group docs sphinx-build docs/ docs/_build/html
 
 .PHONY: docs-serve
 docs-serve: ## Build and serve the docs for local dev
-	@poetry run pandoc --from=markdown --to=rst CHANGELOG.md -o docs/changelog.rst
-	@poetry run sphinx-autobuild docs/ docs/_build/html
+	@uv run --group docs pandoc --from=markdown --to=rst CHANGELOG.md -o docs/changelog.rst
+	@uv run --group docs sphinx-autobuild docs/ docs/_build/html
 
 .PHONY: help
 help:

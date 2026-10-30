@@ -1,4 +1,4 @@
 python 3.12.13
-poetry 1.8.3
+uv 0.11.19
 pandoc 3.2.1
 node 24.16.0

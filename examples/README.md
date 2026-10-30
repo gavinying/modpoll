@@ -9,11 +9,11 @@
 From the repository root, run the self-contained TCP/MQTT demonstration:
 
 ```sh
-mise exec -- docker compose up --build
+docker compose up --build
 # In another terminal:
-mise exec -- docker compose exec mosquitto mosquitto_sub -t 'modpoll/#' -C 1
+docker compose exec mosquitto mosquitto_sub -t 'modpoll/#' -C 1
 # Stop and remove this demonstration:
-mise exec -- docker compose down
+docker compose down
 ```
 
 Compose builds the current modpoll checkout, mounts its TM, and starts a local

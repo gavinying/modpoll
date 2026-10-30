@@ -1,4 +1,4 @@
-> **2.x development branch.** This checkout accepts WoT TM/TD JSON using profile 0.2. CSV remains supported on the 1.x `main` branch. Install the current preview with `pip install "modpoll[serial]==2.0.0a2"`. Stable 1.x remains available with `pip install "modpoll<2"`. For development, run `mise install` and `mise exec -- poetry install --all-extras`, then prefix the examples below with `mise exec -- poetry run`.
+> **2.x development branch.** This checkout accepts WoT TM/TD JSON using profile 0.2. CSV remains supported on the 1.x `main` branch. Install the current preview with `uv tool install --prerelease allow 'modpoll[serial]==2.0.0a2'`; stable 1.x remains available with `uv tool install 'modpoll<2'`. For development, run `make install`, then prefix project commands with `uv run`.
 
 # Modpoll - A New Command-line Tool for Modbus and MQTT
 
@@ -40,43 +40,29 @@ In fact, *modpoll* helps to bridge between the traditional field-bus world and t
 
 ## Installation
 
-This tool tested on Python 3.10+ (Ubuntu 22.04+ or equivalent), the package is available in the [Python Package Index](https://pypi.org/), users can easily install it using `pip` or `pipx`. Ubuntu 20.04 and Python 3.8 are no longer supported.
+This tool requires Python 3.10+ (Ubuntu 22.04+ or equivalent) and is available on the [Python Package Index](https://pypi.org/). Install it with uv. Ubuntu 20.04 and Python 3.8 are no longer supported.
 
-### Using PIP
+### Using uv
 
 Install *modpoll* using the following command,
 
 ```bash
-pip install "modpoll==2.0.0a2"
+uv tool install --prerelease allow "modpoll==2.0.0a2"
 ```
 
 Optionally, [pyserial](https://pyserial.readthedocs.io/) library can be installed for Modbus-RTU communication,
 
 ```bash
-pip install 'modpoll[serial]==2.0.0a2'
+uv tool install --prerelease allow 'modpoll[serial]==2.0.0a2'
 ```
 
 Upgrade the tool via the following command,
 
 ```bash
-pip install -U --pre "modpoll<3"
+uv tool install --upgrade --prerelease allow "modpoll<3"
 ```
 
-### On Windows
-
-It is recommended to use `pipx` for installing *modpoll* on Windows, refer to [here](https://pypa.github.io/pipx/installation/) for more information about `pipx`.
-
-Once `pipx` installed, you can run the following command in a Command Prompt terminal.
-
-```PowerShell
-pipx install "modpoll==2.0.0a2"
-```
-
-Upgrade the tool via the following command,
-
-```PowerShell
-pipx upgrade modpoll
-```
+The same commands work on Windows PowerShell; uv manages the isolated tool environment.
 
 ## Quickstart
 

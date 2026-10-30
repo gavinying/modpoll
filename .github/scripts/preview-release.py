@@ -7,6 +7,11 @@ import os
 from pathlib import Path
 import re
 import sys
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 import time
 import urllib.error
 import urllib.request
@@ -22,15 +27,11 @@ CHECKS = {
 
 
 def package_version(path):
-    section = ""
-    for line in Path(path).read_text().splitlines():
-        if line.strip().startswith("["):
-            section = line.strip()
-        elif section == "[tool.poetry]":
-            match = re.fullmatch(r'\s*version\s*=\s*"([^"]+)"\s*', line)
-            if match:
-                return match[1]
-    raise ValueError("missing package version")
+    metadata = tomllib.loads(Path(path).read_text(encoding="utf-8"))
+    try:
+        return metadata["project"]["version"]
+    except KeyError as exc:
+        raise ValueError("missing package version") from exc
 
 
 def release_target(tag):

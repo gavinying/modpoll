@@ -42,14 +42,14 @@ To start an isolated local broker (remove it after testing)::
     printf 'listener 1883\nallow_anonymous true\npersistence false\n' > /tmp/modpoll-mosquitto.conf
     docker run -d --name modpoll-mqtt-acceptance -p 127.0.0.1:18883:1883 -v /tmp/modpoll-mosquitto.conf:/mosquitto/config/mosquitto.conf:ro eclipse-mosquitto:2
 
-Then run with installed mise/Poetry project environments::
+Then run with the project uv environment::
 
     export MODSIM_SOURCE=/path/to/modsim
     export MODSIM_PYTHON=$MODSIM_SOURCE/.venv/bin/python
     export MODPOLL_1X_SOURCE=/path/to/modpoll-1x
     export MODPOLL_MQTT_HOST=127.0.0.1
     export MODPOLL_MQTT_PORT=18883
-    mise exec -- poetry run pytest -q tests/test_wot_reading_interop.py tests/test_mqtt_modsim_interop.py
+    uv run pytest -q tests/test_wot_reading_interop.py tests/test_mqtt_modsim_interop.py
     docker rm -f modpoll-mqtt-acceptance
 
 The public broker smoke test can use ``MODPOLL_MQTT_HOST=broker.emqx.io`` and
@@ -89,15 +89,15 @@ Install serial extras in the development environment and both test fixtures.
 With the baseline, simulator and private broker variables above, run::
 
     export MODPOLL_MQTT_INTEGRATION=1
-    mise exec -- poetry install --all-extras
-    mise exec -- poetry run pytest -q --junitxml=/tmp/modpoll-acceptance.xml
-    mise exec -- poetry run python tools/verify_modsim_equivalence.py --modpoll-1x "$MODPOLL_1X_SOURCE" --modsim "$MODSIM_SOURCE" --report /tmp/modpoll-equivalence.json
+    uv sync --locked --all-extras --all-groups
+    uv run pytest -q --junitxml=/tmp/modpoll-acceptance.xml
+    uv run python tools/verify_modsim_equivalence.py --modpoll-1x "$MODPOLL_1X_SOURCE" --modsim "$MODSIM_SOURCE" --report /tmp/modpoll-equivalence.json
 
 The TLS tests create temporary certificates using OpenSSL and own an isolated
 Docker broker. CI runs the transport and failure tests in its interoperability
 job and retains their JUnit report alongside the MQTT/equivalence reports.
 Virtual terminals prove framing and software behavior, not RS485 wiring or
-physical timing. The automated CI range is Python 3.10–3.12 on Linux. The release and manual
+physical timing. The automated CI range is Python 3.10 and 3.14 on Linux. The release and manual
 hardware results below extend this software evidence.
 
 
