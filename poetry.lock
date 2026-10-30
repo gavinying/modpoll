@@ -691,22 +691,21 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pymodbus"
-version = "3.9.2"
+version = "3.16.1"
 description = "A fully featured modbus protocol stack in python"
 optional = false
 python-versions = ">=3.10.0"
 files = [
-    {file = "pymodbus-3.9.2-py3-none-any.whl", hash = "sha256:292dcf859d6f232c30abc9753c1f0b7804771fd9c749641b32831de01b360b30"},
-    {file = "pymodbus-3.9.2.tar.gz", hash = "sha256:2d08ab7bf6d1abc55a87f4faa3a7b04f74d7310b8c9771c3d66ee5fccf2e25ac"},
+    {file = "pymodbus-3.16.1-py3-none-any.whl", hash = "sha256:bb433f7417280bdea1190d95495aa6fb8e1fa8e0d720c436922b270bc378024c"},
+    {file = "pymodbus-3.16.1.tar.gz", hash = "sha256:19e571826dff37860afc31c845c1fd2fb72acffca02a233506b32d94fa022c33"},
 ]
 
 [package.extras]
-all = ["pymodbus[development,documentation,repl,serial,simulator]"]
-development = ["build (>=1.2.2)", "codespell (>=2.3.0)", "coverage (>=7.6.1)", "mypy (>=1.11.2)", "pylint (>=3.3.0)", "pytest (>=8.3.3)", "pytest-aiohttp (>=1.0.5)", "pytest-asyncio (>=0.24.0)", "pytest-cov (>=5.0.0)", "pytest-profiling (>=1.7.0)", "pytest-timeout (>=2.3.1)", "pytest-xdist (>=3.6.1)", "ruff (>=0.8.2)", "twine (>=5.1.1)", "types-Pygments", "types-pyserial"]
-documentation = ["Sphinx (>=7.3.7)", "recommonmark (>=0.7.1)", "sphinx-rtd-theme (>=2.0.0)"]
-repl = ["pymodbus-repl (>=2.0.4)"]
+all = ["pymodbus[development,documentation,serial,simulator]"]
+development = ["build (>=1.5.0)", "codespell (>=2.4.2)", "coverage (>=7.14.3)", "pylint (>=4.0.6)", "pyserial (>=3.5)", "pytest (>=9.1.1)", "pytest-aiohttp (>=1.1.1)", "pytest-asyncio (>=1.4.0)", "pytest-cov (>=7.1.0)", "pytest-profiling (>=1.7.0)", "pytest-timeout (>=2.3.1)", "pytest-xdist (>=3.6.1)", "ruff (>=0.15.20)", "twine (>=6.2.0)", "types-Pygments", "types-pyserial", "zuban (>=0.9.0)"]
+documentation = ["Sphinx (>=7.3.7)", "Sphinx (>=9.1.0)", "recommonmark (>=0.7.1)", "sphinx-rtd-theme (>=3.1.0)"]
 serial = ["pyserial (>=3.5)"]
-simulator = ["aiohttp (>=3.10.6)", "aiohttp (>=3.8.6)"]
+simulator = ["aiohttp (>=3.14.1)", "aiohttp (>=3.8.6)"]
 
 [[package]]
 name = "pyproject-api"
@@ -1407,4 +1406,4 @@ serial = ["pyserial"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "7eded4401bab274e016cf1006fa1a02b130283e9de2d705d51b80eb9bf06ffe7"
+content-hash = "cca9aa1101672c562897f832d3ce6d093e5256bfb6ff38d243d6a06cdf5de0aa"

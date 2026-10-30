@@ -114,7 +114,7 @@ def test_all_numeric_types_bits_strings_and_multipliers(
     client = ModbusTcpClient("127.0.0.1", port=live_modsim)
     try:
         assert client.connect()
-        assert not client.write_registers(40000, registers, slave=7).isError()
+        assert not client.write_registers(40000, registers, device_id=7).isError()
     finally:
         client.close()
     args = get_parser().parse_args(
@@ -402,7 +402,7 @@ def test_numeric_bit_table_csv_parity_uses_complete_bytes(
     client = ModbusTcpClient("127.0.0.1", port=live_modsim)
     try:
         assert client.connect()
-        assert not client.write_coils(0, bits, slave=1).isError()
+        assert not client.write_coils(0, bits, device_id=1).isError()
     finally:
         client.close()
     document = meter_model("bits")

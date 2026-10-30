@@ -10,7 +10,7 @@ packages = [{ include = "modpoll" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-pymodbus = "~3.9.0"
+pymodbus = "~3.16.1"
 paho-mqtt = "^2.1.0"
 prettytable = "^3.9.0"
 requests = "^2.32.5"

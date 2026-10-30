@@ -287,7 +287,7 @@ def test_csv_tm_td_mqtt_equivalence_and_local_write_commands(
                     try:
                         assert client.connect()
                         assert client.read_holding_registers(
-                            40000, count=1, slave=1
+                            40000, count=1, device_id=1
                         ).registers == [1]
                         commands = [
                             (
@@ -321,9 +321,11 @@ def test_csv_tm_td_mqtt_equivalence_and_local_write_commands(
                             wait_for(
                                 lambda: condition(telemetry(observer, prefix, single))
                             )
-                        assert client.read_coils(1, count=1, slave=1).bits[0] is True
+                        assert (
+                            client.read_coils(1, count=1, device_id=1).bits[0] is True
+                        )
                         assert client.read_holding_registers(
-                            40000, count=4, slave=1
+                            40000, count=4, device_id=1
                         ).registers == [321, 11, 22, 33]
                     finally:
                         client.close()

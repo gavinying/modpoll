@@ -20,7 +20,7 @@ def test_poller_uses_discrete_inputs_for_fc2():
         def __init__(self):
             self.called = None
 
-        def read_discrete_inputs(self, start_address, *, count, slave=None):
+        def read_discrete_inputs(self, start_address, *, count, device_id=None):
             self.called = ("di", start_address, count)
             return FakeResult(bits=[1, 0])
 
@@ -47,7 +47,7 @@ def test_bit_reference_decodes_multiple_bits_same_register():
         def __init__(self):
             self.called = None
 
-        def read_input_registers(self, start_address, *, count, slave=None):
+        def read_input_registers(self, start_address, *, count, device_id=None):
             self.called = ("ir", start_address, count)
             return FakeResult(registers=[0x8001])  # 1000 0000 0000 0001
 
@@ -71,7 +71,7 @@ def test_bit_reference_respects_endianness():
         def __init__(self):
             self.called = None
 
-        def read_input_registers(self, start_address, *, count, slave=None):
+        def read_input_registers(self, start_address, *, count, device_id=None):
             self.called = ("ir", start_address, count)
             return FakeResult(registers=[0x8001])  # raw register value
 
@@ -133,7 +133,7 @@ def test_coil_groups_decode_independently_in_any_reference_order():
     ]
 
     class Client:
-        def read_coils(self, address, count, slave):
+        def read_coils(self, address, count, device_id):
             return FakeResult(bits=bits)
 
     assert poller.poll(Client())
@@ -150,7 +150,7 @@ def test_coil_group_reports_only_requested_bits_and_rejects_short_response():
     class Client:
         bits = [True, False] * 8
 
-        def read_coils(self, address, count, slave):
+        def read_coils(self, address, count, device_id):
             return FakeResult(bits=self.bits)
 
     client = Client()

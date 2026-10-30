@@ -14,8 +14,7 @@ import urllib.request
 CHECKS = {
     "quality-check",
     "tox (3.10)",
-    "tox (3.11)",
-    "tox (3.12)",
+    "tox (3.14)",
     "docs",
     "modsim-equivalence",
 }

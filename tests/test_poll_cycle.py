@@ -206,7 +206,7 @@ def test_failure_and_recovery_never_publish_old_samples(monkeypatch, tmp_path):
     class Client(FakeClient):
         response = 7
 
-        def read_holding_registers(self, address, count, slave):
+        def read_holding_registers(self, address, count, device_id):
             if self.response is None:
                 return None
             return type(
@@ -265,7 +265,7 @@ def test_nonfinite_register_sample_marks_poll_failed(monkeypatch):
     poller.add_readable_reference(ref)
 
     class Client:
-        def read_holding_registers(self, address, count, slave):
+        def read_holding_registers(self, address, count, device_id):
             return type(
                 "Response",
                 (),
@@ -301,7 +301,7 @@ def test_odd_length_string_does_not_include_padding_byte():
     poller.add_readable_reference(ref)
 
     class Client:
-        def read_holding_registers(self, address, count, slave):
+        def read_holding_registers(self, address, count, device_id):
             return type(
                 "Response",
                 (),

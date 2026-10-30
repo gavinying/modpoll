@@ -11,16 +11,16 @@ class FakeClient:
     def close(self):
         pass
 
-    def write_coil(self, address, value, *, slave):
-        self.calls.append(("write_coil", address, value, slave))
+    def write_coil(self, address, value, *, device_id):
+        self.calls.append(("write_coil", address, value, device_id))
         return FakeResponse()
 
-    def write_register(self, address, value, *, slave):
-        self.calls.append(("write_register", address, value, slave))
+    def write_register(self, address, value, *, device_id):
+        self.calls.append(("write_register", address, value, device_id))
         return FakeResponse()
 
-    def write_registers(self, address, values, *, slave):
-        self.calls.append(("write_registers", address, values, slave))
+    def write_registers(self, address, values, *, device_id):
+        self.calls.append(("write_registers", address, values, device_id))
         return FakeResponse()
 
 
@@ -36,7 +36,7 @@ def make_handler():
     return handler, client
 
 
-def test_single_writes_use_locked_pymodbus_slave_keyword():
+def test_single_writes_use_locked_pymodbus_device_id_keyword():
     handler, client = make_handler()
 
     assert handler.write_coil("meter", 12, True)

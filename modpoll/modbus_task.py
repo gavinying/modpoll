@@ -188,7 +188,7 @@ class Poller:
 
             def _call_read(method):
                 return method(
-                    self.start_address, count=self.size, slave=self.device.devid
+                    self.start_address, count=self.size, device_id=self.device.devid
                 )
 
             if self.fc == 1:
@@ -604,7 +604,7 @@ class ModbusHandler:
                     if not self.connect():
                         return False
                     result = self.modbus_client.write_coil(
-                        address, bool(value), slave=dev.devid
+                        address, bool(value), device_id=dev.devid
                     )
                     return not result.isError()
                 except (
@@ -652,7 +652,7 @@ class ModbusHandler:
                         return False
                     if not self.connect():
                         return False
-                    result = write(*args, slave=dev.devid)
+                    result = write(*args, device_id=dev.devid)
                     return not result.isError()
                 except (
                     ModbusException,

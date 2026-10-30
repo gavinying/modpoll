@@ -140,7 +140,7 @@ def test_mixed_endian_transforms_bits_half_strings_remain_one_request(live_modsi
     client = ModbusTcpClient("127.0.0.1", port=live_modsim)
     try:
         assert client.connect()
-        assert not client.write_registers(40000, registers, slave=7).isError()
+        assert not client.write_registers(40000, registers, device_id=7).isError()
     finally:
         client.close()
     m, td = profile.instantiate(d, host="127.0.0.1", port=live_modsim, unit_id=7)
@@ -153,7 +153,7 @@ def test_mixed_endian_transforms_bits_half_strings_remain_one_request(live_modsi
             client, "read_holding_registers", wraps=client.read_holding_registers
         ) as read:
             handler.poll()
-            read.assert_called_once_with(40000, count=len(registers), slave=7)
+            read.assert_called_once_with(40000, count=len(registers), device_id=7)
         assert {
             name: ref.val for name, ref in handler.deviceList[0].references.items()
         } == expected
@@ -207,7 +207,7 @@ def test_native_physical_bit_addresses_and_partial_arrays(live_modsim):
                 True,
                 True,
             ],
-            slave=7,
+            device_id=7,
         ).isError()
     finally:
         client.close()
@@ -288,7 +288,7 @@ def test_actual_node_wot_reads_and_writes_exported_td(
             + words("I", 3000000000, byte, word)
             + words("d", 1234.5, byte, word)
         )
-        assert not client.write_registers(40000, registers, slave=7).isError()
+        assert not client.write_registers(40000, registers, device_id=7).isError()
     finally:
         client.close()
     td = profile.export_td(
@@ -356,7 +356,7 @@ def test_odd_utf8_string_respects_member_order(live_modsim, byte, word):
     try:
         assert client.connect()
         assert not client.write_registers(
-            40000, [int.from_bytes(part, "big") for part in chunks], slave=7
+            40000, [int.from_bytes(part, "big") for part in chunks], device_id=7
         ).isError()
     finally:
         client.close()
@@ -402,7 +402,7 @@ def test_explicit_legacy_packed_numeric_bits_at_physical_offset(live_modsim):
     client = ModbusTcpClient("127.0.0.1", port=live_modsim)
     try:
         assert client.connect()
-        assert not client.write_coils(0, bits, slave=7).isError()
+        assert not client.write_coils(0, bits, device_id=7).isError()
     finally:
         client.close()
     m, td = profile.instantiate(d, host="127.0.0.1", port=live_modsim, unit_id=7)
@@ -468,7 +468,7 @@ def test_app_uses_td_endpoint_without_transport_flags(live_modsim, tmp_path):
     try:
         assert client.connect()
         assert not client.write_registers(
-            40000, [42, 0, 0xFF85, 0, 0x4148, 0, 0, 0], slave=7
+            40000, [42, 0, 0xFF85, 0, 0x4148, 0, 0, 0], device_id=7
         ).isError()
     finally:
         client.close()
@@ -500,7 +500,7 @@ def test_app_cli_instantiates_typed_tm_parameters(live_modsim, tmp_path):
     try:
         assert client.connect()
         assert not client.write_registers(
-            40000, [42, 0, 0xFF85, 0, 0x4148, 0, 0, 0], slave=7
+            40000, [42, 0, 0xFF85, 0, 0x4148, 0, 0, 0], device_id=7
         ).isError()
     finally:
         client.close()

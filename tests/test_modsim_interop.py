@@ -87,7 +87,9 @@ def test_four_table_reads_and_fc5_fc6_fc16_writes(tmp_path):
         assert device.references["coil01-08"].val[1] is True
         assert device.references["holding_reg01"].val == 123
         assert handler.connect()
-        result = handler.modbus_client.read_holding_registers(40000, count=4, slave=7)
+        result = handler.modbus_client.read_holding_registers(
+            40000, count=4, device_id=7
+        )
         assert not result.isError()
         assert result.registers == [123, 12, 13, 14]
     finally:

@@ -163,7 +163,7 @@ def wait_ready(process, client):
                 raise AssertionError(process.stderr.read().decode())
             try:
                 if client.connect():
-                    result = client.read_holding_registers(40000, count=1, slave=1)
+                    result = client.read_holding_registers(40000, count=1, device_id=1)
                     if not result.isError():
                         return
             except Exception:
