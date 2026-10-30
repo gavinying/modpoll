@@ -31,9 +31,10 @@ Migration procedure
    Review the report before using the file on a device. A successful schema check
    alone cannot certify a vendor register map.
 
-Commands from the development checkout::
+Commands from the development checkout (the validation command uses the
+candidate shared package; version 0.2.0a1 does not provide this subcommand)::
 
-    mise exec -- poetry run python -m modpoll_wot meter.tm.json
+    PYTHONPATH=packages/modpoll-wot mise exec -- poetry run python -m modpoll_wot validate meter.tm.json --profile
     mise exec -- poetry run modpoll --once --config meter.tm.json --tcp HOST --tcp-port PORT --export data.json
     mise exec -- poetry run modpoll --config first.tm.json second.tm.json --tcp HOST
 
